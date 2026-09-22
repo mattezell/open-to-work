@@ -4,6 +4,28 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 18:50 CDT: asset pipeline adapted, design candidates rendered
+
+**What.** Ported an earlier game's `genassets.py`/`pixelize.py`. Changes: the
+per-game palette is gone in favour of a Genesis snap (median-cut to 15
+colours per sheet, then every channel onto the 8-level 9-bit grid, one
+palette line per sheet); assets can list `refs` that are attached to codex
+with `-i`; a new `design` kind stops after the cutout at full resolution;
+prompt placeholders are any string key in the style block (`{matt}`,
+`{token}`). Rendered 3 likeness candidates for Matt (from his two photos)
+and 2 for TOKEN in tmux session `otw-art`: 5/5 succeeded, 73 to 81 s each,
+no retries, no signals.
+
+**Why.** Approved designs become the reference images for every animation
+sheet, which should hold the likeness better than text alone.
+
+**Gotcha.** `codex exec -i` is variadic (`<FILE>...`), so it must come after
+the positional prompt or it swallows the prompt as another image path.
+
+**Alternatives rejected.** Snapping to one fixed game-wide palette (the
+earlier game's route): Genesis hardware gives each sprite its own 15-colour line,
+so a per-sheet palette is both more authentic and less speckly.
+
 ## 2026-09-22 18:36 CDT - Codex imagegen probe: first sheet, first try
 
 **What:** one `codex exec` call (Codex CLI 0.155.1, built-in image_gen,

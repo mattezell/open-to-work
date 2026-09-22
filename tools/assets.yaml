@@ -1,0 +1,141 @@
+# ---------------------------------------------------------------------------
+# OPEN TO WORK asset manifest
+#
+# Every generated asset in the game is declared here, so the art direction is a
+# reviewable file rather than a chat history. tools/genassets.py reads this,
+# drives codex's image_gen tool, and post-processes through tools/pixelize.py.
+#
+#   python3 tools/genassets.py --list
+#   python3 tools/genassets.py --group design --jobs 3
+#   python3 tools/genassets.py --only matt_design_a --dry-run
+#
+# Flow: `design` candidates first (full resolution, cutout only). The approved
+# design is copied to art/ref/ and listed under `refs` for every animation
+# sheet of that character, together with the verbatim description below.
+# ---------------------------------------------------------------------------
+
+style:
+  # Prepended to every prompt. This paragraph is the whole look of the game.
+  world: >
+    OPEN TO WORK house style: a 1992 Sega Genesis side-scrolling beat 'em up in
+    the tradition of Streets of Rage 2 and Final Fight. Bold, chunky,
+    confident character art with slightly exaggerated brawler proportions,
+    big hands, readable faces, and a thick dark outline. Limited 16-bit
+    console colour: each character uses about fifteen flat colours with two
+    or three shade steps per material, lit from the upper left. The tone is
+    comic and warm, a Saturday-morning cartoon punch-up, never grim. No text,
+    no letters, no logos, no watermark, no signature.
+
+  # Appended to prompts for anything that becomes a pixel actor.
+  sprite: >
+    Rendered as high-craft 16-bit pixel art: hard-edged colour clusters,
+    minimal dithering, clean readable silhouette, no soft anti-aliased blur,
+    no drop shadow, no glow, no ground plane, no scenery, no labels, no frame
+    borders, no poster composition. Production game asset, not concept art.
+    Fully transparent background.
+
+  painted: >
+    Painted 16-bit era key art, bold shapes, saturated but limited colour.
+
+  # Player 1. Pasted verbatim into every Matt prompt; paraphrase drifts.
+  matt: >
+    MATT, player one: a stocky, broad-shouldered man in his forties with a
+    closely buzzed, nearly bald head and a full, thick brown beard that is
+    greying at the cheeks and sides, trimmed short at the chin. Grey-green
+    eyes under heavy brows, a determined half-smile. He wears a plain
+    heathered brick-red crew-neck t-shirt, dark blue straight-leg jeans, and
+    black-and-white sneakers. A black smartwatch on his left wrist. Big
+    capable hands, forearms slightly thick. He reads clearly as one
+    recognisable person: same face, same beard, same proportions, same
+    palette, every time.
+
+  # Player 2, the AI sidekick. Original design; not any existing robot.
+  token: >
+    TOKEN, the AI sidekick robot: about the height of a man's chest. Its head
+    is a chunky beige 1980s CRT computer monitor with rounded bezel corners;
+    the screen is dark teal and shows a simple glowing pixel face, two square
+    eyes and a small line mouth. A short thin antenna on top ends in a round
+    amber bulb. Boxy cream-coloured torso with teal panel seams and a small
+    row of three coloured status lights on the chest. Segmented grey
+    ball-jointed arms ending in oversized grey boxing-glove fists. Short
+    stubby legs with wide flat grey feet. Friendly, eager, slightly clumsy.
+    Same proportions, same palette, same silhouette, every time.
+
+assets:
+  # --- design candidates: pick one per character, then it becomes the ref --
+
+  - id: matt_design_a
+    group: design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/matt_a.png
+    refs: [ref/matt-1.jpg, ref/matt-2.jpg]
+    prompt: >
+      Character model sheet for a video game hero, drawn from the attached
+      reference photos of the real person: match his face, head shape, beard
+      shape and colour, eye colour and build closely. {matt}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, standing facing the
+      viewer in a relaxed ready pose; on the right, in strict side profile
+      facing RIGHT in a boxer's fighting stance, fists up. Faithful, grounded
+      proportions.
+
+  - id: matt_design_b
+    group: design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/matt_b.png
+    refs: [ref/matt-1.jpg, ref/matt-2.jpg]
+    prompt: >
+      Character model sheet for a video game hero, drawn from the attached
+      reference photos of the real person: match his face, head shape, beard
+      shape and colour, eye colour and build closely. {matt}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer with
+      arms crossed and a confident grin; on the right, in strict side profile
+      facing RIGHT in a boxer's fighting stance, fists up. Heroic arcade
+      brawler proportions: broader chest, bigger fists, slightly larger head,
+      like a Streets of Rage 2 lead.
+
+  - id: matt_design_c
+    group: design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/matt_c.png
+    refs: [ref/matt-1.jpg, ref/matt-2.jpg]
+    prompt: >
+      Character model sheet for a video game hero, drawn from the attached
+      reference photos of the real person: match his face, head shape, beard
+      shape and colour, eye colour and build closely. {matt}
+      Additionally he wears a pair of over-ear headphones resting around his
+      neck and the t-shirt sleeves are pushed up. Two full-body views of the
+      same character side by side, same scale, separated by clear empty
+      space: on the left, facing the viewer, cracking his knuckles; on the
+      right, in strict side profile facing RIGHT in a boxer's fighting
+      stance, fists up. Slightly chibi-leaning arcade proportions, like a
+      Final Fight hero seen through a cartoon lens.
+
+  - id: token_design_a
+    group: design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/token_a.png
+    prompt: >
+      Character model sheet for a video game sidekick robot. {token}
+      Two full-body views of the same robot side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer and
+      waving one fist; on the right, in strict side profile facing RIGHT in
+      a fighting stance, fists up, screen face showing determined eyes.
+
+  - id: token_design_b
+    group: design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/token_b.png
+    prompt: >
+      Character model sheet for a video game sidekick robot. {token}
+      Rounder, toylike take: softer bevels, a slightly bigger monitor head
+      relative to the body, like a 1980s tin toy. Two full-body views of the
+      same robot side by side, same scale, separated by clear empty space:
+      on the left, facing the viewer with a happy screen face; on the right,
+      in strict side profile facing RIGHT in a fighting stance, fists up.
