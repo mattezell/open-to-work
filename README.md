@@ -159,8 +159,9 @@ the tower at full health, keeping the score Matt walked in with.
 ## Layout
 
 - `src/sim/`: the game itself, pure deterministic TypeScript, no Phaser.
-  Everything that matters is tested here, including a bot that must clear
-  Stage 1 on several seeds.
+  Everything that matters is tested here, including bots that must clear
+  every stage, and the whole run street to tunnel to tower, on several
+  seeds (`src/sim/campaign-bot.test.ts`), as part of `npm run check`.
 - `src/view/`: Phaser rendering, keyboard input, the touch pad and sound
   (`music.ts` is the score, `audio.ts` the WebAudio synth). Reads the sim,
   never changes game state except by passing input to `step`.

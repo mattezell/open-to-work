@@ -4,6 +4,41 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 06:30 CDT: M6 part 1, the campaign bot and the CV going live
+
+**What.** `src/sim/campaign-bot.test.ts` plays the whole run: the street
+brawl, then the tunnel from `tunnelStart(carryFromStreet(...))`, then the
+tower from `carryFromTunnel(...)`, one attempt per stage, the same carry
+functions the scenes use. The per-stage bots were already in
+`npm run check` (Stage 1 and 3 in `bot.test.ts`, the tunnel in
+`tunnel-bot.test.ts`), so the M6 "bot in CI" item came down to the gap
+between stages. 13 tests, about 0.4 s.
+
+**Measured first, then asserted** (10 seeds each, HP/score after each
+stage):
+- Sharp: 10/10 full clears, reaching the offer with 59 to 79 HP and 36k to
+  41k points.
+- Casual: 10/10 full clears too, but the tower bites: 1 to 50 HP left
+  (seed 5 finished on 1 HP). The tunnel's retry floor matters: casual
+  leaves the street with 42 to 80 HP and starts the tunnel on at least 60.
+- The assertions: sharp clears every seed; casual clears at least 8/10;
+  a casual win ends the tower under 80 HP; score rises through all three
+  stages. A mutation check (tunnel budget starved to 600 ticks) failed all
+  13, after tightening the "tower bites" test, which had passed vacuously
+  when no run reached the tower.
+
+**/cv/ is live.** Rechecked before any deploy work: immatt.com/cv/ now
+serves its own 21 KB page (title "CV", sections Professional Summary to
+Education), different from the home page, so `CV_LIVE` is true. The HIRED
+card shows CV, CONTACT, PLAY AGAIN on one row; in headless Chromium Enter
+on the default CV opened https://immatt.com/cv/ in a new tab, no errors.
+Another session deployed the CV page overnight; this session only reads
+it.
+
+**Next.** The Cloudflare deploy needs Matt: the hostname
+(opentowork.immatt.com with otw redirecting, or otw.immatt.com) and the
+go-ahead to publish.
+
 ## 2026-09-23 06:26 CDT: playtest item 6, painted parallax backdrops
 
 **What.** Seven generated layers replace the flat code-drawn backdrops:

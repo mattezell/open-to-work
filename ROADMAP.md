@@ -53,9 +53,14 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     backgrounds kept as the fallback (7 layers: street 3, tunnel 2,
     tower 2; plan in `src/view/backdrops.ts`) (87000a1)
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
-  (a subdomain of immatt.com; hostname to confirm at deploy). Before the
-  deploy build: recheck https://immatt.com/cv/ against the home page and
-  flip `CV_LIVE` in `src/view/hire.ts` if the CV is up
+  - [x] Every stage and the whole campaign cleared by the bot in
+    `npm run check` (`src/sim/campaign-bot.test.ts`; the per-stage bots
+    were already there)
+  - [x] /cv/ rechecked 2026-09-23: live (its own body, "CV" title), so
+    `CV_LIVE` is true and the card offers CV, CONTACT, PLAY AGAIN.
+    Recheck again before each deploy build
+  - [ ] Deploy to Cloudflare on a subdomain of immatt.com (hostname to
+    confirm with Matt; no publish without his go-ahead)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 

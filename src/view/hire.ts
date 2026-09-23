@@ -5,11 +5,12 @@
 export const CV_URL = 'https://immatt.com/cv/';
 export const CONTACT_URL = 'https://immatt.com/contact/';
 /**
- * Whether immatt.com/cv/ is the CV yet. Until that page is deployed the
- * site answers /cv/ with its home page (200, not 404), so the card offers
- * the contact page alone. Recheck before every deploy.
+ * Whether immatt.com/cv/ is the CV. Until that page was deployed the site
+ * answered /cv/ with its home page (200, not 404), so the card offered the
+ * contact page alone. Live since 2026-09-23 (its own body, "CV" title);
+ * recheck against the home page before every deploy.
  */
-export const CV_LIVE = false;
+export const CV_LIVE = true;
 
 export type HireAction = { kind: 'link'; url: string } | { kind: 'again' };
 

@@ -7,6 +7,9 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- A campaign beatability test: the bot plays the street, the tunnel and
+  the tower in one run, carrying health and score between stages, on ten
+  seeds, in `npm run check`.
 - Painted parallax backdrops for all three stages, generated and snapped to
   the Genesis palette: a dusk skyline, a storefront row and the near shops
   on the street (with a "WE'RE HIRING (not you)" banner and a recruiting
@@ -16,9 +19,9 @@ All notable changes to this project are documented here. Format follows
   images fail to load.
 - Asset pipeline: `kind: layer` backdrop entries, `--crop` and
   `--seamless` in `pixelize.py image`.
-- HIRED card call to action: "Hire the real Matt" with a link to
-  immatt.com/contact/ (and immatt.com/cv/ once that page is live), opened
-  in a new tab, plus PLAY AGAIN. The card also carries the credit "Built in
+- HIRED card call to action: "Hire the real Matt" with links to
+  immatt.com/cv/ and immatt.com/contact/, opened in a new tab, plus PLAY
+  AGAIN. The card also carries the credit "Built in
   N days by Matt Ezell + Claude", N from the git history at build time.
 - Title screen: the logo, Matt and TOKEN on the street, the start hint for
   keyboard or touch, and a credit line. Enter, Space, J or a tap starts.

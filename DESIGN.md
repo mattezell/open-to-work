@@ -183,8 +183,8 @@ three enemies.
   letter, HIRED, the final score, and the credit ("Built in N days by Matt
   Ezell + Claude", N counted from the first commit to the last by
   `tools/with-commit-dates.sh` at build time). Under it, "Hire the real
-  Matt": a menu of immatt.com/cv/ (once it is live, `CV_LIVE` in
-  `src/view/hire.ts`), immatt.com/contact/, and PLAY AGAIN from the street.
+  Matt": a menu of immatt.com/cv/ (behind `CV_LIVE` in `src/view/hire.ts`,
+  live since 2026-09-23), immatt.com/contact/, and PLAY AGAIN from the street.
   Left and right choose; Enter, an action key, a pad button or a tap on
   the option picks. Links open in a new tab from a window-level key or
   pointer listener, because Phaser queues its own input to the next step
