@@ -51,7 +51,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     with its home page), so `CV_LIVE` is false: CONTACT only (7bac7cc)
   - [x] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
     backgrounds kept as the fallback (7 layers: street 3, tunnel 2,
-    tower 2; plan in `src/view/backdrops.ts`)
+    tower 2; plan in `src/view/backdrops.ts`) (87000a1)
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
   (a subdomain of immatt.com; hostname to confirm at deploy). Before the
   deploy build: recheck https://immatt.com/cv/ against the home page and
