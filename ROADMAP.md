@@ -133,6 +133,9 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   street and tunnel score.
 - Panel desks: done in the playtest fixes (diagonal, 60 px apart, hot-seat
   marker). Matt's call whether the arrow reads at phone size.
+- Fullscreen on Android (Matt, 2026-09-23: no touch entered it) fixed:
+  requests moved to pointerup plus a FULL pill. Verified in headless
+  Chromium with CDP touch; needs Matt's phone to confirm.
 - Touch pad is verified only in emulated Chromium (Playwright, CDP touch
   events). Needs a real iPhone and Android pass: thumb reach of the button
   cluster, whether the landscape buttons hide too much of the right edge,

@@ -1,4 +1,11 @@
 import type { InputFrame } from '../sim/input';
+import {
+  canRequest,
+  initialFullscreenState,
+  shouldAutoEnter,
+  showFullPill,
+  type FullscreenState,
+} from './fullscreen';
 import { TouchState, type ButtonAction } from './touch-state';
 
 /**
@@ -42,7 +49,10 @@ export class TouchPad {
   private readonly pausePill: HTMLElement;
   private onPause: () => void = () => undefined;
   private isActive = false;
-  private askedFullscreen = false;
+  private readonly fullPill: HTMLElement;
+  private fullscreen = initialFullscreenState(
+    typeof document.documentElement.requestFullscreen === 'function',
+  );
 
   constructor(
     mount: HTMLElement,
@@ -73,7 +83,29 @@ export class TouchPad {
       e.stopPropagation();
       this.onPause();
     });
-    mount.append(this.root, this.pausePill);
+    this.fullPill = element('div', 'full-pill', 'FULL');
+    this.fullPill.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    // On the way up: Chrome grants a touch its user activation at pointerup, not pointerdown.
+    this.fullPill.addEventListener('pointerup', (e) => {
+      e.stopPropagation();
+      if (canRequest(this.fullscreen)) this.enterFullscreen(false);
+    });
+    mount.append(this.root, this.pausePill, this.fullPill);
+    window.addEventListener(
+      'pointerup',
+      (e) => {
+        if (e.pointerType === 'touch' && shouldAutoEnter(this.fullscreen))
+          this.enterFullscreen(true);
+      },
+      { capture: true },
+    );
+    document.addEventListener('fullscreenchange', () => {
+      this.updateFullscreen({ isFullscreen: document.fullscreenElement !== null });
+    });
+    this.updateFullscreen({});
 
     window.addEventListener(
       'pointerdown',
@@ -130,7 +162,6 @@ export class TouchPad {
     zone.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       zone.setPointerCapture(e.pointerId);
-      this.requestFullscreenOnce();
       this.state.stickStart(e.pointerId, e.clientX, e.clientY);
       this.drawStick();
     });
@@ -151,7 +182,6 @@ export class TouchPad {
     button.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       button.setPointerCapture(e.pointerId);
-      this.requestFullscreenOnce();
       this.state.buttonDown(e.pointerId, action);
       this.drawButtons();
     });
@@ -190,20 +220,29 @@ export class TouchPad {
   }
 
   /**
-   * First touch on the pad asks for fullscreen and a landscape lock, as Momentum
-   * does. Only once, so a player who backs out of fullscreen is not dragged
-   * back in. iPhone Safari has no element fullscreen; there the page simply
-   * stays as it is (home-screen install is the fullscreen path).
+   * Fullscreen and a landscape lock, as Momentum does. Automatic asks come from
+   * any touch lifting off (see fullscreen.ts for when they stop); the FULL pill
+   * asks on demand. iPhone Safari has no element fullscreen, so there neither
+   * happens and the pill stays hidden (home-screen install is the path).
    */
-  private requestFullscreenOnce(): void {
-    if (this.askedFullscreen) return;
-    this.askedFullscreen = true;
-    const page = document.documentElement;
-    if (typeof page.requestFullscreen !== 'function' || document.fullscreenElement) return;
-    page
+  private enterFullscreen(automatic: boolean): void {
+    this.updateFullscreen({ pending: true });
+    document.documentElement
       .requestFullscreen({ navigationUI: 'hide' })
-      .then(() => lockLandscape())
-      .catch((error: unknown) => console.info('[otw] fullscreen refused:', error));
+      .then(() => {
+        this.updateFullscreen({ pending: false, entered: true });
+        return lockLandscape();
+      })
+      .catch((error: unknown) => {
+        const refusals = this.fullscreen.refusals + (automatic ? 1 : 0);
+        this.updateFullscreen({ pending: false, refusals });
+        console.info('[otw] fullscreen refused:', error);
+      });
+  }
+
+  private updateFullscreen(patch: Partial<FullscreenState>): void {
+    this.fullscreen = { ...this.fullscreen, ...patch };
+    this.fullPill.classList.toggle('shown', showFullPill(this.fullscreen));
   }
 }
 

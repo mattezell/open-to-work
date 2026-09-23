@@ -132,6 +132,13 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- Fullscreen on Android: no touch anywhere entered it. The pad asked on
+  the touch's way down, before Chrome grants the tap its user activation,
+  and the one refusal used up its only try. It now asks when any tap
+  lifts, keeps asking until one request lands, and a FULL pill (left of
+  SOUND, or atop the right bar in landscape) goes back in after the
+  player leaves.
+
 - On a phone, touching the stick on the title screen started the game
   instead of moving the menu cursor, and a pad button with CV chosen
   started the game rather than opening the CV. The stick now moves the

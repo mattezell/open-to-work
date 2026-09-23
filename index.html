@@ -262,10 +262,34 @@
         opacity: 0.6;
         touch-action: none;
       }
-      /* Landscape has side bars: keep the pill off the canvas, top of the left bar. */
+      /* FULL mirrors PAUSE on the other side of SOUND; hidden once fullscreen or where there is none. */
+      .full-pill {
+        display: none;
+      }
+      html.touch .full-pill.shown {
+        display: block;
+        position: fixed;
+        z-index: 13;
+        top: calc(var(--safe-top) + 6px);
+        right: calc(50% + 46px);
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 2px solid rgb(16 16 16 / 70%);
+        background: #f0f0e0;
+        color: #101010;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 10px;
+        opacity: 0.6;
+        touch-action: none;
+      }
+      /* Landscape has side bars: keep the pills off the canvas, PAUSE atop the left bar, FULL the right. */
       @media (orientation: landscape) {
         html.touch .pause-pill {
           left: calc(var(--safe-left) + 12px);
+        }
+        html.touch .full-pill.shown {
+          right: calc(var(--safe-right) + 12px);
         }
       }
     </style>

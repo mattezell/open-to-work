@@ -4,6 +4,42 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 09:34 CDT: fullscreen never worked from a touch
+
+**What.** Matt, on Android: nowhere on the screen does a press enter
+fullscreen, and in landscape the address bar eats the screen. He first
+read it as a side effect of the menu fix; it was not.
+
+**Why.** The pad called `requestFullscreen` in its `pointerdown` handler.
+Instrumenting `navigator.userActivation` in the live build under CDP
+touch showed Chrome grants a touch its activation at `pointerup`, not
+before: `isActive` was false at pointerdown and touchstart and true at
+pointerup and touchend, and the request failed with "API can only be
+initiated by a user gesture". The pad set its asked-once flag before
+asking, so that single refusal was the only try, and a sky tap never
+asked at all. A bare test page had shown activation at pointerdown; the
+instrumented game is the one that counts. So it has probably never
+worked on a real phone.
+
+**Fix.** `fullscreen.ts` holds the rules, tested without a DOM: any touch
+lifting off asks, on a capture `pointerup` listener on the window; asking
+continues until a request lands, stopping after three refusals; once the
+player has been fullscreen and left, nothing asks again by itself. A FULL
+pill (left of SOUND, or atop the right bar in landscape) asks on its own
+pointerup and hides while fullscreen or where there is no fullscreen API.
+
+**Alternatives.** Keep the pointerdown request and add only the pill:
+leaves the automatic path broken. Ask on every tap forever: fights a
+player who backed out on purpose.
+
+**Checked.** Playwright, 844x390 isMobile, CDP touch on the dev server: a
+sky tap on the title enters fullscreen and hides the pill; after
+`exitFullscreen` the pill shows and another sky tap stays windowed; a tap
+on the pill enters again. Portrait 390x844: FULL, SOUND ON and PAUSE sit
+in one row, 10 px apart.
+
+**Follow-up.** Confirm on Matt's Android phone after deploy.
+
 ## 2026-09-23 08:43 CDT: the touch stick started the game from the title
 
 **What.** Matt, on his phone: pushing the stick right to reach CV started
