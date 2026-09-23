@@ -48,7 +48,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   - [x] 5. HIRED screen: score, credits, "Hire the real Matt" links to
     immatt.com/cv/ and /contact/ (fall back to /contact/ if /cv/ is not
     live at deploy). /cv/ was not live on 2026-09-23 (the site answers it
-    with its home page), so `CV_LIVE` is false: CONTACT only
+    with its home page), so `CV_LIVE` is false: CONTACT only (7bac7cc)
   - [ ] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
     backgrounds kept as the fallback
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
