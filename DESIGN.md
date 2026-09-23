@@ -186,7 +186,8 @@ three enemies.
   Matt": a menu of immatt.com/cv/ (behind `CV_LIVE` in `src/view/hire.ts`,
   live since 2026-09-23), immatt.com/contact/, and PLAY AGAIN from the street.
   Left and right choose; Enter, an action key, a pad button or a tap on
-  the option picks. Links open in a new tab from a window-level key or
+  the option picks. The row is a `MenuRow` (`src/view/menu-row.ts`), shared
+  with the title screen. Links open in a new tab from a window-level key or
   pointer listener, because Phaser queues its own input to the next step
   and popup blockers only trust the event itself; if the browser blocks the
   tab anyway, the link opens in the same tab.
@@ -222,8 +223,14 @@ three enemies.
 
 ## Front end: title, attract loop, name cards
 
-- `TitleScene` is the cabinet front: logo, heroes on the street, start hint,
-  credit. `src/view/attract.ts` (Phaser-free, tested) says what shows at
+- `TitleScene` is the cabinet front: logo, heroes on the street, a hint
+  line, credit, and a `START  CV  CONTACT` menu row (`titleOptions` in
+  `src/view/hire.ts`) so hiring Matt is never gated behind the ending.
+  START is chosen, so the start keys still just start; left or right moves
+  the cursor, returns to the title panel and swaps the hint for the link's
+  URL (`titleHint`). A tap on an option picks it, a tap elsewhere starts.
+  Help's last page, HIRE MATT (`hirePage` in `src/view/help.ts`), lists
+  the same links as text. `src/view/attract.ts` (Phaser-free, tested) says what shows at
   each tick: title for 10 s, then each `ROSTER` entry for 1.5 s, then the
   demo. The demo is the ordinary `GameScene` with `demo: true`: seed 7, the
   `SHARP` bot's frames instead of the player's, no music, no sound, no

@@ -1,6 +1,7 @@
 import { SCREEN_H, SCREEN_W } from '../sim/constants';
 import type { FighterKind } from '../sim/fighters';
 import { HELP_CODES, KEY_BINDINGS, PAUSE_CODES } from './controls';
+import { CV_LIVE, displayUrl, hireLinks } from './hire';
 import { CELL_H, CELL_W } from './pixel-font';
 import { BOSS_NAMES } from './stage-view';
 
@@ -199,6 +200,22 @@ const TOWER: HelpPage = {
   ],
 };
 
+/** The real Matt's links, as text: help is for reading, the title screen's menu opens them. */
+export function hirePage(cvLive: boolean): HelpPage {
+  return {
+    tab: 'HIRE MATT',
+    layout: 'columns',
+    rows: [
+      { head: 'MATT', text: 'The real one is open to work.' },
+      ...hireLinks(cvLive).map(({ label, action }) => ({
+        head: label,
+        text: action.kind === 'link' ? displayUrl(action.url) : '',
+      })),
+      { head: 'OPEN', text: 'Pick them on the title screen, or beat the tower.' },
+    ],
+  };
+}
+
 /** The pages in order; the first one shows the controls for the device in use. */
 export function helpPages(touch: boolean): readonly HelpPage[] {
   const controls: HelpPage = {
@@ -206,7 +223,7 @@ export function helpPages(touch: boolean): readonly HelpPage[] {
     layout: 'columns',
     rows: touch ? TOUCH_CONTROLS : KEYBOARD_CONTROLS,
   };
-  return [controls, ORDERS, STREET, TUNNEL, TOWER];
+  return [controls, ORDERS, STREET, TUNNEL, TOWER, hirePage(CV_LIVE)];
 }
 
 export type RosterEntry = HelpRow & { kind: FighterKind; tagline: string };

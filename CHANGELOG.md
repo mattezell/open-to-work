@@ -7,6 +7,9 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- CV and contact links without beating the game: the title screen's
+  bottom row is now a `START  CV  CONTACT` menu (START chosen, so start
+  keys still start), and help ends on a HIRE MATT page listing both URLs.
 - A link preview: pasting https://opentowork.immatt.com into Slack,
   Discord, X, LinkedIn or iMessage now shows a card with Matt and TOKEN on
   the roof and the title, plus a description. The site also has a
@@ -129,6 +132,8 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- The HIRED card's menu row sat 2 to 3 pixels right of centre; it and the
+  title's menu now share one centred layout.
 - Starting a second run after clearing the tunnel froze the game on the
   first frame of the street: the scene reused sprites its previous visit
   had destroyed. Both stage scenes now drop them on entry.

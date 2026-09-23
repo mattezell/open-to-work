@@ -1,6 +1,7 @@
 import { TICK_HZ } from '../sim/constants';
 import type { InputFrame } from '../sim/input';
 import { ROSTER } from './help';
+import { optionHint, type HireAction } from './hire';
 
 /**
  * The arcade attract loop: the title, then the enemies one at a time, then
@@ -31,4 +32,9 @@ export function startPressed(frame: InputFrame): boolean {
 
 export function startHint(touch: boolean): string {
   return touch ? 'tap to start' : 'enter, space or J';
+}
+
+/** The line under the pitch on the title: how to start, or where the chosen link goes. */
+export function titleHint(action: HireAction, touch: boolean): string {
+  return action.kind === 'play' ? startHint(touch) : optionHint(action);
 }

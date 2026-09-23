@@ -7,6 +7,7 @@ import {
   BODY_BOTTOM,
   BODY_TOP,
   helpPages,
+  hirePage,
   keyLabel,
   layoutPage,
   layoutTabs,
@@ -15,6 +16,7 @@ import {
   turnPage,
   wrap,
 } from './help';
+import { CV_LIVE, displayUrl, hireLinks } from './hire';
 import { CELL_H, hasGlyph, textWidth } from './pixel-font';
 
 const EVERY_PAGE = [...helpPages(false), ...helpPages(true)];
@@ -110,6 +112,22 @@ describe('page layout', () => {
     for (const footer of [pauseFooter(false), pauseFooter(true)]) {
       expect(textWidth(footer)).toBeLessThanOrEqual(SCREEN_W - 16);
     }
+  });
+});
+
+describe('the hire page', () => {
+  it('is the last page, on keyboards and touch screens alike', () => {
+    for (const touch of [false, true]) expect(helpPages(touch).at(-1)).toEqual(hirePage(CV_LIVE));
+  });
+
+  it('spells out every link the title and the HIRED card offer', () => {
+    for (const cvLive of [true, false]) {
+      const text = hirePage(cvLive).rows.map((row) => `${row.head} ${row.text}`);
+      for (const { label, action } of hireLinks(cvLive)) {
+        if (action.kind === 'link') expect(text).toContain(`${label} ${displayUrl(action.url)}`);
+      }
+    }
+    expect(hirePage(false).rows.map((row) => row.head)).not.toContain('CV');
   });
 });
 

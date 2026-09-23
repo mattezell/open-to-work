@@ -1,22 +1,14 @@
 import Phaser from 'phaser';
 import { SCREEN_H, SCREEN_W } from '../sim/constants';
 import type { InputFrame } from '../sim/input';
-import { KEY_BINDINGS, mergeInputs, type HeldKeys } from './controls';
+import { mergeInputs, type HeldKeys } from './controls';
 import { sharedAudio } from './audio';
 import { sharedDevices } from './devices';
-import {
-  builtInDays,
-  creditLine,
-  CV_LIVE,
-  cycle,
-  hireOptions,
-  optionHint,
-  optionText,
-  type HireOption,
-} from './hire';
+import { builtInDays, creditLine, CV_LIVE, hireOptions, optionHint } from './hire';
 import { INK, MAX_TICKS_PER_FRAME, RESTART_DELAY_TICKS, TICK_MS } from './hud';
-import { CELL_H, CELL_W, TITLE_SCALE } from './pixel-font';
-import { HEAD_COLOR, pixelFont, pixelText } from './pixel-text';
+import { listenForPicks, MenuRow, openInNewTab, PICK_CODES } from './menu-row';
+import { TITLE_SCALE } from './pixel-font';
+import { HEAD_COLOR, pixelText } from './pixel-text';
 import type { TouchPad } from './touch';
 
 /** The ending card holds a beat before the words come up over it. */
@@ -25,13 +17,6 @@ const FADE_MS = 800;
 const CAPTION_H = 82;
 const CAPTION_TOP = SCREEN_H - CAPTION_H;
 const DIM_COLOR = '#b0b0a0';
-/** Keys that pick the chosen option: Enter plus the three action buttons. */
-const PICK_CODES: readonly string[] = [
-  'Enter',
-  ...KEY_BINDINGS.attack,
-  ...KEY_BINDINGS.jump,
-  ...KEY_BINDINGS.special,
-];
 
 function centred(text: Phaser.GameObjects.BitmapText): Phaser.GameObjects.BitmapText {
   return text.setX(Math.round((SCREEN_W - text.width) / 2));
@@ -41,17 +26,6 @@ function centred(text: Phaser.GameObjects.BitmapText): Phaser.GameObjects.Bitmap
 function buildDays(): number | null {
   const { VITE_FIRST_COMMIT: first, VITE_LAST_COMMIT: last } = import.meta.env;
   return first && last ? builtInDays(first, last) : null;
-}
-
-/**
- * Open a link in a new tab from inside the key or tap that asked for it, so
- * popup blockers let it through. The new tab gets no handle back to the game.
- * If the browser blocks it anyway, go there in this tab rather than do nothing.
- */
-function openInNewTab(url: string): void {
-  const tab = window.open(url, '_blank');
-  if (tab) tab.opener = null;
-  else window.location.assign(url);
 }
 
 /**
@@ -65,9 +39,7 @@ export class EndingScene extends Phaser.Scene {
   private touch!: TouchPad;
   private accumulator = 0;
   private ticks = 0;
-  private options: HireOption[] = [];
-  private selected = 0;
-  private slots: Phaser.GameObjects.BitmapText[] = [];
+  private menu!: MenuRow;
   private hint!: Phaser.GameObjects.BitmapText;
   private lastFrame: InputFrame | null = null;
 
@@ -79,7 +51,6 @@ export class EndingScene extends Phaser.Scene {
     this.score = data.score ?? 0;
     this.ticks = 0;
     this.accumulator = 0;
-    this.selected = 0;
     this.lastFrame = null;
   }
 
@@ -93,7 +64,6 @@ export class EndingScene extends Phaser.Scene {
     this.cameras.main.fadeIn(FADE_MS);
     sharedAudio().play('ending');
     this.add.image(SCREEN_W / 2, 0, 'ending-hired').setOrigin(0.5, 0);
-    this.options = hireOptions(CV_LIVE);
     const caption = this.add.rectangle(0, CAPTION_TOP, SCREEN_W, CAPTION_H, INK, 0.8).setOrigin(0);
     const title = centred(
       pixelText(this, 0, CAPTION_TOP + 3, 'HIRED', HEAD_COLOR).setScale(TITLE_SCALE),
@@ -105,13 +75,24 @@ export class EndingScene extends Phaser.Scene {
       pixelText(this, 0, CAPTION_TOP + 33, creditLine(buildDays()), DIM_COLOR),
     );
     const cta = centred(pixelText(this, 0, CAPTION_TOP + 47, 'Hire the real Matt', HEAD_COLOR));
-    this.slots = this.layoutMenu(CAPTION_TOP + 57);
+    this.menu = new MenuRow(this, hireOptions(CV_LIVE), CAPTION_TOP + 57);
     this.hint = pixelText(this, 0, CAPTION_TOP + 70, '', DIM_COLOR);
-    const parts = [caption, title, score, credit, cta, ...this.slots, this.hint];
+    const parts = [caption, title, score, credit, cta, ...this.menu.slots, this.hint];
     for (const part of parts) part.setAlpha(0);
     this.tweens.add({ targets: parts, alpha: 1, delay: TEXT_DELAY_MS, duration: FADE_MS });
-    this.select(0);
-    this.listen();
+    this.showHint();
+    listenForPicks(
+      this,
+      (e) => {
+        if (!e.repeat && this.ready() && PICK_CODES.includes(e.code)) this.pick();
+      },
+      (x, y) => {
+        const hit = this.menu.slotAt(x, y);
+        if (hit < 0 || !this.ready()) return;
+        this.menu.select(hit);
+        this.pick();
+      },
+    );
   }
 
   update(_time: number, delta: number): void {
@@ -125,7 +106,7 @@ export class EndingScene extends Phaser.Scene {
 
   /**
    * The stick and the keys move the cursor; the touch pad's buttons pick.
-   * Keyboard picks arrive through `listen` instead, inside the key event.
+   * Keyboard picks and taps arrive through `listenForPicks` instead, inside the event.
    */
   private step(): void {
     const keys = this.keys.snapshot();
@@ -134,64 +115,19 @@ export class EndingScene extends Phaser.Scene {
     const was = this.lastFrame;
     this.lastFrame = frame;
     if (!this.ready() || !was) return;
-    if (frame.left && !was.left) this.select(cycle(this.selected, -1, this.options.length));
-    if (frame.right && !was.right) this.select(cycle(this.selected, 1, this.options.length));
-    if (pad.attack || pad.jump || pad.special) this.pick(this.selected);
+    if (frame.left && !was.left) this.move(-1);
+    if (frame.right && !was.right) this.move(1);
+    if (pad.attack || pad.jump || pad.special) this.pick();
   }
 
-  /** One pixel text per option, side by side and centred as a row. */
-  private layoutMenu(y: number): Phaser.GameObjects.BitmapText[] {
-    const texts = this.options.map((option) => optionText(option.label, false));
-    const rowWidth = (texts.join(' ').length - 1) * CELL_W;
-    let x = Math.round((SCREEN_W - rowWidth) / 2);
-    return texts.map((text) => {
-      const slot = pixelText(this, x, y, text);
-      x += (text.length + 1) * CELL_W;
-      return slot;
-    });
+  private move(step: number): void {
+    this.menu.move(step);
+    this.showHint();
   }
 
-  private select(index: number): void {
-    this.selected = index;
-    this.slots.forEach((slot, i) => {
-      const option = this.options[i];
-      if (!option) return;
-      slot.setFont(pixelFont(this, i === index ? HEAD_COLOR : undefined));
-      slot.setText(optionText(option.label, i === index));
-    });
-    const option = this.options[index];
+  private showHint(): void {
+    const option = this.menu.option;
     if (option) centred(this.hint.setText(optionHint(option.action)));
-  }
-
-  /**
-   * Keys and taps are read straight from the window so a link opens inside
-   * the event that asked for it (Phaser queues its own until the next step,
-   * and popup blockers only trust the event itself).
-   */
-  private listen(): void {
-    const openedAt = performance.now();
-    const onKey = (e: KeyboardEvent): void => {
-      if (!e.repeat && this.ready() && PICK_CODES.includes(e.code)) this.pick(this.selected);
-    };
-    const onTap = (e: PointerEvent): void => {
-      if (e.timeStamp < openedAt || !this.ready()) return;
-      const x = this.scale.transformX(e.pageX);
-      const y = this.scale.transformY(e.pageY);
-      const hit = this.slots.findIndex(
-        (slot) =>
-          x >= slot.x && x < slot.x + slot.width && Math.abs(y - slot.y - CELL_H / 2) < CELL_H,
-      );
-      if (hit >= 0) {
-        this.select(hit);
-        this.pick(hit);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('pointerdown', onTap);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('pointerdown', onTap);
-    });
   }
 
   /** Ignore the buttons still held from the final blow until the card has been seen. */
@@ -199,8 +135,8 @@ export class EndingScene extends Phaser.Scene {
     return this.ticks > RESTART_DELAY_TICKS + (TEXT_DELAY_MS + FADE_MS) / TICK_MS;
   }
 
-  private pick(index: number): void {
-    const action = this.options[index]?.action;
+  private pick(): void {
+    const action = this.menu.option?.action;
     if (!action) return;
     if (action.kind === 'link') openInNewTab(action.url);
     else this.scene.start('game', { stage: 'street' });

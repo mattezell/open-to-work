@@ -12,9 +12,11 @@ import {
   ROSTER_ENTRY_TICKS,
   startHint,
   startPressed,
+  titleHint,
   TITLE_TICKS,
 } from './attract';
 import { ROSTER } from './help';
+import { CONTACT_URL, titleOptions } from './hire';
 import { NameCards } from './name-cards';
 import { hasGlyph, textWidth } from './pixel-font';
 
@@ -42,8 +44,19 @@ describe('the attract loop', () => {
     expect(startPressed(NO_INPUT)).toBe(false);
   });
 
+  it('says how to start with START chosen, and where a link goes otherwise', () => {
+    expect(titleHint({ kind: 'play' }, true)).toBe(startHint(true));
+    expect(titleHint({ kind: 'link', url: CONTACT_URL }, false)).toBe(
+      'opens immatt.com/contact in a new tab',
+    );
+  });
+
   it('fits its hints on screen in the pixel font', () => {
-    for (const hint of [startHint(false), startHint(true)]) {
+    const hints = titleOptions(true).flatMap(({ action }) => [
+      titleHint(action, false),
+      titleHint(action, true),
+    ]);
+    for (const hint of hints) {
       expect(textWidth(hint)).toBeLessThanOrEqual(SCREEN_W - 16);
       expect([...hint].every(hasGlyph)).toBe(true);
     }

@@ -1,6 +1,10 @@
+import { SCREEN_W } from '../sim/constants';
+import { CELL_W } from './pixel-font';
+
 /**
- * The call to action on the HIRED card: the real Matt's CV and contact
- * page, and another go. Phaser-free so the copy and the menu are tested.
+ * The real Matt's CV and contact page, offered on the HIRED card, on the
+ * title screen and in help, so hiring him is never gated behind beating
+ * the game. Phaser-free so the copy and the menus are tested.
  */
 export const CV_URL = 'https://immatt.com/cv/';
 export const CONTACT_URL = 'https://immatt.com/contact/';
@@ -12,25 +16,49 @@ export const CONTACT_URL = 'https://immatt.com/contact/';
  */
 export const CV_LIVE = true;
 
-export type HireAction = { kind: 'link'; url: string } | { kind: 'again' };
+export type HireAction = { kind: 'link'; url: string } | { kind: 'play' };
 
 export interface HireOption {
   label: string;
   action: HireAction;
 }
 
-/** The menu under "Hire the real Matt", the hire links first so they are the default. */
-export function hireOptions(cvLive: boolean): HireOption[] {
-  const links: HireOption[] = [
+/** CV (once it is live) then contact. */
+export function hireLinks(cvLive: boolean): HireOption[] {
+  return [
     ...(cvLive ? [{ label: 'CV', action: { kind: 'link', url: CV_URL } } as const] : []),
     { label: 'CONTACT', action: { kind: 'link', url: CONTACT_URL } },
   ];
-  return [...links, { label: 'PLAY AGAIN', action: { kind: 'again' } }];
+}
+
+/** The menu under "Hire the real Matt", the hire links first so they are the default. */
+export function hireOptions(cvLive: boolean): HireOption[] {
+  return [...hireLinks(cvLive), { label: 'PLAY AGAIN', action: { kind: 'play' } }];
+}
+
+/** The title screen's menu: START first, so start still just starts. */
+export function titleOptions(cvLive: boolean): HireOption[] {
+  return [{ label: 'START', action: { kind: 'play' } }, ...hireLinks(cvLive)];
 }
 
 /** A menu slot: the chosen option between arrows, the rest padded to the same width. */
 export function optionText(label: string, selected: boolean): string {
   return selected ? `> ${label} <` : `  ${label}  `;
+}
+
+/**
+ * Where each slot of a one-row menu starts, the row centred on screen with a
+ * cell of air between slots. Slots keep their width chosen or not, so
+ * nothing shifts as the cursor moves.
+ */
+export function menuSlotXs(labels: readonly string[]): number[] {
+  const texts = labels.map((label) => optionText(label, false));
+  let x = Math.round((SCREEN_W - (texts.join(' ').length * CELL_W - 1)) / 2);
+  return texts.map((text) => {
+    const left = x;
+    x += (text.length + 1) * CELL_W;
+    return left;
+  });
 }
 
 /** Move the menu cursor `step` places, wrapping round at either end. */
@@ -40,8 +68,13 @@ export function cycle(index: number, step: number, count: number): number {
 
 /** The line under the menu: where a link goes, or what playing again does. */
 export function optionHint(action: HireAction): string {
-  if (action.kind === 'again') return 'back to the street';
-  return `opens ${action.url.replace(/^https:\/\//, '').replace(/\/$/, '')} in a new tab`;
+  if (action.kind === 'play') return 'back to the street';
+  return `opens ${displayUrl(action.url)} in a new tab`;
+}
+
+/** A link as it reads on screen: `https://immatt.com/cv/` is immatt.com/cv. */
+export function displayUrl(url: string): string {
+  return url.replace(/^https:\/\//, '').replace(/\/$/, '');
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

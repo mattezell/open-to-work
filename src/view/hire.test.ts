@@ -6,17 +6,19 @@ import {
   creditLine,
   CV_URL,
   cycle,
+  displayUrl,
   hireOptions,
+  menuSlotXs,
   optionHint,
   optionText,
+  titleOptions,
+  type HireOption,
 } from './hire';
-import { hasGlyph, textWidth } from './pixel-font';
+import { CELL_W, hasGlyph, textWidth } from './pixel-font';
 
 /** The options sit on one row with a cell of air between them. */
-function menuRow(cvLive: boolean, selected: number): string {
-  return hireOptions(cvLive)
-    .map((option, i) => optionText(option.label, i === selected))
-    .join(' ');
+function menuRow(options: readonly HireOption[], selected: number): string {
+  return options.map((option, i) => optionText(option.label, i === selected)).join(' ');
 }
 
 function fits(line: string): void {
@@ -29,7 +31,7 @@ describe('the hire menu', () => {
     expect(hireOptions(true).map((o) => o.action)).toEqual([
       { kind: 'link', url: CV_URL },
       { kind: 'link', url: CONTACT_URL },
-      { kind: 'again' },
+      { kind: 'play' },
     ]);
   });
 
@@ -57,15 +59,53 @@ describe('the hire menu', () => {
     expect(optionHint({ kind: 'link', url: CONTACT_URL })).toBe(
       'opens immatt.com/contact in a new tab',
     );
-    expect(optionHint({ kind: 'again' })).toBe('back to the street');
+    expect(optionHint({ kind: 'play' })).toBe('back to the street');
   });
 
   it('fits every line of the card on screen in the pixel font', () => {
     for (const cvLive of [true, false]) {
-      for (let i = 0; i < hireOptions(cvLive).length; i++) fits(menuRow(cvLive, i));
+      for (const options of [hireOptions(cvLive), titleOptions(cvLive)]) {
+        for (let i = 0; i < options.length; i++) fits(menuRow(options, i));
+      }
       for (const { action } of hireOptions(cvLive)) fits(optionHint(action));
     }
     fits(creditLine(30));
+  });
+});
+
+describe('the title menu', () => {
+  it('puts START first so start still just starts, then the same links as the HIRED card', () => {
+    for (const cvLive of [true, false]) {
+      const [start, ...links] = titleOptions(cvLive);
+      expect(start).toEqual({ label: 'START', action: { kind: 'play' } });
+      expect(links).toEqual(hireOptions(cvLive).filter((o) => o.action.kind === 'link'));
+    }
+  });
+});
+
+describe('a menu row', () => {
+  const labels = titleOptions(true).map((o) => o.label);
+
+  it('is centred on screen', () => {
+    const xs = menuSlotXs(labels);
+    const last = labels.length - 1;
+    const right = (xs[last] ?? 0) + textWidth(optionText(labels[last] ?? '', false));
+    expect(Math.abs((xs[0] ?? 0) - (SCREEN_W - right))).toBeLessThanOrEqual(1);
+  });
+
+  it('starts each slot one cell after the one before it ends', () => {
+    const xs = menuSlotXs(labels);
+    for (let i = 1; i < labels.length; i++) {
+      const before = optionText(labels[i - 1] ?? '', false);
+      expect((xs[i] ?? 0) - (xs[i - 1] ?? 0)).toBe((before.length + 1) * CELL_W);
+    }
+  });
+});
+
+describe('a link on screen', () => {
+  it('drops the scheme and the trailing slash', () => {
+    expect(displayUrl(CV_URL)).toBe('immatt.com/cv');
+    expect(displayUrl(CONTACT_URL)).toBe('immatt.com/contact');
   });
 });
 

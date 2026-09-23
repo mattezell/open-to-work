@@ -4,6 +4,40 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 08:15 CDT: CV and contact on the title screen and in help
+
+**What.** Matt: expose the CV and contact links on the title screen, and
+maybe help, so they are not gated behind beating the tower. The title's
+blinking PRESS START became a `START  CV  CONTACT` row; help gained a last
+page, HIRE MATT, with both URLs as text. The HIRED card's menu code moved
+into `src/view/menu-row.ts` (`MenuRow`, `listenForPicks`, `openInNewTab`,
+`PICK_CODES`) and both scenes use it. `HireAction` 'again' became 'play',
+since on the title it means start rather than play again.
+
+**Why this shape.** START stays the default so every start key still
+starts: a returning player never notices the menu unless they press left
+or right. A tap on an option picks it; a tap anywhere else still starts,
+so the tap-anywhere habit survives. Help lists URLs rather than links
+because the pause scene has no cursor, and a page of text is enough for
+someone who wants to type it.
+
+**Surprise.** Sharing the layout exposed that the ending's row was off
+centre: it measured the row as `(len - 1) * CELL_W` where the pixel font's
+width is `len * CELL_W - 1`, 5 pixels short, so the row sat 2 to 3 pixels
+right. `menuSlotXs` now centres the row as one string, and
+a test pins both the centring and the one-cell gap.
+
+**Checked.** Playwright on the dev server: keys (arrow then Enter, arrow
+then J) open the CV and contact with `window.open` stubbed; wrap round to
+START and Enter starts; a click on a slot opens it and a click on the sky
+starts; the help key then left lands on HIRE MATT; the ending still opens
+the CV on Enter; phone portrait and landscape taps on slots and sky work
+and the touch pad clears the row. No console errors.
+
+**Alternatives rejected.** A separate title submenu (an extra screen
+between the player and the links); links in the attract roster (they
+would flash by).
+
 ## 2026-09-23 07:46 CDT: link preview card and favicons
 
 **What.** Matt asked whether pasting the link shows a preview image, and
