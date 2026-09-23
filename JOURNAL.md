@@ -4,6 +4,44 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 06:37 CDT: M6 part 2, live on Cloudflare
+
+**What.** OPEN TO WORK is live at https://opentowork.immatt.com, with
+https://otw.immatt.com as a 301 alias (Matt chose the pair). Two Workers
+on Matt's account: `open-to-work` (static assets from `dist/`, no script)
+and `open-to-work-otw` (script-only redirect, `src/edge/otw-redirect.ts`,
+3 tests). Each attached its hostname from `routes` with
+`custom_domain: true`; one `wrangler deploy` apiece, no DNS work, live
+with TLS in under a minute. Deployed with the wrangler 4.120 already in
+`~/w/portals` (not installed here; it is not a repo dependency).
+
+**Verified by content, not status.** `index.html` byte-identical to
+`dist/` (md5), the JS bundle the same size with `text/javascript`, a
+backdrop as `image/png`, a made-up path a real 404, otw 301 to the same
+path and query over http and https, the credit's commit dates baked in.
+Then headless Chromium: otw.immatt.com landed on the canonical host, the
+title, a street run and `?stage=2` rendered with the painted backdrops, no
+console errors, no failed requests.
+
+**Decisions.**
+- The redirect is its own Worker. Inside the game Worker it would need
+  `run_worker_first: true`, and every one of about 85 requests per page
+  load would cost a Worker invocation (free tier: 100k a day, so roughly
+  1,100 plays before requests fail). Split, the game is pure asset fetches
+  and only otw visits run a script, once each.
+- `not_found_handling: "none"`: the game is one page with query
+  parameters, no client routes, and a real 404 keeps deploy checks honest
+  (the SPA fallback answers 200 for everything).
+- 301, not 302: the canonical host is decided.
+
+**Surprise.** Right after the deploy every probe from this box got
+`000`: the `dig` run before deploying (to check neither name had a record)
+left an NXDOMAIN in the local resolver's negative cache. Public resolvers
+had the record at once; `curl --resolve` and Chromium's
+`--host-resolver-rules` pinned to 1.1.1.1's answer verified meanwhile.
+Lesson: checking for "no record" before a deploy poisons your own
+post-deploy check for the negative-cache TTL.
+
 ## 2026-09-23 06:30 CDT: M6 part 1, the campaign bot and the CV going live
 
 **What.** `src/sim/campaign-bot.test.ts` plays the whole run: the street

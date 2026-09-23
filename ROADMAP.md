@@ -52,17 +52,17 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   - [x] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
     backgrounds kept as the fallback (7 layers: street 3, tunnel 2,
     tower 2; plan in `src/view/backdrops.ts`) (87000a1)
-- [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
+- [x] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
   - [x] Every stage and the whole campaign cleared by the bot in
     `npm run check` (`src/sim/campaign-bot.test.ts`; the per-stage bots
     were already there) (1d65087)
   - [x] /cv/ rechecked 2026-09-23: live (its own body, "CV" title), so
     `CV_LIVE` is true and the card offers CV, CONTACT, PLAY AGAIN.
     Recheck again before each deploy build (1d65087)
-  - [ ] Deploy to Cloudflare: opentowork.immatt.com (Matt chose it
-    2026-09-23, with otw.immatt.com redirecting to it), static assets
+  - [x] Deploy to Cloudflare: live at https://opentowork.immatt.com
+    2026-09-23 (Matt chose it, with otw.immatt.com redirecting to it), static assets
     Worker plus a separate script-only redirect Worker for the alias so
-    sprite fetches never cost an invocation
+    sprite fetches never cost an invocation (1ecf000)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 
