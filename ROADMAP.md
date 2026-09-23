@@ -59,8 +59,10 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   - [x] /cv/ rechecked 2026-09-23: live (its own body, "CV" title), so
     `CV_LIVE` is true and the card offers CV, CONTACT, PLAY AGAIN.
     Recheck again before each deploy build (1d65087)
-  - [ ] Deploy to Cloudflare on a subdomain of immatt.com (hostname to
-    confirm with Matt; no publish without his go-ahead)
+  - [ ] Deploy to Cloudflare: opentowork.immatt.com (Matt chose it
+    2026-09-23, with otw.immatt.com redirecting to it), static assets
+    Worker plus a separate script-only redirect Worker for the alias so
+    sprite fetches never cost an invocation
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 

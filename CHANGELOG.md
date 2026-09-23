@@ -7,6 +7,9 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- Live on the web at https://opentowork.immatt.com (Cloudflare Workers
+  static assets), with https://otw.immatt.com as a short alias that
+  redirects there.
 - A campaign beatability test: the bot plays the street, the tunnel and
   the tower in one run, carrying health and score between stages, on ten
   seeds, in `npm run check`.

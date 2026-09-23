@@ -210,8 +210,13 @@ three enemies.
 - **Beatability proof in CI** (the Momentum standard): a scripted bot drives
   the sim headless through every stage and must clear it within a time and
   health budget. A stage that cannot be beaten does not ship.
-- **Deploy**: Cloudflare Workers static assets plus a small Worker API for a
-  leaderboard (KV), following Momentum's `worker/` layout. Score validation
+- **Deploy**: Cloudflare Workers static assets at opentowork.immatt.com,
+  with no Worker script, so every request is a plain asset fetch. The alias
+  otw.immatt.com is a separate script-only Worker that 301s to it; putting
+  the redirect in the game's Worker would need `run_worker_first: true`,
+  which bills a Worker invocation for every sprite (about 85 per page
+  load). The stretch leaderboard would add a small Worker API (KV),
+  following Momentum's `worker/` layout. Score validation
   by replaying the input log through the sim server-side, like Momentum's
   anti-cheat. The leaderboard is a Friday stretch goal, not a blocker.
 

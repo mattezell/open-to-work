@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  // otw.immatt.com -> opentowork.immatt.com. A separate Worker from the game
+  // (wrangler.jsonc) so only the alias costs Worker invocations.
+  "name": "open-to-work-otw",
+  "main": "src/edge/otw-redirect.ts",
+  "compatibility_date": "2026-09-22",
+  "routes": [{ "pattern": "otw.immatt.com", "custom_domain": true }],
+}

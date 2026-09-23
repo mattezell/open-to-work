@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "open-to-work",
+  // One day behind the day it was written: the workerd bundled with wrangler
+  // can reject a date it does not support yet (see ~/w/portals).
+  "compatibility_date": "2026-09-22",
+  // Static assets only, no Worker script. `npm run build` first; it bakes
+  // the commit dates into the HIRED card's credit.
+  "assets": {
+    "directory": "./dist",
+    // A real 404 for anything that is not a file. The game is one page with
+    // query parameters, so there are no client routes to fall back for, and
+    // a 404 keeps deploy checks honest.
+    "not_found_handling": "none",
+  },
+  "routes": [{ "pattern": "opentowork.immatt.com", "custom_domain": true }],
+}

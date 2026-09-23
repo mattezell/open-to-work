@@ -34,6 +34,31 @@ the arcade attract loop: the title, then the enemy roster one at a time
 then back to the title. Enter, Space, J (any attack, jump or special
 button), or a tap, starts a run from any of them.
 
+## Deploy
+
+Live at https://opentowork.immatt.com; https://otw.immatt.com redirects
+there (301, path and query kept). Both are Cloudflare Workers on
+immatt.com, attached as custom domains by their wrangler configs (no DNS
+work):
+
+| Config | Worker | Serves |
+|---|---|---|
+| `wrangler.jsonc` | `open-to-work` | `dist/` as static assets, no script, real 404s |
+| `wrangler.redirect.jsonc` | `open-to-work-otw` | `src/edge/otw-redirect.ts`, the alias |
+
+Wrangler is not a dependency of this repo; use any wrangler 4 that is
+logged in to the account (`wrangler whoami`).
+
+```bash
+# 1. recheck the CV page: it must differ from the home page, else set CV_LIVE false
+[ "$(curl -s https://immatt.com/cv/ | md5sum)" != "$(curl -s https://immatt.com/ | md5sum)" ] && echo CV live
+npm run check && npm run build     # the build bakes in the credit's commit dates
+npx wrangler deploy                # the game
+npx wrangler deploy -c wrangler.redirect.jsonc   # the otw alias (only when it changes)
+curl -s https://opentowork.immatt.com/ | grep -o '<title>[^<]*'
+curl -sI https://otw.immatt.com/?stage=2 | grep -i '^location'
+```
+
 Add `?stage=1` to the URL to skip the title and start on the street,
 `?stage=2` to start in the tunnel, or `?stage=3` to start in the tower
 (with 60 hp, a typical arrival), without clearing the stages before it
