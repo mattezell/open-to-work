@@ -67,7 +67,8 @@ pickups (Coffee) and a Referral power-up. Three stages, a boss, an ending.
 3. **Interview Tower.** LeetCode Golems (armored, must be thrown), Ghosting
    Phantoms (fade out mid-fight). Boss: **The Panel**, a long desk with three
    interviewer heads that attack in rotation. "FINISH HIM" on the last head;
-   the finisher is handing over the offer letter. Ending: HIRED.
+   the finisher is handing over the offer letter. Ending: HIRED. As built:
+   see "Stage 3 as built" below (the Golem and the finisher changed).
 
 ## Stage 2 as built: the Take-Home Tunnel
 
@@ -101,8 +102,62 @@ no enemies, no attacks, an autoscrolling camera.
   scrolling 2.2, 2.8 and 3.6 px a tick (about 45 seconds clean). TOKEN calls
   a hazard 130 px ahead; on Go wild 25 percent of calls are wrong. Matt
   enters with his street health floored at 60 (the retry health), so a
-  scraped street clear is not punished twice. A cleared tunnel shows "to be
-  continued" until Stage 3 exists.
+  scraped street clear is not punished twice. A cleared tunnel leads up the
+  Interview Tower with whatever health and score survived the ride.
+
+## Stage 3 as built: the Interview Tower
+
+Back on the belt, on the top floor of an office tower: a glass wall onto a
+sunset skyline, grey carpet. Same brawler sim as the street
+(`STAGE_3` in `src/sim/stage.ts`), three new enemy rules and a boss that is
+three enemies.
+
+- **LeetCode Golem** (`golem`). A slow stone golem with a flowchart for a
+  face. It is *heavy*: any hit that does not knock down chips 1 hp and never
+  staggers it, so mashing jabs goes nowhere; only the third hit of the
+  chain (the haymaker), the jump kick or the special hurt it. Its smash
+  winds up for 24 ticks and knocks Matt down. The design said "must be
+  thrown"; there is no grab or throw in the game, and adding one for a
+  single enemy was out of scope for the week, so heavy armor makes the same
+  point: finish the combo.
+- **Ghoster** (`ghoster`, src `src/sim/ghoster.ts`). A phone-headed
+  recruiter ghost. After it recovers from any hit it fades out for 80 ticks:
+  it cannot be hit, nobody targets it, and it drifts round to come back
+  behind Matt with a 30-tick grace before it swings. On screen it is a
+  faint outline, flickering back just before it returns. Named Ghoster, not
+  Ghosting Phantom, because TOKEN's Go wild whiffs are already "phantom
+  swings".
+- **The Panel** (`screener`, `techlead`, `manager`; `src/sim/panel.ts`).
+  Three object-headed interviewers behind desks at the end of the floor.
+  They never move (`seated`), take no knockback, and take Matt one at a
+  time: only the one in the hot seat is in play, the others wait greyed out
+  and cannot be hit. Each beaten interviewer stays slumped in its chair and
+  the next takes over, with a round card (ROUND 1, ROUND 2, FINAL ROUND).
+  Players cannot walk past the desk line. Each asks its own question from
+  the desk: the Screener throws screening forms along its depth line, the
+  Tech Lead sends a wall of sticky notes across every depth (a *wide*
+  projectile, so only a jump clears it), and the Hiring Manager delegates
+  fast folders.
+- **The finisher.** When the Hiring Manager is the only one left and down
+  to a quarter of its health, CLOSE THE DEAL! blinks on screen (in place of
+  "FINISH HIM": the tone is the job hunt, not a fatality). The last hit
+  freezes the room for half a second, the offer letter flies from the
+  manager's desk to Matt, and he holds it up: OFFER EXTENDED. The stage
+  ends on the last panelist (`endsOnLastWave`), not at the end of the
+  floor.
+- **Ending.** `EndingScene`: Matt and TOKEN on the roof at sunset with the
+  letter, HIRED, the final score, and any button to go again from the
+  street.
+- **Losing.** A loss in the tower retries the tower at full health with the
+  score Matt walked in with. Sending a player who reached the last stage
+  back to the street would be the one unfair thing in the game.
+- **Numbers as built.** Floor 1900 px, four waves: Golem and an ATS BOT at
+  300; two Ghosters at 700; Golem, Ghoster and a Spam Recruiter at 1100; the
+  Panel at 1500. Coffee at 180 (a typical arrival from the tunnel has about
+  60 hp), 1000 and 1440. Golem 64 hp; Ghoster 34 hp; Screener 30, Tech Lead
+  40, Hiring Manager 50. Pinned by the Stage 3 bands in `bot.test.ts`
+  (arriving with 60 hp): SHARP with TOKEN clears every seed, CASUAL with
+  TOKEN at least 4 in 5, CASUAL solo at most 2 in 5.
 
 ## Architecture
 

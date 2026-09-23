@@ -9,11 +9,12 @@ Built in four days (2026-09-22 to 2026-09-25) for a The New Guard Deep Dive.
 
 ## Status
 
-Stage 1 (the Job Board) is complete: Matt and TOKEN against ATS BOTs and
-Spam Recruiters, with The Unpaid Take Home as the stage boss. Clearing it
-leads into Stage 2, the Take-Home Tunnel, a hover-board run. Stage 3 is not
-built yet; clearing the tunnel ends the run. See
-`DESIGN.md` for the game and `ROADMAP.md` for progress.
+All three stages are playable end to end. Stage 1 (the Job Board): Matt
+and TOKEN against ATS BOTs and Spam Recruiters, with The Unpaid Take Home as
+the stage boss. Stage 2, the Take-Home Tunnel, a hover-board run. Stage 3,
+the Interview Tower: LeetCode Golems, Ghosters and The Panel, ending in the
+offer letter. Audio, the generated bark bank and deploy are still to come.
+See `DESIGN.md` for the game and `ROADMAP.md` for progress.
 
 ## Run it
 
@@ -24,8 +25,9 @@ npm run check      # typecheck, lint, format check, vitest, pipeline unit tests
 npm run build      # static build in dist/
 ```
 
-Add `?stage=2` to the URL to start in the tunnel without clearing the street
-first (`http://127.0.0.1:5180/?stage=2`).
+Add `?stage=2` to the URL to start in the tunnel, or `?stage=3` to start in
+the tower (with 60 hp, a typical arrival), without clearing the stages
+before it (`http://127.0.0.1:5180/?stage=3`).
 
 ## Controls
 
@@ -89,6 +91,17 @@ TOKEN rides behind and calls the next hazard. Its order still matters:
 | Go wild | Calls every hazard, and one call in four is confidently wrong. |
 | Focus | Every call is right. |
 | Guard | Takes the first crash of each section for Matt. |
+
+## Stage 3: the Interview Tower
+
+| Enemy | What it does | How to beat it |
+|---|---|---|
+| LeetCode Golem | Slow and heavy. Jabs chip 1 hp and never stagger it; its smash knocks you down. | Land the whole chain: only the third hit, the jump kick or the special really hurt it. Step off its line when it rears back. |
+| Ghoster | Takes a hit, then vanishes and comes back behind you. | Keep turning. It flickers just before it returns. |
+| The Panel | Three interviewers at their desks, one at a time: the Screener throws forms, the Tech Lead sends a wall of sticky notes across the whole floor, the Hiring Manager delegates fast folders. Only the one in the hot seat can be hit. | Step off the line for forms and folders; jump the sticky notes. Close the deal on the Hiring Manager for the offer. |
+
+Coffee in the lobby tops Matt up on arrival. Losing in the tower retries
+the tower at full health, keeping the score Matt walked in with.
 
 ## Layout
 

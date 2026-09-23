@@ -14,6 +14,8 @@ import { resolveHits } from './combat';
 import { launchProjectiles, stepProjectiles } from './projectiles';
 import { collectPickups } from './pickups';
 import { callReinforcements } from './boss';
+import { updateGhosters } from './ghoster';
+import { updatePanel } from './panel';
 import { enemyIntent } from './ai';
 import { nextDirective, sidekickIntent, updateSidekick, type Directive } from './sidekick';
 import type { Carry } from './campaign';
@@ -59,6 +61,13 @@ export interface Fighter {
   lastTarget: number | null;
   /** Bosses only: how many times it has called for reinforcements. */
   summons: number;
+  /**
+   * Ticks left out of play: nothing can hit it and nobody targets it. A
+   * Ghoster that has faded out, or a panelist waiting for its turn.
+   */
+  ghost: number;
+  /** Ghosters only: it was hit, so it fades out as soon as it recovers. */
+  ghostDue: boolean;
 }
 
 export interface Projectile {
@@ -88,7 +97,12 @@ export type SimEvent =
   | { type: 'reboot' }
   | { type: 'rebooted' }
   | { type: 'pickup'; kind: PickupKind; by: number }
-  | { type: 'reinforcements'; by: number };
+  | { type: 'reinforcements'; by: number }
+  | { type: 'ghosted'; id: number }
+  /** A panelist takes the hot seat; `last` when it is the final one. */
+  | { type: 'panel'; kind: FighterKind; last: boolean }
+  /** The last panelist is satisfied: the offer. */
+  | { type: 'hired' };
 
 /** Where TOKEN thinks an enemy still is after it has gone: the Go wild hallucination. */
 export interface Phantom {
@@ -166,6 +180,9 @@ export function spawnFighter(
     score: 0,
     lastTarget: null,
     summons: 0,
+    // A panelist sits out of play until its turn comes round.
+    ghost: stats.seated ? 1 : 0,
+    ghostDue: false,
   };
   world.fighters.push(fighter);
   return fighter;
@@ -256,25 +273,30 @@ export function step(world: World, inputs: readonly InputFrame[]): void {
     const intent = enemyIntent(world, enemy);
     stepFighter(enemy, intent, NO_INPUT);
   }
+  updateGhosters(world);
   world.prevInputs = inputs.map((i) => ({ ...i }));
 
   launchProjectiles(world);
   resolveHits(world);
   stepProjectiles(world);
+  updatePanel(world);
   callReinforcements(world);
   collectPickups(world);
   clampToScreen(world);
   updateWaves(world);
   updateCamera(world);
   if (world.goPrompt > 0) world.goPrompt--;
+  // A beaten panelist stays in its seat; everyone else is cleared away.
   world.fighters = world.fighters.filter(
-    (f) => !(f.state === 'dead' && f.team === 'enemy' && f.stateTick > 60),
+    (f) => !(f.state === 'dead' && f.team === 'enemy' && f.stateTick > 60 && !KINDS[f.kind].seated),
   );
 
+  const allWavesCleared = world.wavesCleared === world.stage.waves.length;
   if (humans.every((p) => p.state === 'dead')) world.status = 'gameover';
   else if (
-    world.wavesCleared === world.stage.waves.length &&
-    humans.some((p) => p.x >= world.stage.length - SCREEN_MARGIN - 20)
+    allWavesCleared &&
+    (world.stage.endsOnLastWave ||
+      humans.some((p) => p.x >= world.stage.length - SCREEN_MARGIN - 20))
   ) {
     world.status = 'cleared';
   }
@@ -312,7 +334,12 @@ function updateWaves(world: World): void {
   world.pendingSpawns = world.pendingSpawns.filter((index) => {
     const spawn = wave.spawns[index];
     if (!spawn || world.waveTick < spawn.delay) return true;
-    const x = spawn.side === 'right' ? world.cameraX + SCREEN_W + 24 : world.cameraX - 24;
+    const x =
+      spawn.inset !== undefined
+        ? world.cameraX + SCREEN_W - spawn.inset
+        : spawn.side === 'right'
+          ? world.cameraX + SCREEN_W + 24
+          : world.cameraX - 24;
     spawnFighter(world, spawn.kind, x, spawn.z);
     return false;
   });

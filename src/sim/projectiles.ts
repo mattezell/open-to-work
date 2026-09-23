@@ -31,7 +31,7 @@ function strikes(p: Projectile, target: Fighter): boolean {
   const def = PROJECTILES[p.kind];
   if (target.team === p.team || !isVulnerable(target)) return false;
   if (target.y > def.clearance) return false;
-  if (Math.abs(target.z - p.z) > DEPTH_TOLERANCE) return false;
+  if (!def.wide && Math.abs(target.z - p.z) > DEPTH_TOLERANCE) return false;
   return Math.abs(target.x - p.x) <= KINDS[target.kind].halfWidth + Math.abs(p.vx);
 }
 

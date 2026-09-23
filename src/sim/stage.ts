@@ -6,6 +6,8 @@ export interface SpawnDef {
   z: number;
   /** Ticks after the wave starts before this enemy enters. */
   delay: number;
+  /** Already on screen, this far in from the right edge, instead of walking in from `side`. */
+  inset?: number;
 }
 
 export interface WaveDef {
@@ -28,6 +30,8 @@ export interface StageDef {
   waves: WaveDef[];
   /** Lying on the street from the start, waiting to be walked over. */
   pickups?: PickupDef[];
+  /** Cleared the moment the last wave falls, with no walk to the end: the final boss. */
+  endsOnLastWave?: boolean;
 }
 
 /**
@@ -70,5 +74,55 @@ export const STAGE_1: StageDef = {
   pickups: [
     { kind: 'coffee', x: 1100, z: 40 },
     { kind: 'coffee', x: 1700, z: 20 },
+  ],
+};
+
+/**
+ * Stage 3, The Interview Tower. LeetCode Golems that shrug off anything but
+ * a knockdown, Ghosters that vanish when engaged, then the Panel at the top.
+ * The stage ends the moment the last panelist is satisfied.
+ */
+export const STAGE_3: StageDef = {
+  id: 'interview-tower',
+  length: 1900,
+  endsOnLastWave: true,
+  waves: [
+    {
+      triggerX: 300,
+      spawns: [
+        { kind: 'golem', side: 'right', z: 28, delay: 0 },
+        { kind: 'ats', side: 'left', z: 12, delay: 90 },
+      ],
+    },
+    {
+      triggerX: 700,
+      spawns: [
+        { kind: 'ghoster', side: 'right', z: 20, delay: 0 },
+        { kind: 'ghoster', side: 'left', z: 44, delay: 60 },
+      ],
+    },
+    {
+      triggerX: 1100,
+      spawns: [
+        { kind: 'golem', side: 'right', z: 16, delay: 0 },
+        { kind: 'ghoster', side: 'right', z: 44, delay: 40 },
+        { kind: 'spam', side: 'left', z: 30, delay: 120 },
+      ],
+    },
+    {
+      triggerX: 1500,
+      spawns: [
+        { kind: 'screener', side: 'right', z: 10, delay: 0, inset: 64 },
+        { kind: 'techlead', side: 'right', z: 28, delay: 0, inset: 56 },
+        { kind: 'manager', side: 'right', z: 46, delay: 0, inset: 48 },
+      ],
+    },
+  ],
+  // The lobby coffee sits on Matt's starting line: a battered arrival from the
+  // tunnel gets topped up before the first Golem.
+  pickups: [
+    { kind: 'coffee', x: 180, z: 28 },
+    { kind: 'coffee', x: 1000, z: 40 },
+    { kind: 'coffee', x: 1440, z: 20 },
   ],
 };

@@ -43,6 +43,16 @@ All notable changes to this project are documented here. Format follows
   TOKEN's order carry over from the street. `?stage=2` starts in the tunnel.
 - Hover-board art: Matt riding and wiping out, TOKEN on its hover disc,
   hurdle and paperwork-wall props.
+- Stage 3, the Interview Tower, and the ending. A cleared tunnel leads up
+  the tower. LeetCode Golems shrug off anything short of a knockdown blow;
+  Ghosters vanish after a hit and come back behind Matt; The Panel of three
+  interviewers takes Matt one round at a time from behind their desks
+  (forms, a floor-wide wall of sticky notes to jump, fast folders), with
+  round cards and a CLOSE THE DEAL! prompt on the last one. The final blow
+  hands Matt the offer letter, and the run ends on the HIRED card with the
+  final score. Losing in the tower retries the tower at full health.
+  `?stage=3` starts in the tower. TOKEN has lines for ghosting, each round
+  and the offer.
 
 ### Changed
 
@@ -53,6 +63,10 @@ All notable changes to this project are documented here. Format follows
   again sooner, so mashing in front of one no longer stunlocks it forever.
 
 ### Fixed
+
+- Starting a second run after clearing the tunnel froze the game on the
+  first frame of the street: the scene reused sprites its previous visit
+  had destroyed. Both stage scenes now drop them on entry.
 
 - Enemies no longer stack on one spot: they spread in depth and split
   around Matt instead of queueing on one side.

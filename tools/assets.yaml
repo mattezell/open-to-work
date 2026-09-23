@@ -95,6 +95,54 @@ style:
     armour. Loose pages flutter off it. Menacing but funny, blank pages,
     no text. Same proportions, same palette, same silhouette, every time.
 
+  # Stage 3 enemy. The LeetCode Golem: the whiteboard puzzle, armoured.
+  golem: >
+    LEETCODE GOLEM, an armoured enemy: a hulking, slow stone golem assembled
+    from grey granite blocks and old mechanical keyboard keys, taller and
+    broader than a man. A cracked whiteboard is set into its chest like a
+    breastplate, scrawled with blank boxes and arrows of a tree diagram. Its
+    head is a small square block with two glowing green terminal-cursor
+    eyes. Massive boulder fists studded with loose keycaps. Heavy, patient,
+    immovable. Blank keycaps, no letters, no text. Same proportions, same
+    palette, same silhouette, every time.
+
+  # Stage 3 enemy. The Ghosting Phantom: there one moment, gone the next.
+  phantom: >
+    GHOSTING PHANTOM, an enemy: a pale lavender, semi-transparent ghost in a
+    smart navy business blazer with a lanyard and a blank ID badge. Instead
+    of a head it has a floating smartphone whose dark screen shows two
+    hollow white eyes and no mouth. Below the blazer there are no legs,
+    only a wispy trailing ghost tail. Long thin arms with pale ghostly
+    hands. Eerie but funny. Blank badge, blank screen apart from the eyes,
+    no text. Same proportions, same palette, same silhouette, every time.
+
+  # The Panel, Stage 3 boss: three interviewers, each at their own desk.
+  screener: >
+    THE SCREENER, an interviewer on the boss panel: a figure seated at a
+    small pale-wood office desk, seen from the side. Its head is a big brown
+    clipboard with a sheet of paper clipped to it, on which is drawn a
+    wide, fixed, too-friendly marker smile and two dot eyes. Coral pink
+    cardigan over a white blouse, a tall stack of blank forms on the desk
+    beside a desk bell. Relentlessly cheerful. Blank forms, no text. Same
+    proportions, same palette, same silhouette, every time.
+  techlead: >
+    THE TECH LEAD, an interviewer on the boss panel: a figure seated at a
+    small dark-wood office desk, seen from the side. Its head is a small
+    square whiteboard on a stand-like neck, with two narrowed eyes and a
+    flat unimpressed mouth drawn in blue dry-erase marker. Grey zip-up
+    hoodie, a laptop open on the desk, a mug of dry-erase markers.
+    Sceptical and nitpicky. Blank laptop screen, no text. Same proportions,
+    same palette, same silhouette, every time.
+  manager: >
+    THE HIRING MANAGER, an interviewer on the boss panel: a figure seated at
+    a small mahogany office desk, seen from the side. Its head is a large
+    white coffee mug with steam curling off the top and a calm, unreadable
+    face printed on the side, two dot eyes and a small straight mouth. Navy
+    blazer over a light blue shirt, hands steepled on the desk next to a
+    closed manila folder and a fountain pen. The final decision. Blank
+    folder, no text. Same proportions, same palette, same silhouette, every
+    time.
+
   strip2: >
     A single horizontal sprite strip of exactly 2 animation frames in 2 equal
     side-by-side slots, evenly spaced with clear empty space between them,
@@ -855,3 +903,482 @@ assets:
       paper sticking out everywhere, with a red warning light on top, as a
       16-bit video game obstacle to steer around. Blank labels, no text.
       Centered, alone, filling most of the frame vertically.
+
+  # --- Stage 3, the Interview Tower ------------------------------------------
+  # Designs first (group stage3-design), then the sheets reference them.
+  # The panel interviewers are drawn with their own desk, so each one is a
+  # self-contained actor that depth-sorts in its own lane.
+
+  - id: golem_design
+    group: stage3-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/golem.png
+    prompt: >
+      Character model sheet for a video game enemy. {golem}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer, fists planted together; on the right, in
+      strict side profile facing LEFT, lumbering forward with one boulder fist drawn back.
+
+  - id: phantom_design
+    group: stage3-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/phantom.png
+    prompt: >
+      Character model sheet for a video game enemy. {phantom}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer, arms spread, half faded; on the right, in
+      strict side profile facing LEFT, drifting forward with one ghostly hand reaching out.
+
+  - id: screener_design
+    group: stage3-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/screener.png
+    prompt: >
+      Character model sheet for a video game boss. {screener}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, seated at the desk facing the viewer; on the right, in
+      strict side profile facing LEFT, seated at the desk leaning forward, flicking a blank form off the stack.
+
+  - id: techlead_design
+    group: stage3-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/techlead.png
+    prompt: >
+      Character model sheet for a video game boss. {techlead}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, seated at the desk facing the viewer, arms folded; on the right, in
+      strict side profile facing LEFT, seated at the desk slamming one fist down on it.
+
+  - id: manager_design
+    group: stage3-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/manager.png
+    prompt: >
+      Character model sheet for a video game boss. {manager}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, seated at the desk facing the viewer, hands steepled; on the right, in
+      strict side profile facing LEFT, seated at the desk sliding a closed folder across it.
+
+  - id: golem_idle
+    group: golem
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/golem/idle.png
+    refs: [art/designs/golem.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 84
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {golem}
+      Animation: IDLE LOOP, planted and patient. Frame 1 neutral. Frame 2 the shoulders grind up a little, a keycap rattles loose. Frame 3 highest, eyes flare brighter green. Frame 4 settling back. The feet do not move.
+
+  - id: golem_walk
+    group: golem
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/golem/walk.png
+    refs: [art/designs/golem.png]
+    frames: 6
+    frame_width: 128
+    frame_height: 96
+    target_height: 84
+    outline: "101010"
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {golem}
+      Animation: WALK CYCLE, a slow grinding stomp forward, fists swinging low, dust puffing from the stone joints. Frames alternate legs like a normal walk cycle; frame 1 and frame 4 are the contact poses.
+
+  - id: golem_smash
+    group: golem
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/golem/smash.png
+    refs: [art/designs/golem.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 84
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {golem}
+      Animation: ATTACK: a straight-armed boulder punch. Frame 1 the right fist drawn far back, body twisting. Frame 2 lunging forward. Frame 3 the fist fully extended at head height in front of it, keycaps flying off. Frame 4 pulling back.
+
+  - id: golem_hurt
+    group: golem
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/golem/hurt.png
+    refs: [art/designs/golem.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 82
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {golem}
+      Animation: HIT REACTION. Frame 1 rocked backwards, a crack spreading across the whiteboard chest, eyes squinting. Frame 2 staggering, one arm hanging, chips of stone falling.
+
+  - id: golem_knockdown
+    group: golem
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/golem/knockdown.png
+    refs: [art/designs/golem.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 76
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {golem}
+      Animation: KNOCKDOWN. Frame 1 toppling backwards like a felled statue. Frame 2 flat on its back on the ground, lying horizontally, keycaps scattered. Frame 3 grinding up on one fist. Frame 4 upright again.
+
+  - id: phantom_idle
+    group: phantom
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ghoster/idle.png
+    refs: [art/designs/phantom.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 66
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {phantom}
+      Animation: IDLE LOOP, hovering in place, bobbing gently, tail swaying. Frame 1 neutral. Frame 2 floating up. Frame 3 highest, the phone screen eyes blink. Frame 4 sinking back.
+
+  - id: phantom_walk
+    group: phantom
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ghoster/walk.png
+    refs: [art/designs/phantom.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 66
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {phantom}
+      Animation: DRIFT LOOP, gliding forward through the air, leaning in, the ghost tail streaming out behind. Frame 1 and frame 3 the tail straight back, frame 2 and frame 4 the tail curled.
+
+  - id: phantom_swipe
+    group: phantom
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ghoster/swipe.png
+    refs: [art/designs/phantom.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 66
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {phantom}
+      Animation: ATTACK: a cold backhand swipe. Frame 1 one ghostly arm drawn back across the body. Frame 2 swinging. Frame 3 the arm fully extended in front at chest height, a pale lavender trail behind the hand. Frame 4 recovering.
+
+  - id: phantom_hurt
+    group: phantom
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ghoster/hurt.png
+    refs: [art/designs/phantom.png]
+    frames: 2
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {phantom}
+      Animation: HIT REACTION. Frame 1 knocked back, the phone head cracking and flickering, blazer rumpled. Frame 2 wobbling, partly faded, lanyard flying.
+
+  - id: phantom_knockdown
+    group: phantom
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ghoster/knockdown.png
+    refs: [art/designs/phantom.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 56
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {phantom}
+      Animation: KNOCKDOWN. Frame 1 blown backwards, spinning. Frame 2 slumped low on the ground, the tail spread flat like a sheet, phone face down. Frame 3 rising up off the ground. Frame 4 hovering upright again.
+
+  - id: screener_idle
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/screener/idle.png
+    refs: [art/designs/screener.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {screener}
+      Animation: IDLE LOOP, seated at the desk. Frame 1 neutral. Frame 2 a small shift in the chair, head tilting slightly. The desk does not move.
+
+  - id: screener_attack
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/screener/attack.png
+    refs: [art/designs/screener.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {screener}
+      Animation: ATTACK: flicking a blank form forward. Frame 1 grabs a form from the stack. Frame 2 arm drawn back. Frame 3 arm snapped fully forward, the blank form just leaving the hand. Frame 4 back to seated, smile unchanged.
+
+  - id: screener_hurt
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/screener/hurt.png
+    refs: [art/designs/screener.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {screener}
+      Animation: HIT REACTION, still seated at the desk. Frame 1 rocked back in the chair, the clipboard head tilted, papers flying off the stack. Frame 2 straightening the clipboard, smile a little wobbly.
+
+  - id: screener_done
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/screener/done.png
+    refs: [art/designs/screener.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {screener}
+      Animation: SATISFIED, still seated at the desk. Frame 1 leaning back in the chair, giving a big thumbs up. Frame 2 stamping a form on the desk with a rubber stamp, beaming.
+
+  - id: techlead_idle
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/techlead/idle.png
+    refs: [art/designs/techlead.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {techlead}
+      Animation: IDLE LOOP, seated at the desk. Frame 1 neutral. Frame 2 a small shift in the chair, head tilting slightly. The desk does not move.
+
+  - id: techlead_attack
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/techlead/attack.png
+    refs: [art/designs/techlead.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {techlead}
+      Animation: ATTACK: slamming a fist down on the desk. Frame 1 fist raised high. Frame 2 fist coming down. Frame 3 fist smashed on the desk, the laptop and markers jumping, a burst of blank sticky notes flying. Frame 4 arms folded again.
+
+  - id: techlead_hurt
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/techlead/hurt.png
+    refs: [art/designs/techlead.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {techlead}
+      Animation: HIT REACTION, still seated at the desk. Frame 1 rocked back in the chair, the whiteboard face smudged. Frame 2 re-drawing its frown with a marker.
+
+  - id: techlead_done
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/techlead/done.png
+    refs: [art/designs/techlead.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {techlead}
+      Animation: SATISFIED, still seated at the desk. Frame 1 leaning back, the whiteboard face now drawn with a small grudging smile, one thumb up. Frame 2 closing the laptop with a nod.
+
+  - id: manager_idle
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/manager/idle.png
+    refs: [art/designs/manager.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {manager}
+      Animation: IDLE LOOP, seated at the desk. Frame 1 neutral. Frame 2 a small shift in the chair, head tilting slightly. The desk does not move.
+
+  - id: manager_attack
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/manager/attack.png
+    refs: [art/designs/manager.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {manager}
+      Animation: ATTACK: shoving the closed manila folder hard across the desk. Frame 1 hands on the folder. Frame 2 leaning forward. Frame 3 arms fully extended past the desk edge, the folder flying off in front. Frame 4 back to hands steepled.
+
+  - id: manager_hurt
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/manager/hurt.png
+    refs: [art/designs/manager.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {manager}
+      Animation: HIT REACTION, still seated at the desk. Frame 1 rocked back, coffee sloshing out of the mug head. Frame 2 steadying the mug with one hand.
+
+  - id: manager_done
+    group: panel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/manager/done.png
+    refs: [art/designs/manager.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {manager}
+      Animation: SATISFIED, still seated at the desk. Frame 1 standing up behind the desk, one hand extended for a handshake. Frame 2 holding out a cream envelope with a gold seal.
+
+  - id: prop_offer
+    group: stage3-props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/offer.png
+    width: 14
+    outline: "101010"
+    prompt: >
+      A single cream-coloured envelope with a shiny gold wax seal and a small
+      red ribbon, slightly tilted, glowing faintly, as a 16-bit video game
+      prize item. Centered, alone, filling most of the frame. No text.
+
+  - id: prop_form
+    group: stage3-props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/form.png
+    width: 12
+    outline: "101010"
+    prompt: >
+      A single blank white paper form with a coral pink header stripe and
+      empty checkbox squares, folded into a paper plane and flying, with
+      small motion streaks behind it, as a 16-bit video game projectile.
+      Centered, alone, filling most of the frame. Blank, no text.
+
+  - id: prop_folder
+    group: stage3-props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/folder.png
+    width: 14
+    outline: "101010"
+    prompt: >
+      A single closed manila folder sliding flat through the air, spinning
+      slightly, with brown motion streaks behind it, as a 16-bit video game
+      projectile. Centered, alone, filling most of the frame. Blank, no text.
+
+  - id: prop_notes
+    group: stage3-props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/notes.png
+    width: 16
+    outline: "101010"
+    prompt: >
+      A low rolling wave of blank yellow and blue sticky notes skidding along
+      the ground, wider than it is tall, as a 16-bit video game shockwave
+      projectile to jump over. Centered, alone, filling most of the frame
+      horizontally. Blank notes, no text.
+
+  - id: ending_hired
+    group: stage3-ending
+    kind: still
+    size: "1536x1024"
+    out: public/sprites/ending/hired.png
+    refs: [art/ref/matt.png, art/ref/token.png]
+    width: 320
+    prompt: >
+      Ending screen key art for a 16-bit beat 'em up, 3:2 landscape. The two
+      heroes from the attached model sheets stand on a rooftop at sunrise
+      above a warm golden city skyline. On the left, {matt} He grins and
+      holds up a cream envelope with a gold wax seal. On the right, {token}
+      It throws both boxing-glove fists up in celebration, happy pixel face
+      on its screen. Warm orange and pink sky, a few pigeons, triumphant and
+      a little emotional. Leave the top third of the sky clear for a title.
+      No text, no letters, no logos.

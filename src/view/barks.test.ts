@@ -18,6 +18,10 @@ const EVENTS: SimEvent[] = [
   { type: 'ko', id: 9, by: TOKEN_ID },
   { type: 'pickup', kind: 'coffee', by: 1 },
   { type: 'reinforcements', by: 7 },
+  { type: 'ghosted', id: 5 },
+  { type: 'panel', kind: 'techlead', last: false },
+  { type: 'panel', kind: 'manager', last: true },
+  { type: 'hired' },
 ];
 
 describe('barkFor', () => {
@@ -45,6 +49,12 @@ describe('barkFor', () => {
   it('always shows a reply to an order, and lets chatter wait', () => {
     expect(barkFor({ type: 'order', directive: 'focus' }, TOKEN_ID, 0)?.urgent).toBe(true);
     expect(barkFor({ type: 'whiff' }, TOKEN_ID, 0)?.urgent).toBe(false);
+  });
+
+  it('cheers the final round differently from the others', () => {
+    const round = barkFor({ type: 'panel', kind: 'techlead', last: false }, TOKEN_ID, 0);
+    const final = barkFor({ type: 'panel', kind: 'manager', last: true }, TOKEN_ID, 0);
+    expect(final?.text).not.toBe(round?.text);
   });
 
   it('labels every order', () => {

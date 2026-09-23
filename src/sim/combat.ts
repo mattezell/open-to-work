@@ -1,5 +1,5 @@
 import { DEPTH_TOLERANCE } from './constants';
-import { ATTACKS, chainFor, KINDS, type AttackDef } from './fighters';
+import { ATTACKS, chainFor, HEAVY_CHIP, KINDS, type AttackDef } from './fighters';
 import { setState } from './fighter-step';
 import { FOCUS_DAMAGE_SCALE, guardInterceptor, noteKo } from './sidekick';
 import type { Fighter, World } from './world';
@@ -13,7 +13,13 @@ function isActive(f: Fighter, def: AttackDef): boolean {
 }
 
 export function isVulnerable(f: Fighter): boolean {
-  return f.invuln === 0 && f.state !== 'dead' && f.state !== 'knockdown' && f.state !== 'getup';
+  return (
+    f.invuln === 0 &&
+    f.ghost === 0 &&
+    f.state !== 'dead' &&
+    f.state !== 'knockdown' &&
+    f.state !== 'getup'
+  );
 }
 
 export function inReach(attacker: Fighter, def: AttackDef, target: Fighter): boolean {
@@ -78,23 +84,30 @@ export function applyHit(
   damage: number,
   fromX: number,
 ): void {
-  if (attacker) creditAttacker(attacker, target, damage);
-  target.hp = Math.max(0, target.hp - damage);
+  const stats = KINDS[target.kind];
+  // A heavy shrugs off anything that would not knock a person down.
+  const shrugged = stats.heavy === true && !def.knockdown;
+  const dealt = shrugged ? Math.min(damage, HEAVY_CHIP) : damage;
+  if (attacker) creditAttacker(attacker, target, dealt);
+  target.hp = Math.max(0, target.hp - dealt);
   world.hitstop = Math.max(world.hitstop, def.hitstop);
   const dir = target.x >= fromX ? 1 : -1;
 
   // Armor: a heavy mid-swing takes the damage and keeps swinging.
-  const armored = KINDS[target.kind].armored && target.state === 'attack' && target.hp > 0;
-  if (armored) return;
+  const armored = stats.armored && target.state === 'attack' && target.hp > 0;
+  if (armored || (shrugged && target.hp > 0)) return;
 
   target.attack = null;
   target.facing = dir === 1 ? -1 : 1;
 
   if (def.knockdown || target.hp === 0 || target.y > 0) {
     setState(target, 'knockdown');
-    target.vx = KNOCKDOWN_VX * dir;
-    target.vy = KNOCKDOWN_VY;
-    target.y = Math.max(target.y, 0.01);
+    // A seated panelist slumps at the desk instead of flying out of the chair.
+    if (!stats.seated) {
+      target.vx = KNOCKDOWN_VX * dir;
+      target.vy = KNOCKDOWN_VY;
+      target.y = Math.max(target.y, 0.01);
+    }
     if (target.hp === 0) {
       if (attacker) attacker.score += KINDS[target.kind].score;
       world.events.push({ type: 'ko', id: target.id, by: attacker?.id ?? 0 });
@@ -102,7 +115,7 @@ export function applyHit(
     }
   } else {
     setState(target, 'hurt');
-    target.x += HIT_PUSHBACK * dir;
+    if (!stats.seated) target.x += HIT_PUSHBACK * dir;
   }
 }
 

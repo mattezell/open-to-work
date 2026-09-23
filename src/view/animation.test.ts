@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TICK_HZ } from '../sim/constants';
 import { botInput } from '../sim/bot';
-import { STAGE_1 } from '../sim/stage';
+import { STAGE_1, STAGE_3 } from '../sim/stage';
 import { createWorld, step } from '../sim/world';
 import { input } from '../sim/input';
 import { duel, run, tapAttack } from '../sim/test-helpers';
@@ -13,21 +13,24 @@ function frameCount(kind: keyof typeof SHEETS, sheet: string): number | undefine
 }
 
 describe('poseFor', () => {
-  it('only ever names a sheet and frame that exist, across whole bot runs', () => {
-    for (const seed of [1, 2, 3]) {
-      const world = createWorld(STAGE_1, seed);
-      while (world.status === 'playing' && world.tick < 180 * TICK_HZ) {
-        step(world, [botInput(world)]);
-        for (const f of world.fighters) {
-          const pose = poseFor(f);
-          const frames = frameCount(f.kind, pose.sheet);
-          expect(frames, `${f.kind} has no ${pose.sheet} sheet`).toBeDefined();
-          expect(pose.frame).toBeGreaterThanOrEqual(0);
-          expect(pose.frame).toBeLessThan(frames ?? 0);
+  it.each([STAGE_1, STAGE_3])(
+    'only ever names a sheet and frame that exist ($id bot runs)',
+    (stage) => {
+      for (const seed of [1, 2, 3]) {
+        const world = createWorld(stage, seed);
+        while (world.status === 'playing' && world.tick < 180 * TICK_HZ) {
+          step(world, [botInput(world)]);
+          for (const f of world.fighters) {
+            const pose = poseFor(f);
+            const frames = frameCount(f.kind, pose.sheet);
+            expect(frames, `${f.kind} has no ${pose.sheet} sheet`).toBeDefined();
+            expect(pose.frame).toBeGreaterThanOrEqual(0);
+            expect(pose.frame).toBeLessThan(frames ?? 0);
+          }
         }
       }
-    }
-  });
+    },
+  );
 
   it('alternates hands through the jab chain', () => {
     const { world, matt } = duel();

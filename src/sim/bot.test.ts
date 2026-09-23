@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { DEPTH_TOLERANCE, SCREEN_W, TICK_HZ } from './constants';
 import { ATTACKS, KINDS } from './fighters';
 import { EMPTY_STAGE } from './test-helpers';
-import { botInput, CASUAL, createBot, type BotSkill } from './bot';
-import { STAGE_1 } from './stage';
+import { botInput, CASUAL, createBot, SHARP, type BotSkill } from './bot';
+import { STAGE_1, STAGE_3, type StageDef } from './stage';
+import type { Carry } from './campaign';
 import { NO_INPUT } from './input';
 import { createWorld, livingEnemies, players, spawnFighter, step, type World } from './world';
 import type { InputFrame } from './input';
@@ -53,8 +54,14 @@ interface Run {
   hp: number;
 }
 
-function playStage1(skill: BotSkill, seed: number, sidekick: boolean): Run {
-  const world = createWorld(STAGE_1, seed, { sidekick });
+function play(
+  stage: StageDef,
+  skill: BotSkill,
+  seed: number,
+  sidekick: boolean,
+  carry?: Carry,
+): Run {
+  const world = createWorld(stage, seed, { sidekick, carry });
   const bot = createBot(skill);
   while (world.status === 'playing' && world.tick < TIME_BUDGET_TICKS) {
     step(world, [bot(world)]);
@@ -75,16 +82,41 @@ const SEEDS = [1, 2, 3, 4, 5];
  */
 describe('Stage 1 difficulty for a casual player', () => {
   it('clears with TOKEN, taking real damage on the way', () => {
-    const runs = SEEDS.map((seed) => playStage1(CASUAL, seed, true));
+    const runs = SEEDS.map((seed) => play(STAGE_1, CASUAL, seed, true));
     expect(runs.every((r) => r.cleared)).toBe(true);
     expect(averageHp(runs)).toBeGreaterThanOrEqual(40);
     expect(averageHp(runs)).toBeLessThanOrEqual(80);
   });
 
   it('clears solo too, but only just', () => {
-    const runs = SEEDS.map((seed) => playStage1(CASUAL, seed, false));
+    const runs = SEEDS.map((seed) => play(STAGE_1, CASUAL, seed, false));
     expect(runs.filter((r) => r.cleared).length).toBeGreaterThanOrEqual(4);
     expect(averageHp(runs)).toBeLessThanOrEqual(65);
+  });
+});
+
+/** How Matt typically reaches the tower: the tunnel's retry floor. */
+const TOWER_ARRIVAL: Carry = { hp: 60, score: 0, directive: 'wild' };
+
+/**
+ * Stage 3 is the finale, so it is meant to bite harder than Stage 1: from a
+ * typical arrival, a casual player with TOKEN clears most runs and one
+ * without TOKEN clears few (JOURNAL, Stage 3 entry, 10-seed sweep).
+ */
+describe('Stage 3 difficulty', () => {
+  it('the sharp bot clears it with TOKEN on every seed', () => {
+    const runs = SEEDS.map((seed) => play(STAGE_3, SHARP, seed, true, TOWER_ARRIVAL));
+    expect(runs.every((r) => r.cleared)).toBe(true);
+  });
+
+  it('a casual player with TOKEN clears most runs', () => {
+    const runs = SEEDS.map((seed) => play(STAGE_3, CASUAL, seed, true, TOWER_ARRIVAL));
+    expect(runs.filter((r) => r.cleared).length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('a casual player alone mostly does not: TOKEN earns its keep here', () => {
+    const runs = SEEDS.map((seed) => play(STAGE_3, CASUAL, seed, false, TOWER_ARRIVAL));
+    expect(runs.filter((r) => r.cleared).length).toBeLessThanOrEqual(2);
   });
 });
 
@@ -132,13 +164,16 @@ describe('fairness', () => {
     }
   });
 
-  it('never lets an enemy land a hitbox from off screen', () => {
-    for (const seed of [1, 2, 3, 4, 5]) {
-      const world = createWorld(STAGE_1, seed);
-      while (world.status === 'playing' && world.tick < TIME_BUDGET_TICKS) {
-        step(world, [botInput(world)]);
-        expect(offScreenStrikers(world)).toBe(0);
+  it.each([STAGE_1, STAGE_3])(
+    'never lets an enemy land a hitbox from off screen ($id)',
+    (stage) => {
+      for (const seed of [1, 2, 3, 4, 5]) {
+        const world = createWorld(stage, seed);
+        while (world.status === 'playing' && world.tick < TIME_BUDGET_TICKS) {
+          step(world, [botInput(world)]);
+          expect(offScreenStrikers(world)).toBe(0);
+        }
       }
-    }
-  });
+    },
+  );
 });

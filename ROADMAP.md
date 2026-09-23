@@ -32,7 +32,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] Stage 1 complete (Tue night, ahead of M4, 4b35385): Spam Recruiter, The
   Unpaid Take Home, coffee, Stage 1 wave layout
 - [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, ad0a5ae)
-- [ ] M4 (Thu): Stage 3, The Panel, ending
+- [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule)
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
@@ -73,7 +73,26 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   Snap all of a character's sheets to one shared palette line.
 - HUD text is the browser monospace font, which blurs at 8 px. Replace with
   a bitmap font.
-- Stage art is a placeholder skyline drawn in code.
+- Stage art is drawn in code: a placeholder skyline on the street, a sunset
+  glass wall in the tower.
+- Stage 3 (10 seeds, arriving with 60 hp): CASUAL with TOKEN clears 9/10,
+  CASUAL solo 3/10, SHARP with TOKEN 10/10, SHARP solo 9/10. The first cut
+  was too hard (CASUAL with TOKEN 6/10, solo 0/10); the retune softened the
+  Golem and the Panel and added the lobby coffee (see JOURNAL, Stage 3).
+  Levers: `STAGE_3` in `src/sim/stage.ts`, the panelist cooldowns in
+  `src/sim/ai.ts`.
+- The Golem's smash sheet came out greyer than its other sheets (the same
+  per-sheet palette drift as above). Reads as stone; fix with the shared
+  palette.
+- A sprite sheet missing from `public/` is served as Vite's HTML fallback,
+  which Phaser reports as a process failure rather than a load error, so it
+  shows as Phaser's green missing-texture box instead of the red placeholder.
+  Only matters while art is generating.
+- `?stage=3` arrives with 60 hp and no score; a real arrival carries the
+  street and tunnel score.
+- The three panel desks sit at depths 10, 28 and 46 and overlap heavily on
+  screen. Reads as one panel, but the waiting panelists are hard to tell
+  apart; try wider depth spacing or a small x stagger.
 - Touch pad is verified only in emulated Chromium (Playwright, CDP touch
   events). Needs a real iPhone and Android pass: thumb reach of the button
   cluster, whether the landscape buttons hide too much of the right edge,

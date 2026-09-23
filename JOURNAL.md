@@ -4,6 +4,96 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 20:40 CDT: Stage 3, the Interview Tower, and the ending
+
+**What.** The run is complete end to end: street, tunnel, tower, HIRED.
+Stage 3 is back on the belt, on the top floor of an office tower, with
+three new enemy rules and The Panel as the final boss. The last hit hands
+Matt the offer letter and the run ends on a generated rooftop card. Built
+autonomously while Matt was away; assumptions below.
+
+**Shape.** No new sim module this time: the tower is `STAGE_3` on the
+brawler, and every new behaviour is a rule the brawler did not have.
+
+- *Heavy* (`KindStats.heavy`, LeetCode Golem): hits without knockdown chip
+  1 hp and never stagger. Only the haymaker, jump kick and special hurt.
+- *Ghost* (`Fighter.ghost`, `src/sim/ghoster.ts`): ticks out of play.
+  `isVulnerable`, TOKEN's targeting and the bot all skip a ghosted
+  fighter, so one field covers both the Ghoster and the waiting panelists.
+- *Seated* (`KindStats.seated`, `src/sim/panel.ts`): never moves, no
+  knockback, corpse stays. `updatePanel` puts the first living panelist in
+  the hot seat each tick and holds the rest at `ghost = 1`.
+- *Wide projectiles* (`ProjectileDef.wide`): the Tech Lead's sticky-note
+  wall ignores depth, so only a jump clears it. It is the one attack in the
+  game that teaches jumping.
+- `StageDef.endsOnLastWave` and `SpawnDef.inset` (the panel sits at fixed
+  screen positions inside the locked camera).
+
+The view keeps its tower rules in a Phaser-free `src/view/stage-view.ts`
+(boss bar choice, round cards, the closing prompt, alphas, the retry carry)
+so they are unit tested; `GameScene` just draws them. `EndingScene` is new.
+
+**Assumptions (Matt to overrule).**
+
+1. The design's Golem "must be thrown". There is no grab or throw in the
+   game, and building one for a single enemy was out of scope, so the Golem
+   is heavy-armored instead: the lesson is the same (stop jabbing, finish
+   the chain).
+2. "Ghosting Phantom" became **Ghoster**. TOKEN's Go wild whiffs are
+   already called phantom swings in the design, and two phantoms read as a
+   mistake. The pipeline group is still named `phantom`; the sprites live
+   in `public/sprites/ghoster/`.
+3. The Panel is three object-headed interviewers at separate desks (a
+   clipboard, a whiteboard and a coffee mug for heads), not one desk
+   with three heads: three fighters reuse all the brawler rules, a
+   three-headed boss would have been a new body type.
+4. "FINISH HIM" became **CLOSE THE DEAL!** The enemies are the process;
+   a fatality prompt over a hiring manager is the wrong joke.
+5. The stage ends on the last panelist, not at the end of the floor.
+6. Coffee in the lobby at 180: a typical arrival from the tunnel has about
+   60 hp and walks straight into a Golem.
+7. A loss in the tower retries the tower at full health with the arrival
+   score. Sending someone back to the street after two stages is the one
+   unfair thing the game could do.
+
+**Tuning.** Sweeps over 10 seeds arriving with 60 hp. First cut: CASUAL
+with TOKEN 6/10, CASUAL solo 0/10, too hard for the last stage of a
+showcase. After retuning the Golem (now 64 hp, smash 12) and the panel
+cooldowns and adding the lobby coffee: CASUAL with TOKEN 9/10, CASUAL solo
+3/10, SHARP with TOKEN 10/10, SHARP solo 9/10. Pinned by bands in
+`bot.test.ts` over 5 seeds. The bot needed one new skill, jumping an
+incoming wide projectile, the same "read the telegraph" fix as the Take
+Home's armor.
+
+**What broke.**
+
+- *A latent crash in the shipped Stage 2 build.* Phaser reuses the scene
+  object across `scene.start`, and shutdown destroys every game object, but
+  `GameScene` kept its id-to-sprite maps. The second visit to the street
+  (clear the tunnel, press a button: the only way to start a second run)
+  called `setTexture` on a destroyed sprite and froze on tick 0 with
+  `Cannot read properties of undefined (reading 'sys')`. Found while wiring
+  the ending's "again"; proven by removing the fix and replaying the flow in
+  Playwright, then restoring it. Both stage scenes now clear their maps in
+  `create`.
+- *Phaser keeps the last scene data.* `scene.start('game')` with no data
+  re-used the tower data it was booted with, so "again" from the ending
+  restarted the tower. Every `scene.start` now passes its stage explicitly.
+- *`?stage=3` via the READY event was too late*: the game had already
+  autostarted the street. Calling `game.scene.start(key, data)` right after
+  `new Phaser.Game` works because before boot it queues the autostart with
+  that data (SceneManager `_data`).
+- Vitest swallows `console.log`, so the tuning sweeps printed nothing;
+  `process.stderr.write` does get through.
+
+**Art.** Generated this stage: Golem, Ghoster, three panelists, the form,
+sticky-note, folder and offer props, and the rooftop ending card (Matt
+holding up the letter beside TOKEN at sunset). The Golem smash sheet drifted
+greyer than its other sheets; kept, logged in ROADMAP.
+
+**Follow-ups.** Matt's playtest decides the Stage 3 bands. The tower
+backdrop is code-drawn. M5 (audio, bark bank) next.
+
 ## 2026-09-22 20:15 CDT: Stage 2, the Take-Home Tunnel
 
 **What.** The second stage is playable end to end: clear the street, press

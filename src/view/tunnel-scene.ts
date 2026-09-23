@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { tunnelStart, type Carry } from '../sim/campaign';
+import { carryFromTunnel, tunnelStart, type Carry } from '../sim/campaign';
 import { DEPTH, SCREEN_H, SCREEN_W } from '../sim/constants';
 import type { InputFrame } from '../sim/input';
 import {
@@ -108,6 +108,8 @@ export class TunnelScene extends Phaser.Scene {
 
   create(): void {
     ({ keys: this.keys, touch: this.touch } = sharedDevices(this.game));
+    // The scene object outlives a restart; the hazard images this map held did not.
+    this.hazardSprites.clear();
     this.makeTextures();
     this.wall = this.add.tileSprite(0, 0, SCREEN_W, FLOOR_TOP, 'tunnel-wall').setOrigin(0);
     this.floor = this.add
@@ -161,9 +163,9 @@ export class TunnelScene extends Phaser.Scene {
     this.showBanner('THE TAKE-HOME TUNNEL\n\njump the hurdles\nsteer round the walls', INTRO_TICKS);
   }
 
-  /** Stage 3 is not built yet, so a cleared tunnel ends the run and a button starts a new one. */
+  /** Up the Interview Tower with whatever health and score survived the ride. */
   private advance(): void {
-    this.scene.start('game');
+    this.scene.start('game', { carry: carryFromTunnel(this.world), stage: 'tower' });
   }
 
   private tick(frame: InputFrame): void {
@@ -284,9 +286,7 @@ export class TunnelScene extends Phaser.Scene {
 
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';
     if (this.world.status === 'cleared') {
-      this.bannerText.setText(
-        `TAKE-HOME SUBMITTED\nnext: the interview tower\n(coming soon)\n\n${again}`,
-      );
+      this.bannerText.setText(`TAKE-HOME SUBMITTED\n\nnext: the interview tower\n\n${again}`);
     } else {
       this.bannerText.setText(this.bannerTicks > 0 ? this.banner : '');
     }

@@ -1,5 +1,5 @@
 import { DEPTH, DEPTH_TOLERANCE } from './constants';
-import { ATTACKS, KINDS, SPECIAL_COST } from './fighters';
+import { ATTACKS, KINDS, PROJECTILES, SPECIAL_COST } from './fighters';
 import { input, NO_INPUT, type InputFrame } from './input';
 import { livingEnemies, players, type Fighter, type World } from './world';
 
@@ -10,6 +10,12 @@ const CROWD_RADIUS = 44;
 const CARD_WATCH = 90;
 /** Depth a sidestep aims for: comfortably outside the hit band. */
 const SIDESTEP = DEPTH_TOLERANCE + 6;
+/**
+ * A floor shockwave cannot be sidestepped. Jumping when it is this far off
+ * (in px) has the bot in the air as it arrives and still airborne as it passes.
+ */
+const WAVE_JUMP_NEAR = 20;
+const WAVE_JUMP_FAR = 52;
 
 /** How well a scripted player plays. */
 export interface BotSkill {
@@ -72,6 +78,11 @@ function dodge(world: World, me: Fighter, standing: Fighter[]): InputFrame | nul
   for (const card of world.projectiles) {
     if (card.team === me.team) continue;
     const toward = (me.x - card.x) * card.vx > 0;
+    if (PROJECTILES[card.kind].wide) {
+      const gap = Math.abs(me.x - card.x);
+      if (toward && gap >= WAVE_JUMP_NEAR && gap <= WAVE_JUMP_FAR) return input({ jump: true });
+      continue;
+    }
     if (toward && Math.abs(me.x - card.x) <= CARD_WATCH && Math.abs(card.z - me.z) < SIDESTEP) {
       return sidestep(me, card.z);
     }
@@ -82,7 +93,7 @@ function dodge(world: World, me: Fighter, standing: Fighter[]): InputFrame | nul
 /** What the bot decides to do right now: walk right, line up with the nearest enemy, mash, spin out when flanked. */
 function decide(world: World, me: Fighter, skill: BotSkill): Plan {
   const standing = livingEnemies(world).filter(
-    (e) => e.state !== 'knockdown' && e.state !== 'getup',
+    (e) => e.state !== 'knockdown' && e.state !== 'getup' && e.ghost === 0,
   );
   const evade = dodge(world, me, standing);
   if (evade) return { kind: 'move', frame: evade };

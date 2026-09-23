@@ -5,7 +5,7 @@ import {
   SCREEN_MARGIN,
   SCREEN_W,
 } from './constants';
-import { ATTACKS, KINDS } from './fighters';
+import { ATTACKS, KINDS, type FighterKind } from './fighters';
 import { NO_INPUT, input, type InputFrame } from './input';
 import { randomInt } from './rng';
 import type { Fighter, World } from './world';
@@ -198,11 +198,41 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * A faded-out Ghoster drifts to the spot behind its target, the side it is
+ * not looking at, and waits there to fade back in.
+ */
+function ghostIntent(world: World, enemy: Fighter, target: Fighter): InputFrame {
+  const spot = clamp(
+    target.x - target.facing * ENGAGE_GAP,
+    world.cameraX + SCREEN_MARGIN,
+    world.cameraX + SCREEN_W - SCREEN_MARGIN,
+  );
+  return steer(spot - enemy.x, target.z - enemy.z, 0, false, false);
+}
+
+/** Ticks between a panelist's questions, by who is asking. */
+const PANEL_COOLDOWNS: Partial<Record<FighterKind, [number, number]>> = {
+  screener: [80, 120],
+  techlead: [110, 150],
+  manager: [60, 90],
+};
+
+/** A panelist never leaves the desk: in the hot seat it asks, and asks, and asks. */
+function panelIntent(world: World, enemy: Fighter, target: Fighter): InputFrame {
+  if (enemy.ghost > 0 || !isStanding(target) || !canSwing(world, enemy)) return NO_INPUT;
+  const [min, max] = PANEL_COOLDOWNS[enemy.kind] ?? [90, 120];
+  enemy.cooldown = randomInt(world, min, max);
+  return input({ attack: true });
+}
+
 /** An enemy drives itself through the same controls a player uses. */
 export function enemyIntent(world: World, enemy: Fighter): InputFrame {
   if (enemy.state !== 'idle' && enemy.state !== 'walk') return NO_INPUT;
   const target = nearestTarget(world, enemy);
   if (!target) return NO_INPUT;
+  if (KINDS[enemy.kind].seated) return panelIntent(world, enemy, target);
+  if (enemy.ghost > 0) return ghostIntent(world, enemy, target);
   return enemy.kind === 'spam'
     ? throwerIntent(world, enemy, target)
     : brawlerIntent(world, enemy, target);

@@ -52,8 +52,9 @@ function nearestTo(point: { x: number; z: number }, candidates: Fighter[]): Figh
   return best;
 }
 
+/** Enemies worth swinging at: on their feet and in play. */
 function standingEnemies(world: World): Fighter[] {
-  return world.fighters.filter((f) => f.team === 'enemy' && isStanding(f));
+  return world.fighters.filter((f) => f.team === 'enemy' && isStanding(f) && f.ghost === 0);
 }
 
 function human(world: World): Fighter | undefined {

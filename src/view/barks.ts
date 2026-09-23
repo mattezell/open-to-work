@@ -36,6 +36,14 @@ const LINES = {
   crash: ['Ouch. Noted.', 'That will be in the feedback.', 'Walk it off. Ride it off.'],
   retry: ['Rolling back to last save.', 'git checkout checkpoint', 'From the top. Again.'],
   checkpoint: ['Checkpoint. Progress saved.', 'Committed. Pushed.', 'Autosaved. You are welcome.'],
+  ghosted: ['And they are gone.', 'Left you on read.', 'No reply. Classic.'],
+  panel: ['Next interviewer.', 'Another round? Sure.', 'Same questions, new face.'],
+  finalRound: [
+    'Final round. You got this.',
+    'Hiring manager. Be yourself.',
+    'Last one. Close it out.',
+  ],
+  hired: ['OFFER LETTER!', 'We did it. We are hired.', 'Negotiate. Always negotiate.'],
 } as const satisfies Record<string, readonly string[]>;
 
 export interface Bark {
@@ -64,6 +72,12 @@ export function barkFor(event: SimEvent, tokenId: number | undefined, pick: numb
       return { text: choose(LINES.reinforcements), urgent: true };
     case 'ko':
       return event.by === tokenId ? { text: choose(LINES.ko), urgent: false } : null;
+    case 'ghosted':
+      return { text: choose(LINES.ghosted), urgent: false };
+    case 'panel':
+      return { text: choose(event.last ? LINES.finalRound : LINES.panel), urgent: true };
+    case 'hired':
+      return { text: choose(LINES.hired), urgent: true };
   }
 }
 

@@ -1,5 +1,15 @@
 export type Team = 'player' | 'enemy';
-export type FighterKind = 'matt' | 'token' | 'ats' | 'spam' | 'takehome';
+export type FighterKind =
+  | 'matt'
+  | 'token'
+  | 'ats'
+  | 'spam'
+  | 'takehome'
+  | 'golem'
+  | 'ghoster'
+  | 'screener'
+  | 'techlead'
+  | 'manager';
 export type AttackId =
   | 'jab1'
   | 'jab2'
@@ -11,7 +21,15 @@ export type AttackId =
   | 'shred'
   | 'toss'
   | 'card'
-  | 'slam';
+  | 'slam'
+  | 'smash'
+  | 'swipe'
+  | 'screen'
+  | 'whiteboard'
+  | 'delegate'
+  | 'form'
+  | 'notes'
+  | 'folder';
 
 export interface AttackDef {
   /** Ticks before the hitbox appears. */
@@ -32,7 +50,7 @@ export interface AttackDef {
   projectile?: ProjectileKind;
 }
 
-export type ProjectileKind = 'card';
+export type ProjectileKind = 'card' | 'form' | 'notes' | 'folder';
 
 export interface ProjectileDef {
   /** The attack whose damage, hitstop and knockdown the projectile applies on contact. */
@@ -41,10 +59,15 @@ export interface ProjectileDef {
   /** Height above the ground it flies at. A fighter jumping higher than `clearance` dodges it. */
   height: number;
   clearance: number;
+  /** A shockwave along the floor: it hits at every depth, so only a jump clears it. */
+  wide?: boolean;
 }
 
 export const PROJECTILES: Record<ProjectileKind, ProjectileDef> = {
   card: { hit: 'card', speed: 3.2, height: 40, clearance: 20 },
+  form: { hit: 'form', speed: 2.6, height: 36, clearance: 18 },
+  notes: { hit: 'notes', speed: 2.2, height: 4, clearance: 10, wide: true },
+  folder: { hit: 'folder', speed: 4.2, height: 40, clearance: 20 },
 };
 
 export interface KindStats {
@@ -61,6 +84,42 @@ export interface KindStats {
   basicAttack: AttackId;
   /** Hits while it is mid-attack hurt it but do not interrupt the attack. */
   armored?: boolean;
+  /** Only knockdown attacks really hurt it: anything lighter chips HEAVY_CHIP and never staggers. */
+  heavy?: boolean;
+  /** Sits behind a desk: never walks, never flies on a knockdown, stays in its seat when beaten. */
+  seated?: boolean;
+}
+
+/** Damage a light hit does to a heavy enemy. */
+export const HEAVY_CHIP = 1;
+
+/** A throw: a wind-up of `startup` ticks, then `projectile` leaves the hand. */
+function throwOf(projectile: ProjectileKind, startup: number): AttackDef {
+  return {
+    startup,
+    active: 1,
+    recovery: 20,
+    damage: 0,
+    reach: 0,
+    omni: false,
+    knockdown: false,
+    hitstop: 0,
+    projectile,
+  };
+}
+
+/** What a projectile does when it lands. */
+function projectileHit(damage: number, knockdown: boolean): AttackDef {
+  return {
+    startup: 0,
+    active: 1,
+    recovery: 0,
+    damage,
+    reach: 0,
+    omni: false,
+    knockdown,
+    hitstop: 4,
+  };
 }
 
 export const ATTACKS: Record<AttackId, AttackDef> = {
@@ -175,6 +234,32 @@ export const ATTACKS: Record<AttackId, AttackDef> = {
     knockdown: true,
     hitstop: 10,
   },
+  smash: {
+    startup: 24,
+    active: 4,
+    recovery: 28,
+    damage: 12,
+    reach: 36,
+    omni: false,
+    knockdown: true,
+    hitstop: 10,
+  },
+  swipe: {
+    startup: 9,
+    active: 3,
+    recovery: 16,
+    damage: 8,
+    reach: 28,
+    omni: false,
+    knockdown: false,
+    hitstop: 5,
+  },
+  screen: throwOf('form', 16),
+  whiteboard: throwOf('notes', 24),
+  delegate: throwOf('folder', 12),
+  form: projectileHit(6, false),
+  notes: projectileHit(8, true),
+  folder: projectileHit(7, false),
 };
 
 /** Matt's 3-hit chain, in order. Whiffing resets it to the first jab. */
@@ -251,7 +336,50 @@ export const KINDS: Record<FighterKind, KindStats> = {
     basicAttack: 'slam',
     armored: true,
   },
+  golem: {
+    team: 'enemy',
+    maxHp: 64,
+    walkX: 0.55,
+    walkZ: 0.45,
+    halfWidth: 18,
+    height: 80,
+    hitstun: 14,
+    score: 1500,
+    basicAttack: 'smash',
+    armored: true,
+    heavy: true,
+  },
+  ghoster: {
+    team: 'enemy',
+    maxHp: 34,
+    walkX: 1.4,
+    walkZ: 1.0,
+    halfWidth: 10,
+    height: 60,
+    hitstun: 16,
+    score: 1000,
+    basicAttack: 'swipe',
+  },
+  screener: panelist(30, 'screen'),
+  techlead: panelist(40, 'whiteboard'),
+  manager: panelist(50, 'delegate'),
 };
+
+/** One of the three interviewers at the top of the tower. */
+function panelist(maxHp: number, basicAttack: AttackId): KindStats {
+  return {
+    team: 'enemy',
+    maxHp,
+    walkX: 0,
+    walkZ: 0,
+    halfWidth: 18,
+    height: 72,
+    hitstun: 14,
+    score: 3000,
+    basicAttack,
+    seated: true,
+  };
+}
 
 export function attackLength(def: AttackDef): number {
   return def.startup + def.active + def.recovery;
