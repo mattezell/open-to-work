@@ -156,6 +156,17 @@ style:
     side-by-side slots, evenly spaced with clear empty space between them,
     all the same scale, all facing RIGHT in strict side profile.
 
+  # Stage backdrop layers (kind: layer). Every layer is drawn flat-on, so it
+  # can scroll sideways at its own parallax speed behind the fight.
+  layer: >
+    A background layer for a 16-bit side-scrolling brawler, drawn perfectly
+    flat-on and side-on like a theatre flat: no vanishing point, no camera
+    tilt, no foreground objects, no people, no animals, no vehicles.
+  # What a cutout layer stands on, so tools/pixelize.py can key it out.
+  chroma: >
+    a perfectly flat, uniform, solid pure green (#00FF00) background with no
+    gradient, no shadow, no texture and nothing else in it.
+
 assets:
   # --- design candidates: pick one per character, then it becomes the ref --
 
@@ -1382,3 +1393,135 @@ assets:
       on its screen. Warm orange and pink sky, a few pigeons, triumphant and
       a little emotional. Leave the top third of the sky clear for a title.
       No text, no letters, no logos.
+
+  # -------------------------------------------------------------------------
+  # Stage backdrops: parallax layers behind the fight. The far plate is
+  # opaque and crossfaded at its ends so it tiles; cutout layers are keyed
+  # off {chroma} and trimmed, and their flat building sides tile edge to
+  # edge. Heights are in game pixels above the floor line (FLOOR_TOP, 150).
+  # The code-drawn backdrops in src/view/scenery.ts stay as the fallback.
+  # Signs are drawn in the pixel font over the art, never generated.
+  # -------------------------------------------------------------------------
+
+  - id: bg_street_far
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/street-far.png
+    height: 150
+    # Crop away the empty top of the sky and the harbour the render put under the skyline.
+    crop: [0.2, 0.665]
+    prompt: >
+      {layer} A distant city skyline at dusk as night falls. A deep indigo
+      and violet sky with a few faint stars, fading to a dusky rose glow
+      along the horizon. Far-off skyscrapers and apartment towers stand as
+      cool blue-grey silhouettes across the lower third, dotted with small
+      warm lit windows, a couple of blinking red aircraft lights on the
+      tallest. Nothing in front of them. The skyline runs unbroken from the
+      left edge to the right edge at the same height, so the picture can
+      repeat sideways. No text, no letters, no logos.
+
+  - id: bg_street_mid
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/street-mid.png
+    height: 150
+    crop: [0.05, 0.93]
+    cutout: true
+    prompt: >
+      {layer} A row of mid-rise downtown buildings seen straight on: brick
+      and concrete facades in muted purple, plum and slate grey, rows of
+      windows with some lit warm yellow, fire escapes, rooftop water tanks
+      and an empty billboard frame. The buildings stand shoulder to shoulder
+      across the full width of the picture, all of their bases on one
+      straight horizontal line along the bottom edge, rooftops at varied
+      heights in the upper half. Everything above and between the rooftops
+      is {chroma} No text, no letters, no logos.
+
+  - id: bg_street_near
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/street-near.png
+    height: 96
+    crop: [0, 0.776]
+    cutout: true
+    prompt: >
+      {layer} The ground floor of a city street at night, seen straight on:
+      three shopfronts side by side filling the full width of the picture,
+      standing on one straight line along the bottom edge. Left, a brightly
+      lit shop with one big front window holding a single large plain cream
+      paper banner, completely blank, an empty rectangle. Middle, a small
+      recruiting agency office with its venetian blinds drawn shut in every
+      window and a closed glass door, a little cold and unwelcoming. Right,
+      a shuttered late-night coffee shop with a red and cream striped
+      awning. Above the shop fascias each building front rises one more
+      storey and ends in a flat roofline. Everything above the rooflines is
+      {chroma} No text, no letters, no logos, blank signs.
+
+  - id: bg_tunnel_far
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/tunnel-far.png
+    height: 150
+    crop: [0, 0.62]
+    prompt: >
+      {layer} Deep inside a vast, dark data centre: a long hall of tall
+      black server racks glowing with tiny blue, green and amber status
+      lights, cold blue strip lights and cable trays along the ceiling,
+      a faint haze, a regular rhythm of rack bays from the left edge to the
+      right edge so the hall reads as endless and the picture can repeat
+      sideways. Dark navy, teal and violet, cool and humming. No text, no
+      letters, no logos.
+
+  - id: bg_tunnel_near
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/tunnel-near.png
+    height: 132
+    cutout: true
+    prompt: >
+      {layer} The near wall of a server-room corridor: pairs of tall black
+      server rack cabinets with perforated doors and rows of blinking blue
+      and green lights, each pair separated from the next by an empty gap
+      of the same width. Stacks of brown cardboard filing boxes and loose
+      paper sit at the feet of the racks. Every rack stands on one straight
+      line along the bottom edge. The gaps between the pairs and the space
+      above the racks are {chroma} No text, no letters, no logos.
+
+  - id: bg_tower_far
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/tower-far.png
+    height: 150
+    prompt: >
+      {layer} The view from the top floor of a skyscraper at sunset: a sky
+      in broad bands of gold, orange, coral, pink and violet, a low sun
+      half behind a line of clouds, and far below a sprawling city of
+      silhouetted towers in plum and navy with a few lit windows. Just the
+      sky and the city, no window frames, no interior. The skyline runs
+      unbroken from the left edge to the right edge so the picture can
+      repeat sideways. No text, no letters, no logos.
+
+  - id: bg_tower_near
+    group: backdrop
+    kind: layer
+    size: "1536x1024"
+    out: public/sprites/bg/tower-near.png
+    height: 56
+    crop: [0, 0.865]
+    cutout: true
+    prompt: >
+      {layer} A low row of corporate open-plan office furniture seen
+      straight on from the side, lined up along a window: a sleek grey
+      reception desk, a potted fiddle-leaf fig, a water cooler, a pair of
+      low filing cabinets, a wheeled whiteboard that is completely blank, a
+      tidy desk with a closed laptop and a lamp. Cream, grey and charcoal
+      with small touches of green. Everything sits on one straight line
+      along the bottom edge and fills the full width, nothing taller than a
+      person. Everything above the furniture is {chroma} No text, no
+      letters, no logos.

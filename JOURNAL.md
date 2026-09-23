@@ -4,7 +4,55 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
-## 2026-09-23 06:55 CDT: playtest item 5, the HIRED card
+## 2026-09-23 06:26 CDT: playtest item 6, painted parallax backdrops
+
+**What.** Seven generated layers replace the flat code-drawn backdrops:
+street (dusk skyline 0.15, storefront row 0.4, near shops 1), tunnel
+(server room 0.25, rack row 0.6), tower (sunset city 0.15 behind the glass
+frame, office furniture in front). The pipeline gained a `layer` kind,
+`--crop` and `--seamless`; the layer plan is `src/view/backdrops.ts`
+(13 tests), and each stage falls back to its old code backdrop if any of
+its layers fails to load. Verified in headless Chromium both ways (layers
+served, and `sprites/bg/**` blocked with 404s): no errors, the expected
+`[otw] missing bg-...` warnings in the blocked case, and each screenshot
+showing the right backdrop.
+
+**Generation.** 7/7 layers rendered first try through `codex exec`, about
+60 to 70 s each, one 1536x1024 plate per layer. The renders needed tuning
+three times, all in post-process against the staged raws
+(`--reuse-raw`, deterministic, same md5 on a rerun):
+- The far skyline came with a harbour under it and a lot of empty sky;
+  the cutouts came with pavement and reflections under the buildings; the
+  tunnel room and the tower furniture came with floors. Fix: a `crop` row
+  band per entry, the edges found by scanning rows of the raw, not guessed.
+- The first near street layer (112 px) hid the mid layer entirely.
+  Rebalanced to 96 px so the storefront row shows above it.
+- Colour counts after the Genesis snap are 7 to 13 per layer (16 allowed),
+  which reads as painted 16-bit rather than posterised.
+
+**Decisions and assumptions.**
+- The "WE'RE HIRING (not you)" sign is drawn in code, in the pixel font on
+  a paper banner. Image models do not render reliable text, and the
+  banner the render did paint is about 42x14 px, too small for 71 px of
+  "WE'RE HIRING". Its place in the tile was read off the image, so it
+  repeats with the tile (once per 221 px) like a chain of branches, and
+  must be moved if `street-near.png` is regenerated (said in the code and
+  the README).
+- The recruiting agency with its blinds drawn is in the prompt and in the
+  art, with no text; it reads as a closed office, which is the joke.
+- Opaque plates are made seamless by crossfading the right 10 percent of
+  the width into the left, rather than mirroring (mirrors read as
+  mirrors) or asking the model for a tileable image (it does not reliably
+  make one).
+- The tower keeps the code-drawn glass frame over the painted city, so the
+  sunset still reads as "behind glass"; the furniture layer sits in front
+  of the frame (depth -9), still behind the fighters.
+- The tunnel layers scroll by distance ridden, like the old wall did.
+
+**Follow-ups.** None blocking. Pillow warns that `getdata` goes away in
+Pillow 14 (2027-10); only a one-off colour-count probe used it.
+
+## 2026-09-23 06:12 CDT: playtest item 5, the HIRED card
 
 **What.** The HIRED card now carries the credit ("Built in 2 days by Matt
 Ezell + Claude" today) and a "Hire the real Matt" menu: CONTACT (and CV
@@ -39,7 +87,7 @@ the cursor wraps.
   `VITE_FIRST_COMMIT` and `VITE_LAST_COMMIT` around `vite` in the dev and
   build scripts, and the credit drops the number if they are missing.
 
-## 2026-09-23 06:25 CDT: playtest item 4, title, attract mode, name cards
+## 2026-09-23 06:06 CDT: playtest item 4, title, attract mode, name cards
 
 **What.** The game now boots to a title screen (logo, Matt and TOKEN idling
 on the street, start hint, credit). Idle, it runs the arcade loop: 10 s of

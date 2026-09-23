@@ -168,6 +168,25 @@ the tower at full health, keeping the score Matt walked in with.
   direction; `public/sprites/` holds its output) and the bark generator
   (`genbarks.py`, `barks.yaml`).
 
+### Regenerating a backdrop layer
+
+Backdrops are `kind: layer` entries in `tools/assets.yaml`, written to
+`public/sprites/bg/`. Each renders one painted plate, crops a band of rows,
+and snaps to Genesis colours:
+
+```bash
+python3 tools/genassets.py --only bg_street_far            # render with codex + post-process
+python3 tools/genassets.py --only bg_street_far --reuse-raw # redo the crop/snap from the staged raw
+# the post-process step by hand:
+python3 tools/pixelize.py image --input raw.png --out layer.png --height 150 \
+  --genesis-colors 16 --crop 0.2,0.665 --seamless 0.1 --no-trim --alpha-threshold 0
+```
+
+`--crop TOP,BOTTOM` keeps rows between those fractions of the height;
+`--seamless F` crossfades the rightmost F of the width into the left edge
+so the layer tiles. After regenerating `street-near.png`, move
+`HIRING_SIGN` in `src/view/backdrops.ts` to the new shop window.
+
 ## Docs
 
 | File | What |

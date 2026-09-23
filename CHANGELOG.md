@@ -7,6 +7,15 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- Painted parallax backdrops for all three stages, generated and snapped to
+  the Genesis palette: a dusk skyline, a storefront row and the near shops
+  on the street (with a "WE'RE HIRING (not you)" banner and a recruiting
+  agency with its blinds drawn), a server room and a rack row in the
+  tunnel, and a sunset city behind the tower's glass with office furniture
+  in front. The old code-drawn backdrops stay as the fallback if the
+  images fail to load.
+- Asset pipeline: `kind: layer` backdrop entries, `--crop` and
+  `--seamless` in `pixelize.py image`.
 - HIRED card call to action: "Hire the real Matt" with a link to
   immatt.com/contact/ (and immatt.com/cv/ once that page is live), opened
   in a new tab, plus PLAY AGAIN. The card also carries the credit "Built in

@@ -259,6 +259,45 @@ def downscale(
     return im.resize((target_w, max(1, target_h)), Image.Resampling.BOX)
 
 
+def crop_rows(im: Image.Image, top: float, bottom: float) -> Image.Image:
+    """Keep the band of rows between two fractions of the height.
+
+    Generated scenery often comes with extra ground (a pavement, a harbour)
+    under the thing that should stand on the stage's floor line.
+    """
+    if not 0 <= top < bottom <= 1:
+        raise ValueError(f"crop {top},{bottom} is not a band inside 0..1")
+    w, h = im.size
+    return im.crop((0, round(h * top), w, round(h * bottom)))
+
+
+def seamless(im: Image.Image, overlap: float) -> Image.Image:
+    """Make a painted plate tile horizontally without a visible seam.
+
+    The rightmost `overlap` fraction of the width is crossfaded into the
+    leftmost and then dropped, so the last remaining column sits next to the
+    first exactly as it did in the source. The result is narrower by the
+    overlap.
+    """
+    if overlap <= 0:
+        return im
+    im = im.convert("RGBA")
+    w, h = im.size
+    n = max(1, round(w * overlap))
+    if n * 2 >= w:
+        raise ValueError(f"seamless overlap {overlap} is too wide for {w}px")
+    tail = im.crop((w - n, 0, w, h))
+    head = im.crop((0, 0, n, h))
+    # Mask weight is the head's share: near zero in the first column, where
+    # the tail must continue from the plate's last column, near full in the
+    # last, where the head must meet the untouched column after it.
+    ramp = Image.new("L", (n, h))
+    ramp.putdata([round(255 * (x + 0.5) / n) for _ in range(h) for x in range(n)])
+    out = im.crop((0, 0, w - n, h))
+    out.paste(Image.composite(head, tail, ramp), (0, 0))
+    return out
+
+
 def add_outline(rgba: Image.Image, color: tuple[int, int, int], threshold: int = 96) -> Image.Image:
     """One pixel dark keyline so actors stay legible over painted parallax."""
     alpha = rgba.getchannel("A").point(lambda v: 255 if v >= threshold else 0)
@@ -288,13 +327,17 @@ def process(
     outline: tuple[int, int, int] | None,
     trim: bool,
     genesis_colors: int = 0,
+    seam: float = 0.0,
+    rows: tuple[float, float] = (0.0, 1.0),
 ) -> Image.Image:
-    im = im.convert("RGBA")
+    im = crop_rows(im.convert("RGBA"), *rows)
 
     if trim:
         box = content_bbox(im.getchannel("A"))
         if box:
             im = im.crop(box)
+
+    im = seamless(im, seam)
 
     im = downscale(im, height, width)
     rgb, alpha = split_alpha(im)
@@ -594,6 +637,11 @@ def resolve_palette(args) -> list[tuple[int, int, int]] | None:
     return load_palette(args.palette, args.palette_slots)
 
 
+def parse_band(value: str) -> tuple[float, float]:
+    top, bottom = (float(v) for v in value.split(","))
+    return top, bottom
+
+
 def parse_hex(value: str):
     if not value:
         return None
@@ -610,6 +658,10 @@ def main() -> None:
     add_common(one)
     one.add_argument("--height", type=int, required=True)
     one.add_argument("--width", type=int, default=None)
+    one.add_argument("--seamless", type=float, default=0.0,
+                     help="crossfade this fraction of the width so the image tiles sideways")
+    one.add_argument("--crop", default="0,1",
+                     help="TOP,BOTTOM: keep only this band of rows, as fractions of the height")
 
     cut = sub.add_parser("cutout", help="remove a flat background via border flood")
     cut.add_argument("--input", required=True, type=Path)
@@ -669,6 +721,8 @@ def main() -> None:
             outline=outline,
             trim=not args.no_trim,
             genesis_colors=genesis_colors,
+            seam=args.seamless,
+            rows=parse_band(args.crop),
         )
     else:
         out = normalise_strip(

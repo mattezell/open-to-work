@@ -196,6 +196,11 @@ def post_process(asset: dict, raw: Path, work: Path) -> bool:
         ])
 
     cut = work / (raw.stem + ".cut.png")
+    if kind == "layer":
+        if asset.get("cutout") and not dechroma(raw, cut):
+            return False
+        return pixelize(layer_args(asset, cut if asset.get("cutout") else raw, out))
+
     if not dechroma(raw, cut):
         return False
 
@@ -232,6 +237,34 @@ def post_process(asset: dict, raw: Path, work: Path) -> bool:
         "--saturation", "1.15", "--contrast", "1.08",
         "--brightness", bright,
     ])
+
+
+def layer_args(asset: dict, src: Path, out: Path) -> list[str]:
+    """pixelize arguments for one parallax layer of a stage backdrop.
+
+    Layers are sized by height, so they stack against the floor line, and
+    snapped to the Genesis grid like the sprites. `crop` (top and bottom as
+    fractions of the height) cuts away any ground the render put under the
+    layer's own base. An opaque plate (sky and far skyline) is crossfaded at
+    its ends so it tiles; a cutout is trimmed to its buildings, whose flat
+    sides already butt together when tiled.
+    """
+    cutout = bool(asset.get("cutout"))
+    args = [
+        "image",
+        "--input", str(src), "--out", str(out),
+        "--height", str(asset["height"]),
+        "--genesis-colors", str(asset.get("colors", 16)),
+        "--saturation", str(asset.get("saturation", 1.06)),
+        "--contrast", str(asset.get("contrast", 1.04)),
+    ]
+    if "crop" in asset:
+        top, bottom = asset["crop"]
+        args += ["--crop", f"{top},{bottom}"]
+    if cutout:
+        return args
+    return args + ["--no-trim", "--alpha-threshold", "0",
+                   "--seamless", str(asset.get("seamless", 0.1))]
 
 
 def _height_for(asset: dict, raw: Path) -> int:

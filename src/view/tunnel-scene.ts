@@ -14,6 +14,7 @@ import {
   type TunnelWorld,
 } from '../sim/tunnel';
 import { sharedAudio } from './audio';
+import { BACKDROPS } from './backdrops';
 import { DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
@@ -43,7 +44,7 @@ const TOKEN_BARK_RISE = 62;
 /** Frames per ride-cycle step, and how far TOKEN bobs on its hover disc. */
 const RIDE_FRAME_TICKS = 6;
 const TOKEN_BOB = 2;
-/** The far wall scrolls slower than the floor, so the tunnel has depth. */
+/** The code-drawn fallback wall scrolls slower than the floor, so the tunnel has depth. */
 const WALL_PARALLAX = 0.6;
 const BANNER_TICKS = 90;
 /** A hazard's CLEAR or CRASH word rises off Matt's board for this long. */
@@ -87,7 +88,8 @@ export class TunnelScene extends Phaser.Scene {
   private barkTicks = 0;
   private bannerTicks = 0;
   private banner = '';
-  private wall!: Phaser.GameObjects.TileSprite;
+  /** The backdrop behind the ride, each part with its share of the floor's speed. */
+  private backdrop: { sprite: Phaser.GameObjects.TileSprite; scroll: number }[] = [];
   private floor!: Phaser.GameObjects.TileSprite;
   private matt!: Phaser.GameObjects.Sprite;
   private token!: Phaser.GameObjects.Sprite;
@@ -119,6 +121,7 @@ export class TunnelScene extends Phaser.Scene {
     }
     this.load.image('prop-hurdle', 'sprites/props/hurdle.png');
     this.load.image('prop-wall', 'sprites/props/wall.png');
+    for (const layer of BACKDROPS.tunnel) this.load.image(layer.key, layer.path);
   }
 
   create(): void {
@@ -126,7 +129,7 @@ export class TunnelScene extends Phaser.Scene {
     // The scene object outlives a restart; the hazard images this map held did not.
     this.hazardSprites.clear();
     this.makeTextures();
-    this.wall = this.add.tileSprite(0, 0, SCREEN_W, FLOOR_TOP, 'tunnel-wall').setOrigin(0);
+    this.backdrop = this.makeBackdrop();
     this.floor = this.add
       .tileSprite(0, FLOOR_TOP, SCREEN_W, SCREEN_H - FLOOR_TOP, 'tunnel-floor')
       .setOrigin(0);
@@ -155,7 +158,9 @@ export class TunnelScene extends Phaser.Scene {
       this.accumulator -= TICK_MS;
       this.tick(mergeInputs(this.keys.snapshot(), this.touch.snapshot()));
     }
-    this.wall.tilePositionX = Math.round(this.world.distance * WALL_PARALLAX);
+    for (const { sprite, scroll } of this.backdrop) {
+      sprite.tilePositionX = Math.round(this.world.distance * scroll);
+    }
     this.floor.tilePositionX = Math.round(this.world.distance);
     this.shadows.clear();
     this.drawHazards();
@@ -331,6 +336,26 @@ export class TunnelScene extends Phaser.Scene {
     } else {
       this.bannerText.setText(this.bannerTicks > 0 ? this.banner : '');
     }
+  }
+
+  /**
+   * The server-room layers standing on the floor line, or the code-drawn wall
+   * if any of them failed to load.
+   */
+  private makeBackdrop(): { sprite: Phaser.GameObjects.TileSprite; scroll: number }[] {
+    const layers = BACKDROPS.tunnel;
+    if (!layers.every((layer) => this.textures.exists(layer.key))) {
+      const wall = this.add.tileSprite(0, 0, SCREEN_W, FLOOR_TOP, 'tunnel-wall').setOrigin(0);
+      return [{ sprite: wall, scroll: WALL_PARALLAX }];
+    }
+    return layers.map(({ key, scroll, depth }) => {
+      const height = this.textures.get(key).getSourceImage().height;
+      const sprite = this.add
+        .tileSprite(0, FLOOR_TOP - height, SCREEN_W, height, key)
+        .setOrigin(0)
+        .setDepth(depth);
+      return { sprite, scroll };
+    });
   }
 
   /**

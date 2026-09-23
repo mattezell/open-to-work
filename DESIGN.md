@@ -233,6 +233,18 @@ three enemies.
   are excluded because its round banners already name each panelist.
 - Scenery shared by the title and the street (`drawStreet`, `drawTower`,
   sprite loading, the tap-anywhere listener) lives in `src/view/scenery.ts`.
+- Backdrops: the layer plan (files, scroll factors, depths, far to near) is
+  `src/view/backdrops.ts`, Phaser-free and tested. Street: skyline 0.15,
+  storefront row 0.4, near shops 1 (the camera scrolls). Tunnel: server
+  room 0.25, rack row 0.6 (scrolled by distance ridden). Tower: the sunset
+  city 0.15 behind the code-drawn glass frame, the office furniture 1 in
+  front of it. Every layer is a tileSprite behind the fighters (negative
+  depth). If any layer of a stage fails to load, that stage draws its old
+  code backdrop instead (warning `[otw] missing bg-...`).
+- The "WE'RE HIRING (not you)" sign is code-drawn in the pixel font on a
+  paper banner, because generated art has no reliable text. Its place in
+  the near street tile (`HIRING_SIGN`) was read off the image; regenerating
+  `street-near.png` means finding the shop window again.
 
 ## Text
 
@@ -266,6 +278,14 @@ is an enemy's name card (gold name, white pitch).
   his own Codex login.
 - Fallback if frame consistency is too poor for fighting animation:
   procedural pixel routines, as in Craft Beer Hero's `src/game/art/`.
+- Backdrops are `kind: layer` entries (group `backdrop`): one 1536x1024
+  painted plate per parallax layer, no people or vehicles. `crop` keeps a
+  band of rows (fractions of the height) before anything else, which is how
+  harbours, pavements and floors the render added get cut away. Opaque
+  plates are made to tile with `--seamless` (the right edge crossfaded into
+  the left) and keep their full width; cutouts (`cutout: true`, rendered on
+  flat #00FF00 and keyed) are trimmed instead. Each layer is snapped to 16
+  Genesis colours (7 to 13 survive) at its own height.
 
 ## Audio
 

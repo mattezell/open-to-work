@@ -6,7 +6,7 @@ import unittest
 
 from PIL import Image, ImageDraw
 
-from pixelize import split_frames_by_blob
+from pixelize import crop_rows, seamless, split_frames_by_blob
 
 
 def strip(boxes: list[tuple[int, int, int, int]], size: tuple[int, int] = (400, 100)) -> Image.Image:
@@ -50,3 +50,54 @@ class SplitFramesByBlob(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def ramp(width: int) -> Image.Image:
+    """A plate whose red channel climbs left to right: its raw seam is one big jump."""
+    im = Image.new("RGBA", (width, 2))
+    im.putdata([(round(x * 255 / (width - 1)), 0, 0, 255) for _ in range(2) for x in range(width)])
+    return im
+
+
+def red(im: Image.Image, x: int) -> int:
+    return im.getpixel((x, 0))[0]
+
+
+class Seamless(unittest.TestCase):
+    def test_drops_the_overlap_from_the_width(self) -> None:
+        self.assertEqual(seamless(ramp(200), 0.1).size, (180, 2))
+
+    def test_the_wrap_is_no_harsher_than_the_plate_itself(self) -> None:
+        tiled = seamless(ramp(200), 0.1)
+        w = tiled.size[0]
+        steps = [abs(red(tiled, (x + 1) % w) - red(tiled, x)) for x in range(w)]
+        # Raw, wrapping from the last column to the first jumps by 255.
+        self.assertLess(abs(red(tiled, 0) - red(tiled, w - 1)), 12)
+        self.assertLess(max(steps), 20)
+
+    def test_leaves_the_middle_of_the_plate_alone(self) -> None:
+        plate = ramp(200)
+        tiled = seamless(plate, 0.1)
+        for x in (20, 100, 179):
+            self.assertEqual(tiled.getpixel((x, 1)), plate.getpixel((x, 1)))
+
+    def test_zero_overlap_is_a_no_op(self) -> None:
+        plate = ramp(50)
+        self.assertIs(seamless(plate, 0), plate)
+
+    def test_refuses_an_overlap_that_eats_the_plate(self) -> None:
+        with self.assertRaises(ValueError):
+            seamless(ramp(50), 0.5)
+
+
+class CropRows(unittest.TestCase):
+    def test_keeps_the_band_between_the_fractions(self) -> None:
+        plate = Image.new("RGBA", (40, 100))
+        self.assertEqual(crop_rows(plate, 0, 0.7).size, (40, 70))
+        self.assertEqual(crop_rows(plate, 0.25, 1).size, (40, 75))
+
+    def test_refuses_a_band_outside_the_image_or_upside_down(self) -> None:
+        plate = Image.new("RGBA", (40, 100))
+        for top, bottom in ((0.5, 0.5), (0.8, 0.2), (-0.1, 1), (0, 1.2)):
+            with self.assertRaises(ValueError):
+                crop_rows(plate, top, bottom)
