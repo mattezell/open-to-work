@@ -90,6 +90,12 @@ export function applyHit(
   const dealt = shrugged ? Math.min(damage, HEAVY_CHIP) : damage;
   if (attacker) creditAttacker(attacker, target, dealt);
   target.hp = Math.max(0, target.hp - dealt);
+  world.events.push({
+    type: 'hit',
+    target: target.id,
+    damage: dealt,
+    heavy: def.knockdown === true || target.hp === 0,
+  });
   world.hitstop = Math.max(world.hitstop, def.hitstop);
   const dir = target.x >= fromX ? 1 : -1;
 

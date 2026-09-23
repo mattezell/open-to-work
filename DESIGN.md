@@ -51,6 +51,15 @@ pickups (Coffee) and a Referral power-up. Three stages, a boss, an ending.
   qwen3.8-27b on a local model server and committed as JSON. No runtime LLM calls:
   the public build cannot reach the box, and a live model in a public game is
   a prompt-injection and cost surface for no gameplay gain.
+- **As built** (`tools/genbarks.py`, `tools/barks.yaml`): 18 moments, each
+  with three hand-written seeds that lead the bank and double as style
+  examples in the prompt. The model returns 14 candidates per moment; a
+  filter drops anything over 40 characters, non-ASCII, naming a real company
+  or product, profane, assistant-voiced or a near duplicate; the bank keeps
+  8 per moment. Review is a veto list, not hand edits, so the bank can be
+  regenerated without losing the curation. The view rotates lines by tick,
+  and the tests pin length, ASCII, uniqueness and the no-real-names rule on
+  the committed bank.
 - Name and look: open question (see below).
 
 ## Stages
@@ -195,6 +204,29 @@ three enemies.
 
 Synthesized at runtime with WebAudio, as in Momentum: a funk bass line in the
 ToeJam and Earl spirit, punchy hit SFX, speed-up music on the tunnel.
+
+As built:
+
+- **Score as data** (`src/view/music.ts`, no WebAudio, unit-tested): each
+  track is two bars of sixteenth-note steps written as tracker-style note
+  strings (`'E2 . E3 E2 . . G2 .'`), with a bpm and a swing amount that
+  delays the off-beat sixteenths. Street (E, 104 bpm, swung), tunnel (A
+  minor, 128 bpm, straight), tower (D minor, 112 bpm), ending (C major,
+  100 bpm).
+- **Synth** (`src/view/audio.ts`): four voices, a square bass through a
+  closing low-pass (the nearest cheap thing to a Genesis FM pluck), a square
+  lead, a pitch-dropping sine kick, and noise-burst snare and hat. A
+  lookahead scheduler (wakes every 25 ms, books 120 ms ahead on the audio
+  clock) keeps timing steady under frame drops.
+- **Tunnel tempo** follows `currentSpeed`: 1x at the first section's 2.2,
+  capped at 1.35x.
+- **Effects** come from sim events, mapped in `sfxForSim` and
+  `sfxForTunnel`. The sim gained one event for this, `hit` (every landed
+  blow, `heavy` on knockdown or a KO), so the view never diffs hp to guess.
+- **Lifecycle**: one shared instance, like the input devices. The context is
+  created on the first key or tap (autoplay policy); M or the touch SOUND
+  pill mutes by suspending the context, remembered in localStorage when the
+  browser allows it; a hidden tab suspends too.
 
 ## Scope and schedule
 

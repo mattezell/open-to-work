@@ -92,6 +92,8 @@ export interface Pickup {
 export type SimEvent =
   | { type: 'order'; directive: Directive }
   | { type: 'ko'; id: number; by: number }
+  /** Any landed blow, for the view's hit sounds; `heavy` when it knocks down. */
+  | { type: 'hit'; target: number; damage: number; heavy: boolean }
   | { type: 'intercept' }
   | { type: 'whiff' }
   | { type: 'reboot' }

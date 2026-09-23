@@ -52,6 +52,23 @@ describe('attack chain', () => {
     );
   });
 
+  it('reports every landed blow for the hit sounds, heavy on the knockdown', () => {
+    const { world, bot } = duel();
+    const hits: { damage: number; heavy: boolean }[] = [];
+    for (let i = 0; i < 90 && bot.state !== 'knockdown'; i++) {
+      step(world, [input({ attack: i % 2 === 0 })]);
+      for (const event of world.events) {
+        if (event.type === 'hit' && event.target === bot.id) hits.push(event);
+      }
+    }
+    expect(hits.map((h) => h.heavy)).toEqual([false, false, true]);
+    expect(hits.map((h) => h.damage)).toEqual([
+      ATTACKS.jab1.damage,
+      ATTACKS.jab2.damage,
+      ATTACKS.haymaker.damage,
+    ]);
+  });
+
   it('resets to the first jab after a whiff', () => {
     const { world, matt } = duel(200);
     tapAttack(world);

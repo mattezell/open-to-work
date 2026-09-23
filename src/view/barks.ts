@@ -1,3 +1,4 @@
+import bank from './barks.json';
 import type { Directive } from '../sim/sidekick';
 import type { Call, TunnelEvent } from '../sim/tunnel';
 import type { SimEvent } from '../sim/world';
@@ -10,41 +11,11 @@ export const DIRECTIVE_LABELS: Readonly<Record<Directive, string>> = {
 };
 
 /**
- * Placeholder lines until the generated bark bank lands (M5). Short enough to
- * fit over TOKEN's head at 8px.
+ * TOKEN's lines per moment, generated ahead of time by the local model
+ * (`tools/genbarks.py`, spec in `tools/barks.yaml`) and reviewed before
+ * commit. The hand-written seeds lead each list.
  */
-const LINES = {
-  wild: ['GOING WILD.', 'No plan. Only vibes.', 'Unleashing chaos mode.'],
-  focus: ['Target locked.', 'Focusing. Like a cover letter.', 'On your mark.'],
-  guard: ['I got you.', 'Shields up.', 'Nobody touches the candidate.'],
-  intercept: ['Not today, ATS.', 'Blocked. Like my resume.', 'Took that one for you.'],
-  whiff: ['...where did it go?', 'Hallucinated that one.', 'Confidently wrong.'],
-  reboot: ['Rebooting...', 'Turning myself off and on.', 'brb, updating'],
-  rebooted: ['Back online.', 'Updates installed.', 'Where were we?'],
-  pickup: [
-    'Caffeinated. Allegedly.',
-    'Hydrate. Caffeinate. Iterate.',
-    'Free coffee. Great culture.',
-  ],
-  reinforcements: [
-    'Scope creep incoming!',
-    'They added requirements.',
-    'Now it is a two-week project.',
-  ],
-  ko: ['Rejected.', 'Per my last email.', 'Moving forward with other candidates.'],
-  shield: ['Airbag deployed.', 'Absorbed. Barely.', 'That one was on me.'],
-  crash: ['Ouch. Noted.', 'That will be in the feedback.', 'Walk it off. Ride it off.'],
-  retry: ['Rolling back to last save.', 'git checkout checkpoint', 'From the top. Again.'],
-  checkpoint: ['Checkpoint. Progress saved.', 'Committed. Pushed.', 'Autosaved. You are welcome.'],
-  ghosted: ['And they are gone.', 'Left you on read.', 'No reply. Classic.'],
-  panel: ['Next interviewer.', 'Another round? Sure.', 'Same questions, new face.'],
-  finalRound: [
-    'Final round. You got this.',
-    'Hiring manager. Be yourself.',
-    'Last one. Close it out.',
-  ],
-  hired: ['OFFER LETTER!', 'We did it. We are hired.', 'Negotiate. Always negotiate.'],
-} as const satisfies Record<string, readonly string[]>;
+const LINES = bank.lines;
 
 export interface Bark {
   text: string;
@@ -70,6 +41,8 @@ export function barkFor(event: SimEvent, tokenId: number | undefined, pick: numb
       return { text: choose(LINES.pickup), urgent: false };
     case 'reinforcements':
       return { text: choose(LINES.reinforcements), urgent: true };
+    case 'hit':
+      return null;
     case 'ko':
       return event.by === tokenId ? { text: choose(LINES.ko), urgent: false } : null;
     case 'ghosted':

@@ -5,15 +5,18 @@ import type { InputFrame } from '../sim/input';
 import {
   createTunnel,
   CRASH_TICKS,
+  currentSpeed,
   LANES,
   stepTunnel,
   TUNNEL_1,
   type HazardDef,
   type TunnelWorld,
 } from '../sim/tunnel';
+import { sharedAudio } from './audio';
 import { DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
+import { sfxForTunnel, tunnelTempo } from './music';
 import {
   BARK_MIN_TICKS,
   BARK_TICKS,
@@ -160,6 +163,7 @@ export class TunnelScene extends Phaser.Scene {
     this.endedTicks = 0;
     this.lastHp = this.world.matt.hp;
     this.barkTicks = 0;
+    sharedAudio().play('tunnel');
     this.showBanner('THE TAKE-HOME TUNNEL\n\njump the hurdles\nsteer round the walls', INTRO_TICKS);
   }
 
@@ -178,8 +182,16 @@ export class TunnelScene extends Phaser.Scene {
     }
     stepTunnel(this.world, frame);
     this.react();
+    this.playSounds();
     if (this.world.matt.hp < this.lastHp) this.touch.buzz(HURT_BUZZ_MS);
     this.lastHp = this.world.matt.hp;
+  }
+
+  /** Effects for this tick's events; the music keeps pace with the scroll. */
+  private playSounds(): void {
+    const audio = sharedAudio();
+    audio.setTempo(tunnelTempo(currentSpeed(this.world)));
+    for (const event of this.world.events) audio.sfx(sfxForTunnel(event));
   }
 
   /** Turn this tick's events into TOKEN's bubble and the centre banner. */

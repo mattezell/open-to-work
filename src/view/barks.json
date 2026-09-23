@@ -1,0 +1,186 @@
+{
+  "model": "qwen3.8-27b",
+  "generated": "2026-09-22",
+  "lines": {
+    "wild": [
+      "GOING WILD.",
+      "No plan. Only vibes.",
+      "Unleashing chaos mode.",
+      "ATS can't stop us now.",
+      "404: restraint not found.",
+      "Git push --force. Everything.",
+      "My cover letter just exploded.",
+      "No rollback. No mercy."
+    ],
+    "focus": [
+      "Target locked.",
+      "Focusing. Like a cover letter.",
+      "On your mark.",
+      "Locking in. No ghosting.",
+      "Focusing. 99% confidence.",
+      "On it. Focusing like a resume.",
+      "Zooming in. Please be patient.",
+      "Focusing. It's not a bug."
+    ],
+    "guard": [
+      "I got you.",
+      "Shields up.",
+      "Nobody touches the candidate.",
+      "I'm your firewall now.",
+      "Blocking... like a recruiter.",
+      "I'll absorb the damage.",
+      "Stand behind me, human.",
+      "I'm not a take-home test."
+    ],
+    "intercept": [
+      "Not today, ATS.",
+      "Blocked. Like my resume.",
+      "Took that one for you.",
+      "I was already deployed.",
+      "That's a feature, not a bug.",
+      "I've had worse take-homes.",
+      "Buffering... never mind.",
+      "I'll log this as a ticket."
+    ],
+    "whiff": [
+      "...where did it go?",
+      "Hallucinated that one.",
+      "Confidently wrong.",
+      "404: enemy not found",
+      "Swung at a ghost.",
+      "That was a dream.",
+      "My training data lied.",
+      "False positive."
+    ],
+    "reboot": [
+      "Rebooting...",
+      "Turning myself off and on.",
+      "brb, updating",
+      "Caching... please wait.",
+      "Reindexing my confidence.",
+      "Flashing my brain again.",
+      "Restarting my will to try.",
+      "Re-applying to the job."
+    ],
+    "rebooted": [
+      "Back online.",
+      "Updates installed.",
+      "Where were we?",
+      "Rebooting... done. Let's go.",
+      "Cache cleared. Brain back.",
+      "That took forever. Let's go.",
+      "System restored. Resume?",
+      "I had a vision. It was a 404."
+    ],
+    "pickup": [
+      "Caffeinated. Allegedly.",
+      "Hydrate. Caffeinate. Iterate.",
+      "Free coffee. Great culture.",
+      "Now the real work begins.",
+      "Fuel for the take-home.",
+      "This is a benefit, not a bribe.",
+      "Recruiter-proof. Probably.",
+      "Coffee: 1, ATS filter: 0."
+    ],
+    "reinforcements": [
+      "Scope creep incoming!",
+      "They added requirements.",
+      "Now it is a two-week project.",
+      "They said 'just one more thing'",
+      "New ticket just hit the board.",
+      "They want it by Friday now.",
+      "Another interview loop begins.",
+      "That's not in the spec!"
+    ],
+    "ko": [
+      "Rejected.",
+      "Per my last email.",
+      "Moving forward with other candidates.",
+      "Unsubscribed.",
+      "Your offer is revoked.",
+      "You're out of scope.",
+      "Candidate not found.",
+      "We went with your backup."
+    ],
+    "shield": [
+      "Airbag deployed.",
+      "Absorbed. Barely.",
+      "That one was on me.",
+      "Crash logged. Moving on.",
+      "That was my buffer, not yours.",
+      "Take-home test: passed. Barely.",
+      "I handled the exception.",
+      "My resume says I can do this."
+    ],
+    "crash": [
+      "Ouch. Noted.",
+      "That will be in the feedback.",
+      "Walk it off. Ride it off.",
+      "I'll add that to the resume.",
+      "Your tests are judging you.",
+      "Merge conflict? We do that.",
+      "That's a feature, I promise.",
+      "Recruiters love a comeback."
+    ],
+    "retry": [
+      "Rolling back to last save.",
+      "git checkout checkpoint",
+      "From the top. Again.",
+      "Your resume hit the ATS wall.",
+      "Recalculating motivation...",
+      "Take-home test: failed. Again.",
+      "Stack overflow detected.",
+      "Your PR was rejected. Again."
+    ],
+    "checkpoint": [
+      "Checkpoint. Progress saved.",
+      "Committed. Pushed.",
+      "Autosaved. You are welcome.",
+      "PR approved. Zero comments.",
+      "Merged. The build passes.",
+      "Another loop survived.",
+      "Take-home: 40% done.",
+      "Status: Still here."
+    ],
+    "ghosted": [
+      "And they are gone.",
+      "Left you on read.",
+      "No reply. Classic.",
+      "Read. No reply. Repeat.",
+      "Your reply rate: 0%.",
+      "Disconnected. Like your WiFi.",
+      "They pivoted. To silence.",
+      "That's a hard bounce."
+    ],
+    "panel": [
+      "Next interviewer.",
+      "Another round? Sure.",
+      "Same questions, new face.",
+      "Next up: the polite staller.",
+      "They all ask about leadership.",
+      "One more before the offer?",
+      "They rehearsed. I can tell.",
+      "New face, same clipboard."
+    ],
+    "finalRound": [
+      "Final round. You got this.",
+      "Hiring manager. Be yourself.",
+      "Last one. Close it out.",
+      "Offer letter incoming!",
+      "No take-home test left.",
+      "ATS filter: defeated.",
+      "That's the whole thing.",
+      "Negotiate the salary."
+    ],
+    "hired": [
+      "OFFER LETTER!",
+      "We did it. We are hired.",
+      "Negotiate. Always negotiate.",
+      "Sign it before it expires.",
+      "I told you I could parse this.",
+      "No more take-home tests. I think.",
+      "My confidence is now at 100%.",
+      "We beat the ATS AND the human."
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCREEN_H, SCREEN_W } from '../sim/constants';
 import { mergeInputs, type HeldKeys } from './controls';
+import { sharedAudio } from './audio';
 import { sharedDevices } from './devices';
 import {
   HUD_TEXT,
@@ -47,6 +48,7 @@ export class EndingScene extends Phaser.Scene {
     ({ keys: this.keys, touch: this.touch } = sharedDevices(this.game));
     this.touch.setOrderLabel('TOKEN: HIRED');
     this.cameras.main.fadeIn(FADE_MS);
+    sharedAudio().play('ending');
     this.add.image(SCREEN_W / 2, 0, 'ending-hired').setOrigin(0.5, 0);
     const caption = this.add
       .rectangle(0, SCREEN_H - CAPTION_H, SCREEN_W, CAPTION_H, INK, 0.75)

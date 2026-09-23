@@ -14,9 +14,11 @@ import {
   type World,
 } from '../sim/world';
 import { poseFor, sheetKey, SHEETS } from './animation';
+import { sharedAudio } from './audio';
 import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
+import { sfxForSim } from './music';
 import {
   BARK_MIN_TICKS,
   BARK_TICKS,
@@ -194,6 +196,7 @@ export class GameScene extends Phaser.Scene {
     step(this.world, [frame]);
     this.showBarks();
     this.showStageEvents();
+    this.playSounds();
     const hp = players(this.world)[0]?.hp ?? 0;
     if (hp < this.lastHp) this.touch.buzz(HURT_BUZZ_MS);
     this.lastHp = hp;
@@ -226,6 +229,7 @@ export class GameScene extends Phaser.Scene {
     this.bannerTicks = 0;
     this.offer?.destroy();
     this.offer = undefined;
+    sharedAudio().play(this.stage);
     if (this.stage === 'tower') {
       this.showBanner('THE INTERVIEW TOWER\n\nthree rounds. one offer.', INTRO_TICKS);
     }
@@ -264,6 +268,11 @@ export class GameScene extends Phaser.Scene {
       duration: OFFER_FLIGHT_MS,
       ease: 'Quad.easeOut',
     });
+  }
+
+  private playSounds(): void {
+    const audio = sharedAudio();
+    for (const event of this.world.events) audio.sfx(sfxForSim(event));
   }
 
   /** Turn this tick's sim events into TOKEN's speech bubble. */

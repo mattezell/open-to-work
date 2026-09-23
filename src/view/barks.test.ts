@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../sim/world';
 import type { TunnelEvent } from '../sim/tunnel';
+import bank from './barks.json';
 import { barkFor, DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 
 const TOKEN_ID = 2;
@@ -100,5 +101,38 @@ describe('tunnelBarkFor', () => {
   it('keeps quiet about clean passes and the finish line', () => {
     expect(tunnelBarkFor({ type: 'cleared-hazard', kind: 'wall' }, 0)).toBeNull();
     expect(tunnelBarkFor({ type: 'cleared', retries: 0 }, 0)).toBeNull();
+  });
+});
+
+describe('the generated bark bank', () => {
+  const lines = Object.entries(bank.lines);
+
+  it('gives every moment several lines to rotate through', () => {
+    for (const [, variants] of lines) expect(variants.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps every line short, plain ASCII, and free of repeats', () => {
+    for (const [, variants] of lines) {
+      for (const line of variants) {
+        expect(line.length).toBeLessThanOrEqual(MAX_BARK_CHARS);
+        expect(line).toMatch(/^[\x20-\x7e]+$/);
+      }
+      expect(new Set(variants).size).toBe(variants.length);
+    }
+  });
+
+  it('never names a real company', () => {
+    for (const [, variants] of lines)
+      for (const line of variants) expect(line).not.toMatch(/\bworkday\b/i);
+  });
+
+  it('reaches every generated line as the pick rotates', () => {
+    const seen = new Set(
+      Array.from(
+        { length: bank.lines.whiff.length },
+        (_, pick) => barkFor({ type: 'whiff' }, TOKEN_ID, pick)?.text,
+      ),
+    );
+    expect([...seen].sort()).toEqual([...bank.lines.whiff].sort());
   });
 });

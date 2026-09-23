@@ -33,7 +33,8 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   Unpaid Take Home, coffee, Stage 1 wave layout
 - [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, ad0a5ae)
 - [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule, 53b4f84)
-- [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
+- [x] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b (Tue night,
+  ahead of schedule)
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
@@ -66,8 +67,13 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   `src/sim/tunnel.ts`, bands pinned in `tunnel-bot.test.ts`).
 - The hover-board came out red and blue, not the grey and orange in
   `assets.yaml`. It reads fine; regenerate if it bothers anyone.
-- Barks are placeholder lines in `src/view/barks.ts`; M5 replaces them with
-  the generated bank.
+- The mix has only been checked by instruments (Playwright counts voices,
+  every effect fires without an error), not by ear. Levels to adjust after
+  Matt's first listen: `MUSIC_GAIN`, `SFX_GAIN` and the per-voice levels in
+  `src/view/audio.ts`. The street and tunnel tracks have no lead line yet.
+- The bark bank's 90 generated lines were reviewed once (14 vetoed). Matt's
+  read decides the rest: add to `veto:` in `tools/barks.yaml` and run
+  `genbarks.py --reselect`.
 - Each sheet gets its own 15-colour snap, so a character's colours drift a
   little between sheets (the ATS walk reads teal against the navy idle).
   Snap all of a character's sheets to one shared palette line.

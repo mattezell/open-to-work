@@ -191,6 +191,31 @@
         opacity: 1;
         filter: brightness(1.3);
       }
+      /* Sound on or off: touch players have no M key. Top centre, clear of the HUD corners. */
+      .sound-pill {
+        display: none;
+      }
+      html.touch .sound-pill {
+        display: block;
+        position: fixed;
+        z-index: 13;
+        top: calc(var(--safe-top) + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 2px solid rgb(16 16 16 / 70%);
+        background: #f0f0e0;
+        color: #101010;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 10px;
+        opacity: 0.6;
+        touch-action: none;
+      }
+      html.touch .sound-pill.off {
+        background: #808080;
+      }
     </style>
   </head>
   <body>
