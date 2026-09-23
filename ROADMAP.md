@@ -65,7 +65,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     sprite fetches never cost an invocation (1ecf000)
 - [x] Link preview card (Open Graph and Twitter tags, 1200x630 image) and
   favicons, built from the ending art by `tools/gencard.py` (Matt's ask,
-  2026-09-23)
+  2026-09-23), live and checked against five crawler user agents (78ffb96)
 - [ ] CV and contact links on the title screen and in help, so they are not
   gated behind beating the game (Matt's ask, 2026-09-23). Proposal: a
   `START  CV  CONTACT` row on the title with START the default, reusing the
