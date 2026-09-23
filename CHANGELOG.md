@@ -7,6 +7,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- A link preview: pasting https://opentowork.immatt.com into Slack,
+  Discord, X, LinkedIn or iMessage now shows a card with Matt and TOKEN on
+  the roof and the title, plus a description. The site also has a
+  favicon and a home-screen icon: TOKEN grinning.
 - Live on the web at https://opentowork.immatt.com (Cloudflare Workers
   static assets), with https://otw.immatt.com as a short alias that
   redirects there.

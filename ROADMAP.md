@@ -63,6 +63,14 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     2026-09-23 (Matt chose it, with otw.immatt.com redirecting to it), static assets
     Worker plus a separate script-only redirect Worker for the alias so
     sprite fetches never cost an invocation (1ecf000)
+- [x] Link preview card (Open Graph and Twitter tags, 1200x630 image) and
+  favicons, built from the ending art by `tools/gencard.py` (Matt's ask,
+  2026-09-23)
+- [ ] CV and contact links on the title screen and in help, so they are not
+  gated behind beating the game (Matt's ask, 2026-09-23). Proposal: a
+  `START  CV  CONTACT` row on the title with START the default, reusing the
+  HIRED card's menu (`src/view/hire.ts`); a plain text line with the URLs
+  on the help pages
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 

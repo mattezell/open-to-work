@@ -57,7 +57,26 @@ npx wrangler deploy                # the game
 npx wrangler deploy -c wrangler.redirect.jsonc   # the otw alias (only when it changes)
 curl -s https://opentowork.immatt.com/ | grep -o '<title>[^<]*'
 curl -sI https://otw.immatt.com/?stage=2 | grep -i '^location'
+curl -s https://opentowork.immatt.com/ | grep -o 'og:image" content="[^"]*'
 ```
+
+### Link preview and icons
+
+Pasting the link into Slack, Discord, X, LinkedIn or iMessage unfurls a
+1200x630 card: the rooftop ending at 4x with the logo and the pitch in the
+pixel font. The tab icon and the home-screen icon are TOKEN's face from
+the same art. The tags are in `index.html` (absolute URLs on the canonical
+host, checked by `src/page-head.test.ts`); the images are built, not
+generated, by one deterministic script:
+
+```bash
+python3 tools/gencard.py   # writes public/og.png, favicon.png, favicon.ico, apple-touch-icon.png
+```
+
+Rerun it after changing `public/sprites/ending/hired.png` or the pixel
+font; `tools/test_gencard.py` fails until the committed images match.
+Some unfurlers cache the image by its URL, so after changing `og.png`
+give it a new name (and update the `og:image` tag) rather than wait them out.
 
 Add `?stage=1` to the URL to skip the title and start on the street,
 `?stage=2` to start in the tunnel, or `?stage=3` to start in the tower
@@ -192,7 +211,8 @@ the tower at full health, keeping the score Matt walked in with.
   never changes game state except by passing input to `step`.
 - `tools/`: the codex imagegen art pipeline (`assets.yaml` is the art
   direction; `public/sprites/` holds its output) and the bark generator
-  (`genbarks.py`, `barks.yaml`).
+  (`genbarks.py`, `barks.yaml`), and `gencard.py`, which builds the link
+  preview card and the favicons from the ending art.
 
 ### Regenerating a backdrop layer
 

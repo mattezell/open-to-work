@@ -291,6 +291,13 @@ is an enemy's name card (gold name, white pitch).
   the left) and keep their full width; cutouts (`cutout: true`, rendered on
   flat #00FF00 and keyed) are trimmed instead. Each layer is snapped to 16
   Genesis colours (7 to 13 survive) at its own height.
+- The link preview card and the favicons are composed, not generated
+  (`tools/gencard.py`): the HIRED ending art cropped to 300x158 game
+  pixels with the logo and pitch drawn in the game's own pixel font (its
+  glyph table parsed from `src/view/pixel-font.ts`), scaled 4x and trimmed
+  to 1200x630. The icons are the one front view of TOKEN in the game, a
+  45-pixel square of that art: 4x for the 180x180 home-screen icon, filtered
+  down to 32 and 16 for the tab, where whole pixels are too coarse to read.
 
 ## Audio
 

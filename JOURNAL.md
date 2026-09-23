@@ -4,6 +4,42 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 07:46 CDT: link preview card and favicons
+
+**What.** Matt asked whether pasting the link shows a preview image, and
+whether there was a favicon: neither existed. Now `index.html` carries
+Open Graph and Twitter tags (absolute URLs on the canonical host, a
+description, a 1200x630 image with its size and alt text) plus a canonical
+link, and `public/` has `og.png`, `favicon.png`, `favicon.ico` and
+`apple-touch-icon.png`. "Use your judgement on the image."
+
+**Decisions.**
+- The card is composed from the existing HIRED ending art, not generated:
+  it is already the best image in the game (Matt, TOKEN, the offer letter,
+  the sunset), and a composed card is deterministic and costs no image
+  run. Crop to 300x158 game pixels, logo at 2x and the pitch in the game's
+  own pixel font right-aligned in the sky, then 4x nearest-neighbour, so
+  the card is the game's pixels rather than a smoothed photo of them.
+- The Python builder reads the glyph table out of `pixel-font.ts` with a
+  regex instead of keeping a copy, so the card cannot drift from the game's
+  font. The test checks all 95 printable characters parse.
+- Favicon: first cut was TOKEN's head from his idle sheet. It is a side
+  view, so at tab size it is a cream blob; switched to the one front view
+  of him in the game (the ending art), a 45-pixel square so the touch icon
+  is exactly 4x (180). Tab sizes are LANCZOS-filtered, because whole pixels
+  at 16 and 32 chop the face apart.
+- `test_committed_images_match_the_builder` compares pixels, not bytes, so
+  a Pillow upgrade that re-encodes PNGs does not fail it, but a changed
+  ending image or font does until the images are rebuilt.
+
+**Surprises.** Pillow silently drops ICO sizes larger than the source
+image (asked for 16, 32 and 48 from a 45-pixel face and got 16 and 32);
+the size list now says 16 and 32 explicitly and the test pins it.
+
+**Also.** Matt, mid-task: expose CV and contact on the title and in help
+so they are not gated behind beating the game. Agreed and proposed a
+design (ROADMAP); it follows as the next item after this deploy.
+
 ## 2026-09-23 06:37 CDT: M6 part 2, live on Cloudflare
 
 **What.** OPEN TO WORK is live at https://opentowork.immatt.com, with
