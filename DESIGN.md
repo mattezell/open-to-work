@@ -207,6 +207,25 @@ three enemies.
   by replaying the input log through the sim server-side, like Momentum's
   anti-cheat. The leaderboard is a Friday stretch goal, not a blocker.
 
+## Front end: title, attract loop, name cards
+
+- `TitleScene` is the cabinet front: logo, heroes on the street, start hint,
+  credit. `src/view/attract.ts` (Phaser-free, tested) says what shows at
+  each tick: title for 10 s, then each `ROSTER` entry for 1.5 s, then the
+  demo. The demo is the ordinary `GameScene` with `demo: true`: seed 7, the
+  `SHARP` bot's frames instead of the player's, no music, no sound, no
+  buzz, and a blinking PRESS START in place of the round banner. It leaves
+  for the title when the run ends or after 30 s. A test runs that exact
+  demo headless and requires Matt to survive it and meet the street crew.
+- Name cards (`src/view/name-cards.ts`, tested) introduce each kind of
+  street and tunnel enemy the first time it is fully on screen, queued when
+  several arrive together, dropped early if the enemy goes down. The seen
+  set lives at module level in the game scene, so it lasts for the page
+  visit and survives retries; the demo uses its own set. The Panel's kinds
+  are excluded because its round banners already name each panelist.
+- Scenery shared by the title and the street (`drawStreet`, `drawTower`,
+  sprite loading, the tap-anywhere listener) lives in `src/view/scenery.ts`.
+
 ## Text
 
 Every word on screen is the game's own pixel font, not browser text:
@@ -219,7 +238,8 @@ draws the table into a canvas texture per colour on first use (baked, not
 tinted, because the canvas renderer cannot tint bitmap text), with a
 one-pixel ink shadow in each cell's spare column and row, and registers it
 as a Phaser RetroFont. `PixelBanner` sets a card's first line at 2x over the
-body; `PixelBubble` is TOKEN's speech bubble on an ink plate.
+body; `PixelBubble` is TOKEN's speech bubble on an ink plate; `PixelCard`
+is an enemy's name card (gold name, white pitch).
 
 ## Asset pipeline
 

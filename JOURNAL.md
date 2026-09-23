@@ -4,6 +4,44 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 06:25 CDT: playtest item 4, title, attract mode, name cards
+
+**What.** The game now boots to a title screen (logo, Matt and TOKEN idling
+on the street, start hint, credit). Idle, it runs the arcade loop: 10 s of
+title, then "NOW HIRING", the eight enemies one at a time for 1.5 s each,
+then the bot plays the street for 30 s with a blinking PRESS START, then
+back to the title (about 22 s idle before the demo). Enter, Space, J or a
+tap starts a run from any of them. In a run, each street and tunnel enemy
+kind gets a Final Fight name card over its head the first time it is fully
+on screen. `?stage=1` skips the title. 11 new tests (231 total), including
+one that runs the exact demo headless and requires Matt to survive it.
+
+**Assumptions made without asking** (standing instruction: go forward):
+- Name cards are once per kind per page visit, not per run: a retry after
+  a loss should not stop the fight to introduce the ATS bot again.
+- The demo is silent (no music, sound or vibration) and always seed 7: an
+  attract demo that blares on a phone left on a table is hostile, and a
+  fixed seed means the demo is the one the test watched.
+- The Panel gets no cards; its round banners already name each panelist,
+  and a card on top would stack two labels on one enemy.
+- The title carries a credit line, "2026 MATT EZELL + CLAUDE"; the HIRED
+  screen (item 5) gets the full "built in N days" credit.
+- Only buttons start a run, not the stick: bumping the stick on a phone
+  should not throw you out of the demo.
+
+**Surprises.**
+- `BitmapText.width` already includes the scale. Centring the 3x logo with
+  `width * scale` put it off the left edge.
+- The demo reuses `GameScene` with a `demo` flag rather than a separate
+  scene: the only differences are the frame source (bot instead of
+  player), the seed, sound, and the banner. The draw code for the street
+  moved to `src/view/scenery.ts` so the title can stand on the same street.
+
+**Follow-ups.** The card clamps to the screen edge, so an enemy entering
+right next to Matt can put its card over Matt's head for a moment
+(visible in the demo). Acceptable for now; revisit if it reads badly in
+Matt's next playtest.
+
 ## 2026-09-23 05:58 CDT: playtest item 3, pause and help
 
 **What.** Esc or P pauses; H or ? opens the same screen on the controls

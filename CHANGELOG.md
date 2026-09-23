@@ -7,6 +7,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- Title screen: the logo, Matt and TOKEN on the street, the start hint for
+  keyboard or touch, and a credit line. Enter, Space, J or a tap starts.
+- Arcade attract mode: after about 22 s idle the title shows the enemy
+  roster one at a time, then the bot plays a silent 30 s demo of the street
+  (fixed seed, blinking PRESS START), then returns to the title. Any start
+  button during the demo starts a real run.
+- Final Fight name cards: the first time each street and tunnel enemy is
+  fully on screen, its name and pitch hang over it. Once per kind per page
+  visit; the Panel keeps its round banners.
+- A one-line pitch for every enemy in the roster (help pages and cards).
+- `?stage=1` boots straight into the street, skipping the title.
 - Design document and project docs.
 - Deterministic simulation core: belt movement, three-hit chain, jump kick,
   special, hit-stop, knockdown and getup, wave camera lock, ATS enemy AI.

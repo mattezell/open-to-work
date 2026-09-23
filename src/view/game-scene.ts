@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { carryFromStreet, type Carry } from '../sim/campaign';
-import { DEPTH, SCREEN_H, SCREEN_W } from '../sim/constants';
+import { SCREEN_H, SCREEN_W } from '../sim/constants';
+import { createBot, SHARP } from '../sim/bot';
 import { KINDS, PROJECTILES, type FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
 import { hotSeat } from '../sim/panel';
@@ -14,14 +15,17 @@ import {
   type Projectile,
   type World,
 } from '../sim/world';
-import { poseFor, sheetKey, SHEETS } from './animation';
+import { poseFor, sheetKey } from './animation';
+import { DEMO_SEED, DEMO_TICKS, startPressed, TITLE_SCENE } from './attract';
 import { sharedAudio } from './audio';
 import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { sfxForSim } from './music';
+import { NameCards } from './name-cards';
+import { drawStreet, drawTower, loadSprites, onAnyTap } from './scenery';
 import { bindPause } from './pause-scene';
-import { PixelBanner, PixelBubble, pixelText } from './pixel-text';
+import { PixelBanner, PixelBubble, PixelCard, pixelText } from './pixel-text';
 import {
   BARK_MIN_TICKS,
   BARK_TICKS,
@@ -64,7 +68,6 @@ const BOSS_BAR_Y = SCREEN_H - 11;
 const BOSS_NAME_GAP = 6;
 /** Coffee bobs gently so it reads as something to grab. */
 const PICKUP_BOB_TICKS = 40;
-const PROPS = ['card', 'coffee', 'form', 'notes', 'folder', 'offer'] as const;
 const BANNER_TICKS = 120;
 const INTRO_TICKS = 150;
 /** Waiting panelists sit in shadow behind their desks. */
@@ -75,6 +78,19 @@ const HOT_SEAT_ARROW_RISE = 84;
 const OFFER_FLIGHT_MS = 800;
 const OFFER_RISE = 100;
 const MATT_FALLBACK: Carry = { hp: 100, score: 0, directive: 'wild' };
+/** A name card sits this far over its enemy's head, and never higher than just under the HUD. */
+const CARD_RISE = 4;
+const CARD_TOP = 28;
+
+/** Enemies already named this visit. The demo keeps its own set, so it never spends a card. */
+const introduced = new Set<FighterKind>();
+
+export interface GameData {
+  carry?: Carry;
+  stage?: BrawlStage;
+  /** The attract-mode demo: the bot plays the street until someone presses start. */
+  demo?: boolean;
+}
 
 /** Where a fighter's feet land on screen, in world pixels (the camera handles scroll). */
 export function feetPosition(f: Fighter): { x: number; y: number } {
@@ -110,31 +126,26 @@ export class GameScene extends Phaser.Scene {
   /** What Matt walked into this stage with, so a tower retry keeps his score. */
   private arrival: Carry | undefined;
   private offer: Phaser.GameObjects.Image | undefined;
+  private demo = false;
+  private demoBot: ReturnType<typeof createBot> | undefined;
+  /** Set once the scene has asked to change, so the rest of the frame does not act again. */
+  private leaving = false;
+  private cards!: NameCards;
+  private card!: PixelCard;
 
   constructor() {
     super('game');
   }
 
-  init(data: { carry?: Carry; stage?: BrawlStage }): void {
-    this.stage = data.stage ?? 'street';
+  init(data: GameData): void {
+    this.demo = data.demo ?? false;
+    this.stage = this.demo ? 'street' : (data.stage ?? 'street');
     this.carry = data.carry;
     this.arrival = data.carry;
   }
 
   preload(): void {
-    this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => {
-      console.warn(`[otw] missing sprite sheet ${file.key}; drawing a placeholder box`);
-      this.missingSheets.add(file.key);
-    });
-    for (const prop of PROPS) this.load.image(`prop-${prop}`, `sprites/props/${prop}.png`);
-    for (const kind of Object.keys(SHEETS) as FighterKind[]) {
-      for (const [sheet, def] of Object.entries(SHEETS[kind])) {
-        this.load.spritesheet(sheetKey(kind, sheet), `sprites/${kind}/${sheet}.png`, {
-          frameWidth: def.frameWidth,
-          frameHeight: def.frameHeight,
-        });
-      }
-    }
+    loadSprites(this, (key) => this.missingSheets.add(key));
   }
 
   create(): void {
@@ -148,8 +159,9 @@ export class GameScene extends Phaser.Scene {
     ]) {
       objects.clear();
     }
-    if (this.stage === 'tower') this.drawTower();
-    else this.drawStreet();
+    const length = BRAWL_STAGES[this.stage].length + SCREEN_W;
+    if (this.stage === 'tower') drawTower(this, length);
+    else drawStreet(this, length);
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
     this.hotSeatMarker = this.add.graphics().setDepth(999.5);
@@ -163,18 +175,29 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(1001);
     this.bannerText = new PixelBanner(this, SCREEN_W / 2, 80, 1001);
+    this.card = new PixelCard(this, 1000.5);
+    this.leaving = false;
     this.input.keyboard?.on('keydown-ENTER', () => {
-      if (this.world.status !== 'playing') this.advance();
+      if (this.demo) this.startRun();
+      else if (this.world.status !== 'playing') this.advance();
     });
-    bindPause(this, this.touch);
+    if (this.demo) {
+      this.touch.setPauseHandler(() => this.startRun(), 'START');
+      onAnyTap(this, () => this.startRun());
+    } else {
+      bindPause(this, this.touch);
+    }
     this.restart();
   }
 
   update(_time: number, delta: number): void {
     this.accumulator = Math.min(this.accumulator + delta, TICK_MS * MAX_TICKS_PER_FRAME);
-    while (this.accumulator >= TICK_MS) {
+    while (this.accumulator >= TICK_MS && !this.leaving) {
       this.accumulator -= TICK_MS;
-      this.tick(mergeInputs(this.keys.snapshot(), this.touch.snapshot()));
+      const player = mergeInputs(this.keys.snapshot(), this.touch.snapshot());
+      if (!this.demoBot) this.tick(player);
+      else if (startPressed(player)) this.startRun();
+      else this.tick(this.demoBot(this.world));
     }
     this.cameras.main.scrollX = Math.round(this.world.cameraX);
     this.drawFighters();
@@ -184,6 +207,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private tick(frame: InputFrame): void {
+    if (this.demo && (this.world.status !== 'playing' || this.world.tick >= DEMO_TICKS)) {
+      this.leave(TITLE_SCENE);
+      return;
+    }
     if (this.world.status !== 'playing') {
       this.endedTicks++;
       const pressed = frame.attack || frame.jump || frame.special;
@@ -192,11 +219,12 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.bannerTicks > 0) this.bannerTicks--;
     step(this.world, [frame]);
+    this.cards.step(this.world.fighters, this.world.cameraX);
     this.showBarks();
     this.showStageEvents();
     this.playSounds();
     const hp = players(this.world)[0]?.hp ?? 0;
-    if (hp < this.lastHp) this.touch.buzz(HURT_BUZZ_MS);
+    if (hp < this.lastHp && !this.demo) this.touch.buzz(HURT_BUZZ_MS);
     this.lastHp = hp;
   }
 
@@ -218,8 +246,25 @@ export class GameScene extends Phaser.Scene {
     this.restart();
   }
 
+  /** Out of the demo into a real run, from the start of the street. */
+  private startRun(): void {
+    // The button that started the run should not also throw Matt's first punch.
+    this.keys.snapshot();
+    this.touch.snapshot();
+    this.leave('game', { stage: 'street' } satisfies GameData);
+  }
+
+  private leave(key: string, data?: GameData): void {
+    if (this.leaving) return;
+    this.leaving = true;
+    this.scene.start(key, data);
+  }
+
   private restart(): void {
-    this.world = createWorld(BRAWL_STAGES[this.stage], Date.now() >>> 0, { carry: this.carry });
+    const seed = this.demo ? DEMO_SEED : Date.now() >>> 0;
+    this.world = createWorld(BRAWL_STAGES[this.stage], seed, { carry: this.carry });
+    this.demoBot = this.demo ? createBot(SHARP) : undefined;
+    this.cards = new NameCards(this.demo ? new Set() : introduced);
     this.accumulator = 0;
     this.endedTicks = 0;
     this.lastHp = players(this.world)[0]?.hp ?? 0;
@@ -227,7 +272,8 @@ export class GameScene extends Phaser.Scene {
     this.bannerTicks = 0;
     this.offer?.destroy();
     this.offer = undefined;
-    sharedAudio().play(this.stage);
+    // Attract mode is silent, as in the arcade; the music starts with the run.
+    if (!this.demo) sharedAudio().play(this.stage);
     if (this.stage === 'tower') {
       this.showBanner(TOWER_INTRO, INTRO_TICKS);
     }
@@ -269,6 +315,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private playSounds(): void {
+    if (this.demo) return;
     const audio = sharedAudio();
     for (const event of this.world.events) audio.sfx(sfxForSim(event));
   }
@@ -284,61 +331,6 @@ export class GameScene extends Phaser.Scene {
       this.barkText.setText(bark.text);
       this.barkTicks = BARK_TICKS;
     }
-  }
-
-  private drawStreet(): void {
-    const g = this.add.graphics().setDepth(-10);
-    const length = BRAWL_STAGES.street.length + SCREEN_W;
-    g.fillStyle(0x2a2440).fillRect(0, 0, length, STREET_TOP);
-    for (let x = 0; x < length; x += 64) {
-      const height = 60 + ((x * 37) % 50);
-      g.fillStyle(0x3b3358).fillRect(x, STREET_TOP - height, 56, height);
-      g.fillStyle(0xe0c060);
-      for (let wy = STREET_TOP - height + 8; wy < STREET_TOP - 12; wy += 14) {
-        for (let wx = x + 6; wx < x + 50; wx += 12) {
-          if ((wx * 7 + wy * 13) % 5 === 0) g.fillRect(wx, wy, 5, 6);
-        }
-      }
-    }
-    g.fillStyle(0x5a5a66).fillRect(0, STREET_TOP - 6, length, 6);
-    g.fillStyle(0x44444e).fillRect(0, STREET_TOP, length, SCREEN_H - STREET_TOP);
-    g.fillStyle(0x50505c);
-    for (let x = 0; x < length; x += 48) g.fillRect(x, STREET_TOP + DEPTH / 2, 24, 2);
-  }
-
-  /**
-   * The top floor of the tower: a glass wall onto a sunset skyline, broken up
-   * by concrete pillars, over grey office carpet.
-   */
-  private drawTower(): void {
-    const g = this.add.graphics().setDepth(-10);
-    const length = BRAWL_STAGES.tower.length + SCREEN_W;
-    const bands = [0xf0a050, 0xe07850, 0xb05868, 0x6a4a78, 0x3a3660];
-    const bandH = Math.ceil(STREET_TOP / bands.length);
-    bands.forEach((color, i) => {
-      g.fillStyle(color).fillRect(0, STREET_TOP - (i + 1) * bandH, length, bandH);
-    });
-    for (let x = 0; x < length; x += 40) {
-      const height = 24 + ((x * 53) % 40);
-      g.fillStyle(0x28243c).fillRect(x, STREET_TOP - height, 34, height);
-      g.fillStyle(0xf0d080);
-      for (let wy = STREET_TOP - height + 5; wy < STREET_TOP - 6; wy += 8) {
-        if ((x * 3 + wy) % 7 < 3) g.fillRect(x + 5 + ((wy * 5) % 20), wy, 3, 3);
-      }
-    }
-    g.fillStyle(0xffffff, 0.08);
-    for (let x = 0; x < length; x += 96) g.fillTriangle(x, 0, x + 30, 0, x, 60);
-    g.fillStyle(0x505868);
-    for (let x = 0; x < length; x += 96) g.fillRect(x - 2, 0, 4, STREET_TOP);
-    for (let x = 0; x < length; x += 384) {
-      g.fillStyle(0x6a7282).fillRect(x + 188, 0, 20, STREET_TOP);
-      g.fillStyle(0x4a5262).fillRect(x + 204, 0, 4, STREET_TOP);
-    }
-    g.fillStyle(0x3a3e4a).fillRect(0, STREET_TOP - 6, length, 6);
-    g.fillStyle(0x5a6070).fillRect(0, STREET_TOP, length, SCREEN_H - STREET_TOP);
-    g.fillStyle(0x525868);
-    for (let x = 0; x < length; x += 32) g.fillRect(x, STREET_TOP, 1, SCREEN_H - STREET_TOP);
-    for (let z = 14; z < DEPTH; z += 14) g.fillRect(0, STREET_TOP + z, length, 1);
   }
 
   private drawFighters(): void {
@@ -506,6 +498,7 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setText(`MATT  ${String(matt?.score ?? 0).padStart(6, '0')}`);
     this.drawToken();
     this.drawBoss();
+    this.drawCard();
 
     const blink = Math.floor(this.world.tick / 15) % 2 === 0;
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';
@@ -517,8 +510,24 @@ export class GameScene extends Phaser.Scene {
     this.bannerText.setText(banner[this.world.status]);
   }
 
+  /** The newest enemy's name card, over its head and inside the screen. */
+  private drawCard(): void {
+    const card = this.cards.current;
+    const f = card && this.world.fighters.find((fighter) => fighter.id === card.id);
+    this.card.setVisible(Boolean(f));
+    if (!card || !f) return;
+    this.card.setText(card.entry.head, card.entry.tagline);
+    const feet = feetPosition(f);
+    const half = this.card.width / 2 + BARK_MARGIN;
+    this.card.setPosition(
+      Phaser.Math.Clamp(feet.x, this.world.cameraX + half, this.world.cameraX + SCREEN_W - half),
+      Math.max(feet.y - KINDS[f.kind].height - CARD_RISE, CARD_TOP + this.card.height),
+    );
+  }
+
   /** A timed card wins; otherwise the GO prompt, or the nudge to close out the last interviewer. */
   private playingBanner(blink: boolean): string {
+    if (this.demo) return blink ? 'PRESS START' : '';
     if (this.bannerTicks > 0) return this.banner;
     if (this.world.goPrompt > 0) return blink ? 'GO >>' : '';
     return closingTime(this.world) && blink ? 'CLOSE THE DEAL!' : '';

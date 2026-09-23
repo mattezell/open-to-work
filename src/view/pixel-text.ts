@@ -21,6 +21,8 @@ import {
  * sunset as well as the night sky.
  */
 export const TEXT_COLOR = '#f0f0e0';
+/** Headings and names: the gold of a Genesis-era title card. */
+export const HEAD_COLOR = '#f0c040';
 const SHADOW_COLOR = '#101010';
 
 /** The bitmap font key for `color`, drawing and registering it on first use. */
@@ -145,6 +147,57 @@ export class PixelBubble {
     const top = label.y - label.height;
     // Two pixels of plate either side, one above the caps and one under the descenders.
     this.plate.setPosition(left - 2, top - 1).setSize(label.width + 3, label.height + 1);
+    return this;
+  }
+}
+
+/**
+ * A Final Fight name card: the enemy's name in gold over its one-line pitch,
+ * on an ink plate, anchored by its bottom centre just over the enemy's head.
+ */
+export class PixelCard {
+  private readonly plate: Phaser.GameObjects.Rectangle;
+  private readonly name: Phaser.GameObjects.BitmapText;
+  private readonly pitch: Phaser.GameObjects.BitmapText;
+
+  constructor(scene: Phaser.Scene, depth: number) {
+    this.plate = scene.add.rectangle(0, 0, 1, 1, INK, 0.85).setOrigin(0).setDepth(depth);
+    this.name = pixelText(scene, 0, 0, '', HEAD_COLOR).setDepth(depth);
+    this.pitch = pixelText(scene, 0, 0).setDepth(depth);
+  }
+
+  get width(): number {
+    return Math.max(this.name.width, this.pitch.width) + 6;
+  }
+
+  get height(): number {
+    return 2 * CELL_H + 3;
+  }
+
+  setText(name: string, pitch: string): this {
+    this.name.setText(name);
+    this.pitch.setText(pitch);
+    return this;
+  }
+
+  setVisible(visible: boolean): this {
+    for (const part of [this.plate, this.name, this.pitch]) part.setVisible(visible);
+    return this;
+  }
+
+  /**
+   * Place the card with its bottom centre at (`x`, `bottom`). Every line is
+   * set on a whole pixel: text centred on a half pixel smears in the pixel font.
+   */
+  setPosition(x: number, bottom: number): this {
+    const width = this.width;
+    const left = Math.round(x - width / 2);
+    const top = Math.round(bottom - this.height);
+    const centred = (line: Phaser.GameObjects.BitmapText): number =>
+      left + Math.round((width - line.width) / 2);
+    this.plate.setPosition(left, top).setSize(width, this.height);
+    this.name.setPosition(centred(this.name), top + 2);
+    this.pitch.setPosition(centred(this.pitch), top + 2 + CELL_H);
     return this;
   }
 }

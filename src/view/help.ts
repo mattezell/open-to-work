@@ -14,6 +14,8 @@ export interface HelpRow {
   text: string;
   /** Set on the rows that introduce an enemy. */
   kind?: FighterKind;
+  /** An enemy's one-line pitch, for its name card and the title screen's roster. */
+  tagline?: string;
 }
 
 export interface HelpPage {
@@ -124,16 +126,19 @@ const STREET: HelpPage = {
     {
       head: 'ATS BOT',
       kind: 'ats',
+      tagline: 'Filters you out by keyword.',
       text: 'Walks up and shreds your resume. Hit it first: it winds up before it swings.',
     },
     {
       head: 'SPAM RECRUITER',
       kind: 'spam',
+      tagline: 'Has an exciting opportunity.',
       text: 'Keeps its distance and throws business cards along its line. Step off the line or jump.',
     },
     {
       head: name('takehome'),
       kind: 'takehome',
+      tagline: 'Should only take two hours.',
       text: 'The boss. Its slam knocks you down: hit it between slams. Low on hp it calls in scope creep.',
     },
     { head: 'COFFEE', text: 'Heals 30 when Matt is hurt.' },
@@ -164,26 +169,31 @@ const TOWER: HelpPage = {
     {
       head: 'LEETCODE GOLEM',
       kind: 'golem',
+      tagline: 'Invert this binary tree.',
       text: 'Jabs barely chip it. Only the haymaker, the jump kick or the special really hurt.',
     },
     {
       head: 'GHOSTER',
       kind: 'ghoster',
+      tagline: 'Will circle back.',
       text: 'Takes a hit, vanishes and comes back behind you. It flickers just before.',
     },
     {
       head: name('screener'),
       kind: 'screener',
+      tagline: 'Just a quick chat.',
       text: 'One interviewer at a time. Throws forms along its line: step off it.',
     },
     {
       head: name('techlead'),
       kind: 'techlead',
+      tagline: 'Walk me through your code.',
       text: 'Sends a wall of sticky notes across the whole floor: jump it.',
     },
     {
       head: name('manager'),
       kind: 'manager',
+      tagline: "Let's talk numbers.",
       text: 'Delegates fast folders. Close the deal for the offer.',
     },
   ],
@@ -199,9 +209,13 @@ export function helpPages(touch: boolean): readonly HelpPage[] {
   return [controls, ORDERS, STREET, TUNNEL, TOWER];
 }
 
+export type RosterEntry = HelpRow & { kind: FighterKind; tagline: string };
+
 /** Every enemy, in the order the run meets them. */
-export const ROSTER: readonly (HelpRow & { kind: FighterKind })[] = [STREET, TOWER].flatMap(
-  (page) => page.rows.flatMap((row) => (row.kind ? [{ ...row, kind: row.kind }] : [])),
+export const ROSTER: readonly RosterEntry[] = [STREET, TOWER].flatMap((page) =>
+  page.rows.flatMap((row) =>
+    row.kind ? [{ ...row, kind: row.kind, tagline: row.tagline ?? '' }] : [],
+  ),
 );
 
 /** The page `delta` steps on from `index`, wrapping round both ends. */

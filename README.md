@@ -27,9 +27,17 @@ npm run check      # typecheck, lint, format check, vitest, pipeline unit tests
 npm run build      # static build in dist/
 ```
 
-Add `?stage=2` to the URL to start in the tunnel, or `?stage=3` to start in
-the tower (with 60 hp, a typical arrival), without clearing the stages
-before it (`http://127.0.0.1:5180/?stage=3`).
+The game opens on the title screen. Left alone for about 22 seconds it runs
+the arcade attract loop: the title, then the enemy roster one at a time
+("NOW HIRING"), then the bot playing a silent 30 second demo of the street,
+then back to the title. Enter, Space, J (any attack, jump or special
+button), or a tap, starts a run from any of them.
+
+Add `?stage=1` to the URL to skip the title and start on the street,
+`?stage=2` to start in the tunnel, or `?stage=3` to start in the tower
+(with 60 hp, a typical arrival), without clearing the stages before it
+(`http://127.0.0.1:5180/?stage=3`). Browser probes that expect to
+land in the game should use `?stage=1` or press Enter first.
 
 ## Controls
 
@@ -47,6 +55,12 @@ before it (`http://127.0.0.1:5180/?stage=3`).
 
 The game also pauses itself when its window loses focus.
 
+The first time each street and tunnel enemy walks fully on screen, a
+Final Fight name card hangs over it for a couple of seconds: its name and
+its pitch ("ATS BOT / Filters you out by keyword."). Each kind is named once
+per page visit, so a retry does not introduce everyone again. The Panel is
+introduced by its round banners instead.
+
 On phones and tablets an on-screen pad appears: a floating stick (put your
 left thumb down anywhere on the left half) and three Genesis-style buttons,
 A special, B attack, C jump. Tap any button to restart after a stage ends.
@@ -58,7 +72,7 @@ on the next keypress. The cyan pill above the buttons shows TOKEN's current
 order; tap it for the next one. The SOUND pill at the top turns sound on or
 off, and the PAUSE pill beside it (in the left bar in landscape) pauses;
 on the pause screen a tap turns the help page and the pill, now RESUME,
-goes back to the game.
+goes back to the game. On the title screen the pill reads START.
 
 Sound starts at the first key or tap (browsers block audio until then).
 

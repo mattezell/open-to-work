@@ -16,11 +16,10 @@ import {
 } from './help';
 import { INK } from './hud';
 import { TITLE_SCALE } from './pixel-font';
-import { pixelFont, pixelText, TEXT_COLOR } from './pixel-text';
+import { HEAD_COLOR, pixelFont, pixelText, TEXT_COLOR } from './pixel-text';
 import type { TouchPad } from './touch';
 
 export const PAUSE_SCENE = 'pause';
-const HEAD_COLOR = '#f0c040';
 const DIM_COLOR = '#909090';
 const SHADE_ALPHA = 0.92;
 const RESUME_CODES: readonly string[] = [...PAUSE_CODES, 'Enter'];
