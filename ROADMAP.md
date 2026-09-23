@@ -29,7 +29,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] Touch controls (added Tue, not in the original plan): the audience
   for this sees it on a phone
 - [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, ce03da4)
-- [x] Stage 1 complete (Tue night, ahead of M4): Spam Recruiter, The
+- [x] Stage 1 complete (Tue night, ahead of M4, 4b35385): Spam Recruiter, The
   Unpaid Take Home, coffee, Stage 1 wave layout
 - [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
