@@ -18,6 +18,7 @@ import { DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { sfxForTunnel, tunnelTempo } from './music';
+import { bindPause } from './pause-scene';
 import { PixelBanner, PixelBubble, pixelFont, pixelText } from './pixel-text';
 import {
   BARK_MIN_TICKS,
@@ -144,6 +145,7 @@ export class TunnelScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.world.status === 'cleared') this.advance();
     });
+    bindPause(this, this.touch);
     this.start();
   }
 

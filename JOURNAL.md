@@ -4,6 +4,49 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 05:58 CDT: playtest item 3, pause and help
+
+**What.** Esc or P pauses; H or ? opens the same screen on the controls
+page. `PauseScene` is launched over the stage, which is `scene.pause`d, so
+the sim and the synth both stop. Five pages (controls, orders, street,
+tunnel, tower), turned with left and right; Esc, P or Enter resumes. The
+copy and its layout live in `src/view/help.ts`, Phaser-free, with 11 tests:
+every bound key named on the controls page (built from `KEY_BINDINGS`),
+every order by its HUD name, every enemy kind exactly once in `ROSTER`,
+every line inside the screen and between the tabs and the footer, every
+character in the pixel font. Touch gets a PAUSE pill that turns into
+RESUME; a tap anywhere turns the page.
+
+**Why these choices.**
+- A scene rather than a flag in each stage scene: Phaser already knows how
+  to freeze a scene (no update, no input), both stages get it with one
+  `bindPause` call, and the title screen in item 4 can show the same pages.
+- Pause on window blur: in a brawler the enemies keep swinging while you
+  are in another window. Blur only, not every visibility change: Phaser
+  already stops the loop on a hidden tab.
+- Resume drops the keys tapped while paused. Without it the arrow that
+  turned the last page reached the sim as one tick of walking (HeldKeys
+  keeps a tap for one snapshot so quick taps are never lost).
+- Slash, Escape, P and H are now claimed from the browser like the game
+  keys: `/` opens Firefox's quick find.
+
+**Surprises.**
+- The first touch screenshot had the PAUSE and SOUND pills sitting on the
+  PAUSED title in portrait. The title and tabs moved down 14 px (the tests
+  caught that the tower page still fits, with 3 px to spare), and in
+  landscape the pause pill moved into the left side bar.
+- DESIGN's controls table still described the pre-build plan (grab and
+  throw, 1/2/3 for orders). Corrected to what shipped.
+
+**Assumptions.** Pause opens on the last page read; help always opens on
+the controls. The ending scene has no pause (nothing is at stake there).
+
+**Verified.** Playwright on the dev server (`t10.cjs`): Esc pauses and the
+sim tick stops, pages turn, Esc resumes with Matt not moved by the page
+keys, ? and H open help, P resumes, a window blur pauses, the tunnel pauses
+and resumes, the touch pill pauses and resumes in landscape and portrait.
+No console errors. `npm run check`: 220 TS tests, 20 tools tests.
+
 ## 2026-09-23 05:50 CDT: playtest item 2, a pixel font
 
 **What.** Every `this.add.text` is now bitmap text in a font drawn for the

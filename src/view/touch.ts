@@ -29,6 +29,8 @@ export class TouchPad {
   private readonly knob: HTMLElement;
   private readonly buttons = new Map<ButtonAction, HTMLElement>();
   private readonly orderPill: HTMLElement;
+  private readonly pausePill: HTMLElement;
+  private onPause: () => void = () => undefined;
   private isActive = false;
   private askedFullscreen = false;
 
@@ -54,7 +56,14 @@ export class TouchPad {
     this.buttons.set('order', this.orderPill);
     this.root.append(this.orderPill);
     this.bindStick(zone);
-    mount.append(this.root);
+    // Beside the SOUND pill rather than on the pad, so it is out of reach of a thumb mid-fight.
+    this.pausePill = element('div', 'pause-pill', 'PAUSE');
+    this.pausePill.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onPause();
+    });
+    mount.append(this.root, this.pausePill);
 
     window.addEventListener(
       'pointerdown',
@@ -84,6 +93,12 @@ export class TouchPad {
   /** The order pill names TOKEN's current order; tapping it gives the next one. */
   setOrderLabel(text: string): void {
     if (this.orderPill.textContent !== text) this.orderPill.textContent = text;
+  }
+
+  /** What the PAUSE pill does: pause from a stage, resume from the pause screen. */
+  setPauseHandler(handler: () => void, label: string): void {
+    this.onPause = handler;
+    this.pausePill.textContent = label;
   }
 
   /** A short buzz on Android. iOS Safari has no Vibration API, so there it does nothing. */

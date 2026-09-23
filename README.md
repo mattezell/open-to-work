@@ -41,7 +41,11 @@ before it (`http://127.0.0.1:5180/?stage=3`).
 | Special (spinning clothesline, costs health, invulnerable) | L or C |
 | Give TOKEN its next order (Go wild, Focus, Guard) | Q or Tab |
 | Restart after the stage ends | Enter |
+| Pause (left and right turn the help pages; Esc, P or Enter resumes) | Esc or P |
+| Help: the controls, TOKEN's orders and every enemy | H or ? |
 | Sound on or off (remembered) | M |
+
+The game also pauses itself when its window loses focus.
 
 On phones and tablets an on-screen pad appears: a floating stick (put your
 left thumb down anywhere on the left half) and three Genesis-style buttons,
@@ -52,7 +56,9 @@ lock; iPhone Safari has no fullscreen API, so there the page stays as is. The
 pad also appears on a laptop touchscreen at the first touch and hides again
 on the next keypress. The cyan pill above the buttons shows TOKEN's current
 order; tap it for the next one. The SOUND pill at the top turns sound on or
-off.
+off, and the PAUSE pill beside it (in the left bar in landscape) pauses;
+on the pause screen a tap turns the help page and the pill, now RESUME,
+goes back to the game.
 
 Sound starts at the first key or tap (browsers block audio until then).
 

@@ -62,6 +62,7 @@ export class GameAudio {
   private effects?: GainNode;
   private noise?: AudioBuffer;
   private muted: boolean;
+  private paused = false;
   private track?: Track;
   private trackId?: TrackId;
   private tempo = 1;
@@ -123,6 +124,12 @@ export class GameAudio {
     this.syncRunning();
   }
 
+  /** Hold the music and effects where they are while the game is paused. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    this.syncRunning();
+  }
+
   private unlock(): void {
     if (!this.ctx) {
       const ctx = new AudioContext();
@@ -142,11 +149,11 @@ export class GameAudio {
     this.syncRunning();
   }
 
-  /** Run the clock only while sound is wanted: unmuted and the page in view. */
+  /** Run the clock only while sound is wanted: unmuted, unpaused and the page in view. */
   private syncRunning(): void {
     const ctx = this.ctx;
     if (!ctx) return;
-    const wanted = !this.muted && document.visibilityState === 'visible';
+    const wanted = !this.muted && !this.paused && document.visibilityState === 'visible';
     if (wanted && ctx.state === 'suspended') void ctx.resume();
     if (!wanted && ctx.state === 'running') void ctx.suspend();
   }

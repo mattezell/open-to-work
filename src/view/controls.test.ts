@@ -30,9 +30,13 @@ describe('HeldKeys', () => {
     const target = {
       addEventListener: (type: string, fn: (e: KeyboardEvent) => void) => listeners.set(type, fn),
     } as unknown as Pick<Window, 'addEventListener'>;
+    const prevented: string[] = [];
     const fire = (type: string, code = ''): void =>
-      listeners.get(type)?.({ code, preventDefault: () => undefined } as KeyboardEvent);
-    return { target, fire };
+      listeners.get(type)?.({
+        code,
+        preventDefault: () => void prevented.push(code),
+      } as KeyboardEvent);
+    return { target, fire, prevented };
   }
 
   it('keeps a tap released before the next snapshot for exactly one snapshot', () => {
@@ -42,6 +46,15 @@ describe('HeldKeys', () => {
     fire('keyup', 'KeyJ');
     expect(keys.snapshot().attack).toBe(true);
     expect(keys.snapshot().attack).toBe(false);
+  });
+
+  it('keeps game keys, pause and help from the browser, and leaves the rest alone', () => {
+    const { target, fire, prevented } = fakeWindow();
+    new HeldKeys(target);
+    for (const code of ['Tab', 'Space', 'Escape', 'Slash', 'KeyH', 'F5', 'KeyR']) {
+      fire('keydown', code);
+    }
+    expect(prevented).toEqual(['Tab', 'Space', 'Escape', 'Slash', 'KeyH']);
   });
 
   it('reports a held key until it is released, and nothing after blur', () => {

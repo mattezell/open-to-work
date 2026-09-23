@@ -67,6 +67,12 @@ All notable changes to this project are documented here. Format follows
   hit. The hurdles in the lanes in front of Matt turn see-through as he
   passes them, so they no longer hide the jump.
 - The hot seat in The Panel is marked with a pool of light and an arrow.
+- Pause and help: Esc or P pauses the street, the tunnel or the tower (and
+  the music with it), H or ? opens the help. Five pages turned with left and
+  right: the controls (the keys, or the pad on a touch screen), TOKEN's
+  orders, and who is who on the street, in the tunnel and in the tower.
+  Touch screens get a PAUSE pill; a tap turns the page. The game also
+  pauses itself when the window loses focus.
 
 ### Changed
 

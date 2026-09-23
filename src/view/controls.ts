@@ -15,6 +15,10 @@ export const KEY_BINDINGS: Readonly<Record<keyof InputFrame, readonly string[]>>
   order: ['KeyQ', 'Tab'],
 };
 
+/** Keys the scenes handle themselves: pause, and help (? is Shift and Slash). */
+export const PAUSE_CODES: readonly string[] = ['Escape', 'KeyP'];
+export const HELP_CODES: readonly string[] = ['KeyH', 'Slash'];
+
 /** Snapshot held keys into the sim's input data. Opposite directions cancel. */
 export function keysToInput(held: ReadonlySet<string>): InputFrame {
   const pressed = (action: keyof InputFrame): boolean =>
@@ -79,7 +83,8 @@ export class HeldKeys {
   }
 }
 
-const BOUND_CODES = new Set(Object.values(KEY_BINDINGS).flat());
+// Slash opens Firefox's quick find, so the menu keys are claimed from the browser too.
+const BOUND_CODES = new Set([...Object.values(KEY_BINDINGS).flat(), ...PAUSE_CODES, ...HELP_CODES]);
 
 function isBound(code: string): boolean {
   return BOUND_CODES.has(code);

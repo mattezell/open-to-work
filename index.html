@@ -216,6 +216,33 @@
       html.touch .sound-pill.off {
         background: #808080;
       }
+      /* Pause sits just right of the SOUND pill in portrait, clear of TOKEN's bar in the corner. */
+      .pause-pill {
+        display: none;
+      }
+      html.touch .pause-pill {
+        display: block;
+        position: fixed;
+        z-index: 13;
+        top: calc(var(--safe-top) + 6px);
+        left: calc(50% + 46px);
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 2px solid rgb(16 16 16 / 70%);
+        background: #f0f0e0;
+        color: #101010;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 10px;
+        opacity: 0.6;
+        touch-action: none;
+      }
+      /* Landscape has side bars: keep the pill off the canvas, top of the left bar. */
+      @media (orientation: landscape) {
+        html.touch .pause-pill {
+          left: calc(var(--safe-left) + 12px);
+        }
+      }
     </style>
   </head>
   <body>

@@ -31,11 +31,28 @@ pickups (Coffee) and a Referral power-up. Three stages, a boss, an ending.
 | Input | Action |
 |---|---|
 | Arrows / WASD | Move (x and depth) |
-| J | Attack (3-hit chain: jab, jab, haymaker) |
-| K | Jump (jump attack with J) |
-| L | Special: 360 clear, costs a sliver of health (SoR rule) |
-| Walk into a stunned enemy | Grab; J to knee, direction + J to throw |
-| 1 / 2 / 3 | Direct the sidekick: Focus my target / Guard me / Go wild |
+| J / Z | Attack (3-hit chain: jab, jab, haymaker) |
+| K / X / Space | Jump (jump attack with J) |
+| L / C | Special: 360 clear, costs a sliver of health (SoR rule) |
+| Q / Tab | Cycle the sidekick's order: Go wild, Focus, Guard |
+| Esc / P | Pause, with the help pages |
+| H / ? | Help: the pause screen, opened on the controls |
+
+As built there is no grab or throw (see the Golem below), and the three
+number keys became one cycling order key so a touch pad needs one pill, not
+three buttons.
+
+**Pause and help** (`src/view/pause-scene.ts`, copy and layout in
+`src/view/help.ts`). A separate Phaser scene launched over the stage, which
+is paused where it stands (`scene.pause`, so the sim stops ticking), with
+the synth's AudioContext suspended alongside. Five pages: controls (keys or
+pad, whichever is in use), TOKEN's orders, then the street, tunnel and
+tower rosters; `ROSTER` in `help.ts` is the list the title screen will
+reuse. The copy is tested to fit the screen in the pixel font, and the
+controls page is built from `KEY_BINDINGS`, so a rebinding cannot leave it
+stale. Resuming throws away the keys tapped on the pause screen, so turning
+a page is never a step or a punch. A lost window focus pauses too: a brawler
+keeps fighting while you are in another window.
 
 ## The sidekick
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SCREEN_H, SCREEN_W } from './sim/constants';
 import { EndingScene } from './view/ending-scene';
 import { GameScene } from './view/game-scene';
+import { PauseScene } from './view/pause-scene';
 import { TunnelScene } from './view/tunnel-scene';
 
 /**
@@ -21,8 +22,8 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene:
     bootStage === '2'
-      ? [TunnelScene, GameScene, EndingScene]
-      : [GameScene, TunnelScene, EndingScene],
+      ? [TunnelScene, GameScene, EndingScene, PauseScene]
+      : [GameScene, TunnelScene, EndingScene, PauseScene],
 });
 // Before boot, starting a scene queues its autostart with this data.
 if (bootStage === '3') {

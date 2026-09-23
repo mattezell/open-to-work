@@ -20,6 +20,7 @@ import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { sfxForSim } from './music';
+import { bindPause } from './pause-scene';
 import { PixelBanner, PixelBubble, pixelText } from './pixel-text';
 import {
   BARK_MIN_TICKS,
@@ -165,6 +166,7 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.world.status !== 'playing') this.advance();
     });
+    bindPause(this, this.touch);
     this.restart();
   }
 
