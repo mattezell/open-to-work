@@ -12,6 +12,12 @@ describe('keysToInput', () => {
     expect(keysToInput(new Set(['ArrowLeft', 'KeyJ']))).toMatchObject({ left: true, attack: true });
   });
 
+  it('gives TOKEN orders on Q or Tab', () => {
+    expect(keysToInput(new Set(['KeyQ'])).order).toBe(true);
+    expect(keysToInput(new Set(['Tab'])).order).toBe(true);
+    expect(mergeInputs(NO_INPUT, input({ order: true })).order).toBe(true);
+  });
+
   it('cancels opposite directions', () => {
     const frame = keysToInput(new Set(['ArrowLeft', 'KeyD', 'ArrowUp']));
     expect(frame).toMatchObject({ left: false, right: false, up: true });

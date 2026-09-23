@@ -22,3 +22,14 @@ All notable changes to this project are documented here. Format follows
   Matt takes damage. Keyboard and touch can be used together.
 - Restart by tapping any button after the stage ends (after a one second
   pause, so mashing does not skip the result screen).
+- TOKEN, the AI sidekick, fighting beside Matt with a zap one-two. Three
+  standing orders cycled with Q or Tab (or the order pill on touch): Go
+  wild, Focus (double damage on Matt's target), Guard (takes hits for Matt
+  at half damage). TOKEN reboots after a KO instead of staying down.
+- TOKEN's health bar and current order in the HUD, and speech bubbles when
+  it takes an order, blocks a hit, lands a KO, whiffs or reboots.
+
+### Fixed
+
+- Enemies no longer stack on one spot: they spread in depth and split
+  around Matt instead of queueing on one side.

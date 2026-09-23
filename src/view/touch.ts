@@ -28,6 +28,7 @@ export class TouchPad {
   private readonly stick: HTMLElement;
   private readonly knob: HTMLElement;
   private readonly buttons = new Map<ButtonAction, HTMLElement>();
+  private readonly orderPill: HTMLElement;
   private isActive = false;
   private askedFullscreen = false;
 
@@ -48,6 +49,10 @@ export class TouchPad {
       this.buttons.set(action, button);
       this.root.append(button);
     }
+    this.orderPill = element('div', 'tbtn-order');
+    this.bindButton(this.orderPill, 'order');
+    this.buttons.set('order', this.orderPill);
+    this.root.append(this.orderPill);
     this.bindStick(zone);
     mount.append(this.root);
 
@@ -74,6 +79,11 @@ export class TouchPad {
 
   snapshot(): InputFrame {
     return this.state.snapshot();
+  }
+
+  /** The order pill names TOKEN's current order; tapping it gives the next one. */
+  setOrderLabel(text: string): void {
+    if (this.orderPill.textContent !== text) this.orderPill.textContent = text;
   }
 
   /** A short buzz on Android. iOS Safari has no Vibration API, so there it does nothing. */

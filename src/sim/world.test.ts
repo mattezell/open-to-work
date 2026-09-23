@@ -161,7 +161,7 @@ describe('waves', () => {
   });
 
   it('enemies approach and attack an idle player', () => {
-    const world = createWorld(STAGE_1, 5);
+    const world = createWorld(STAGE_1, 5, { sidekick: false });
     while (world.activeWave === -1) step(world, [input({ right: true })]);
     run(world, 600);
     expect(player(world).hp).toBeLessThan(KINDS.matt.maxHp);

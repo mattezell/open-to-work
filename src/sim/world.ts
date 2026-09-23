@@ -12,14 +12,19 @@ import type { StageDef } from './stage';
 import { stepFighter } from './fighter-step';
 import { resolveHits } from './combat';
 import { enemyIntent } from './ai';
+import { nextDirective, sidekickIntent, updateSidekick, type Directive } from './sidekick';
 
 export type FighterState =
   'idle' | 'walk' | 'jump' | 'attack' | 'hurt' | 'knockdown' | 'getup' | 'dead';
+
+/** Who drives a fighter: a human's controls, or the sim's own AI. */
+export type Pilot = 'human' | 'ai';
 
 export interface Fighter {
   id: number;
   kind: FighterKind;
   team: Team;
+  pilot: Pilot;
   /** Belt position. */
   x: number;
   /** Depth, 0 (back) to DEPTH (front). */
@@ -43,9 +48,28 @@ export interface Fighter {
   chainTimer: number;
   attackBuffer: number;
   invuln: number;
-  /** Enemy-only: ticks until it may attack again. */
+  /** AI-only: ticks until it may start another attack. */
   cooldown: number;
   score: number;
+  /** Id of the last fighter this one hit, so TOKEN can focus on Matt's target. */
+  lastTarget: number | null;
+}
+
+/** Things that happened this tick, for the view to show and play. Cleared every step. */
+export type SimEvent =
+  | { type: 'order'; directive: Directive }
+  | { type: 'ko'; id: number; by: number }
+  | { type: 'intercept' }
+  | { type: 'whiff' }
+  | { type: 'reboot' }
+  | { type: 'rebooted' };
+
+/** Where TOKEN thinks an enemy still is after it has gone: the Go wild hallucination. */
+export interface Phantom {
+  x: number;
+  z: number;
+  /** Give up on the phantom after this many more ticks. */
+  ticks: number;
 }
 
 export type WorldStatus = 'playing' | 'cleared' | 'gameover';
@@ -69,14 +93,29 @@ export interface World {
   goPrompt: number;
   status: WorldStatus;
   prevInputs: InputFrame[];
+  directive: Directive;
+  phantom: Phantom | null;
+  events: SimEvent[];
 }
 
-export function spawnFighter(world: World, kind: FighterKind, x: number, z: number): Fighter {
+export interface WorldOptions {
+  /** Spawn TOKEN beside Matt. Off in duel tests that need Matt alone. */
+  sidekick?: boolean;
+}
+
+export function spawnFighter(
+  world: World,
+  kind: FighterKind,
+  x: number,
+  z: number,
+  pilot: Pilot = kind === 'matt' ? 'human' : 'ai',
+): Fighter {
   const stats = KINDS[kind];
   const fighter: Fighter = {
     id: world.nextId++,
     kind,
     team: stats.team,
+    pilot,
     x,
     z,
     y: 0,
@@ -95,12 +134,13 @@ export function spawnFighter(world: World, kind: FighterKind, x: number, z: numb
     invuln: 0,
     cooldown: 60,
     score: 0,
+    lastTarget: null,
   };
   world.fighters.push(fighter);
   return fighter;
 }
 
-export function createWorld(stage: StageDef, seed: number): World {
+export function createWorld(stage: StageDef, seed: number, options: WorldOptions = {}): World {
   const world: World = {
     tick: 0,
     rng: seed >>> 0,
@@ -116,13 +156,22 @@ export function createWorld(stage: StageDef, seed: number): World {
     goPrompt: 0,
     status: 'playing',
     prevInputs: [],
+    directive: 'wild',
+    phantom: null,
+    events: [],
   };
   spawnFighter(world, 'matt', 60, DEPTH / 2);
+  if (options.sidekick ?? true) spawnFighter(world, 'token', 20, DEPTH / 2 - 12);
   return world;
 }
 
+/** Human-piloted fighters, in input order: `inputs[i]` drives `players(world)[i]`. */
 export function players(world: World): Fighter[] {
-  return world.fighters.filter((f) => f.team === 'player');
+  return world.fighters.filter((f) => f.pilot === 'human');
+}
+
+export function sidekick(world: World): Fighter | undefined {
+  return world.fighters.find((f) => f.kind === 'token');
 }
 
 export function livingEnemies(world: World): Fighter[] {
@@ -133,6 +182,7 @@ export function livingEnemies(world: World): Fighter[] {
 export function step(world: World, inputs: readonly InputFrame[]): void {
   if (world.status !== 'playing') return;
   world.tick++;
+  world.events = [];
 
   const humans = players(world);
   humans.forEach((p, i) => {
@@ -140,6 +190,10 @@ export function step(world: World, inputs: readonly InputFrame[]): void {
     const before = world.prevInputs[i] ?? NO_INPUT;
     if (now.attack && !before.attack) p.attackBuffer = INPUT_BUFFER_TICKS;
     else if (p.attackBuffer > 0) p.attackBuffer--;
+    if (now.order && !before.order) {
+      world.directive = nextDirective(world.directive);
+      world.events.push({ type: 'order', directive: world.directive });
+    }
   });
 
   // Hit-stop freezes everything except input buffering, the SoR feel.
@@ -154,6 +208,10 @@ export function step(world: World, inputs: readonly InputFrame[]): void {
     const before = world.prevInputs[i] ?? NO_INPUT;
     stepFighter(p, now, before);
   });
+  for (const ally of world.fighters.filter((f) => f.team === 'player' && f.pilot === 'ai')) {
+    updateSidekick(world, ally);
+    stepFighter(ally, sidekickIntent(world, ally), NO_INPUT);
+  }
   // Dead enemies still step so their corpse timer runs and they get removed.
   for (const enemy of world.fighters.filter((f) => f.team === 'enemy')) {
     const intent = enemyIntent(world, enemy);

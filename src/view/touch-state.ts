@@ -5,7 +5,7 @@ export const STICK_DEADZONE = 12;
 /** How far the drawn knob may travel from the stick origin. */
 export const STICK_RADIUS = 44;
 
-export type ButtonAction = 'attack' | 'jump' | 'special';
+export type ButtonAction = 'attack' | 'jump' | 'special' | 'order';
 type Direction = Pick<InputFrame, 'left' | 'right' | 'up' | 'down'>;
 
 const CENTRED: Direction = { left: false, right: false, up: false, down: false };
@@ -100,6 +100,7 @@ export class TouchState {
       attack: button('attack'),
       jump: button('jump'),
       special: button('special'),
+      order: button('order'),
     };
     this.tapped.clear();
     return frame;

@@ -1,8 +1,8 @@
 import { CHAIN_WINDOW_TICKS, GRAVITY } from './constants';
 import {
   ATTACKS,
-  CHAIN,
   JUMP_VELOCITY,
+  chainFor,
   KINDS,
   SPECIAL_COST,
   attackLength,
@@ -29,7 +29,8 @@ function startAttack(f: Fighter, id: AttackId): void {
 }
 
 function groundAttack(f: Fighter): AttackId {
-  return f.kind === 'matt' ? (CHAIN[f.chain] ?? 'jab1') : 'shred';
+  const chain = chainFor(f.kind);
+  return chain ? (chain[f.chain] ?? chain[0] ?? 'shred') : 'shred';
 }
 
 /** Advance one fighter's state machine from its controls for this tick. */
@@ -99,7 +100,9 @@ export function stepFighter(f: Fighter, now: InputFrame, before: InputFrame): vo
       }
       const def = ATTACKS[current];
       const inRecovery = f.attackTick >= def.startup + def.active;
-      const canChain = (current === 'jab1' || current === 'jab2') && f.attackHits.length > 0;
+      const link = chainFor(f.kind)?.indexOf(current) ?? -1;
+      const lastLink = (chainFor(f.kind)?.length ?? 0) - 1;
+      const canChain = link !== -1 && link < lastLink && f.attackHits.length > 0;
       if (inRecovery && canChain && attackPressed) {
         startAttack(f, groundAttack(f));
         return;

@@ -1,6 +1,7 @@
 import { DEPTH_TOLERANCE } from './constants';
-import { ATTACKS, CHAIN, KINDS, type AttackDef } from './fighters';
+import { ATTACKS, chainFor, KINDS, type AttackDef } from './fighters';
 import { setState } from './fighter-step';
+import { FOCUS_DAMAGE_SCALE, guardInterceptor, noteKo } from './sidekick';
 import type { Fighter, World } from './world';
 
 const KNOCKDOWN_VX = 2.2;
@@ -33,31 +34,58 @@ export function resolveHits(world: World): void {
     for (const target of world.fighters) {
       if (target.team === attacker.team || !isVulnerable(target)) continue;
       if (attacker.attackHits.includes(target.id) || !inReach(attacker, def, target)) continue;
-      applyHit(world, attacker, def, target);
+      attacker.attackHits.push(target.id);
+      const guard = attacker.team === 'enemy' ? guardInterceptor(world, target) : undefined;
+      if (guard && !attacker.attackHits.includes(guard.id)) {
+        // TOKEN steps in and takes it, at half damage.
+        attacker.attackHits.push(guard.id);
+        world.events.push({ type: 'intercept' });
+        applyHit(world, attacker, def, guard, Math.ceil(def.damage / 2));
+      } else {
+        applyHit(world, attacker, def, target, damageFor(world, attacker, def, target));
+      }
     }
   }
 }
 
-function applyHit(world: World, attacker: Fighter, def: AttackDef, target: Fighter): void {
-  attacker.attackHits.push(target.id);
-  const chainIndex = CHAIN.indexOf(attacker.attack ?? 'jab1');
-  if (attacker.attackHits.length === 1 && chainIndex !== -1) {
-    attacker.chain = (chainIndex + 1) % CHAIN.length;
-  }
+/** Focus doubles TOKEN's damage on whatever Matt last hit. */
+function damageFor(world: World, attacker: Fighter, def: AttackDef, target: Fighter): number {
+  if (attacker.kind !== 'token' || world.directive !== 'focus') return def.damage;
+  const focused = world.fighters.some((f) => f.pilot === 'human' && f.lastTarget === target.id);
+  return focused ? def.damage * FOCUS_DAMAGE_SCALE : def.damage;
+}
 
-  target.hp = Math.max(0, target.hp - def.damage);
+function applyHit(
+  world: World,
+  attacker: Fighter,
+  def: AttackDef,
+  target: Fighter,
+  damage: number,
+): void {
+  const chain = chainFor(attacker.kind);
+  const chainIndex = chain?.indexOf(attacker.attack ?? 'jab1') ?? -1;
+  if (chain && attacker.attackHits.length === 1 && chainIndex !== -1) {
+    attacker.chain = (chainIndex + 1) % chain.length;
+  }
+  attacker.lastTarget = target.id;
+
+  target.hp = Math.max(0, target.hp - damage);
   target.attack = null;
   const dir = target.x >= attacker.x ? 1 : -1;
   target.facing = dir === 1 ? -1 : 1;
   world.hitstop = Math.max(world.hitstop, def.hitstop);
-  attacker.score += def.damage * 10;
+  attacker.score += damage * 10;
 
   if (def.knockdown || target.hp === 0 || target.y > 0) {
     setState(target, 'knockdown');
     target.vx = KNOCKDOWN_VX * dir;
     target.vy = KNOCKDOWN_VY;
     target.y = Math.max(target.y, 0.01);
-    if (target.hp === 0) attacker.score += KINDS[target.kind].score;
+    if (target.hp === 0) {
+      attacker.score += KINDS[target.kind].score;
+      world.events.push({ type: 'ko', id: target.id, by: attacker.id });
+      noteKo(world, target);
+    }
   } else {
     setState(target, 'hurt');
     target.x += HIT_PUSHBACK * dir;

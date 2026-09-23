@@ -4,6 +4,60 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:39 CDT: TOKEN joins the fight (M3)
+
+**What.** TOKEN is a second fighter on Matt's team, piloted by
+`src/sim/sidekick.ts`, which produces an `InputFrame` each tick exactly like
+a player's pad. It has a two-hit zap chain that only continues when the
+first zap lands, three standing orders, a reboot after a KO, and speech
+bubbles driven by sim events (`world.events`, cleared each step) so the view
+never guesses what happened. Enemy AI got depth separation and a side split
+while I was in there, because TOKEN made the bunching obvious.
+
+**Assumptions made without Matt (flag any to change):**
+- Orders cycle on one key, Q or Tab, plus a cyan pill on the touch pad.
+  One button beats a three-way picker on a phone; three orders are few
+  enough to cycle.
+- Go wild targets the biggest crowd and, after 40% of enemy KOs, remembers a
+  phantom it swings at about 2.5 seconds later ("hallucinated that one").
+  That is the confidently-wrong joke from DESIGN.md made mechanical.
+- Focus doubles TOKEN's damage on the enemy Matt last hit.
+- Guard intercepts hits aimed at Matt when TOKEN is within 40 px and in a
+  state that could plausibly step in; TOKEN takes half the damage. I chose
+  interception over a damage-reduction aura because it is visible: you see
+  TOKEN take the hit and say so.
+- A KO'd TOKEN reboots after 5 seconds at half health, and never counts
+  toward a game over. A permanently dead partner in a four-day game is just
+  a worse game.
+- Enemies prefer Matt: TOKEN counts as 60 px further away when they pick a
+  target, so it cannot tank the whole stage by standing in front.
+- Barks are placeholder lines until the M5 bank.
+
+**Measured, not guessed.** A throwaway probe (vitest writing a TSV, since
+vitest swallows console output) ran the bot through Stage 1 on several seeds
+per order. Without TOKEN, Matt finishes at hp 92 on every seed; with TOKEN,
+92 to 100. TOKEN's KOs: wild 3-4, focus 3, guard 0-1. The identical 92 across
+seeds says the enemies barely attack, so the RNG never matters: Stage 1 is
+too easy, and that is a difficulty problem, not a TOKEN problem (ROADMAP,
+tuning notes).
+
+**Bugs found.**
+- Enemy overlap: two bots ended every run on the same pixel. Separation only
+  applied while they were on cooldown; applying it always took overlap to 0.
+- The side split never fired for two enemies: a "switch if the other side is
+  lighter by a margin" rule compares 1 against 1 forever. Replaced with id
+  seniority: an enemy only counts the crowd of enemies older than itself,
+  so the second one sees an occupied flank and goes round. Now pinned by
+  `ai.test.ts`.
+- TOKEN vanished while rebooting because the corpse blink applied to every
+  dead fighter. Only enemy corpses blink now; TOKEN shows a loading frame.
+- An existing test ("enemies approach and attack an idle player") started
+  failing because TOKEN now protected the idle player. The test was right
+  about its own subject, so it opts out of TOKEN (`{ sidekick: false }`).
+
+**Follow-ups.** A sloppier bot to tune difficulty against; the real bark
+bank; a real-phone check of the order pill position.
+
 ## 2026-09-22 19:26 CDT: touch controls
 
 **What.** Phones and tablets get an on-screen pad: a floating 8-way stick on

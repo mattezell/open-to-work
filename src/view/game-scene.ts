@@ -3,8 +3,9 @@ import { DEPTH, SCREEN_H, SCREEN_W, TICK_HZ } from '../sim/constants';
 import { KINDS, type FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
 import { STAGE_1 } from '../sim/stage';
-import { createWorld, players, step, type Fighter, type World } from '../sim/world';
+import { createWorld, players, sidekick, step, type Fighter, type World } from '../sim/world';
 import { poseFor, sheetKey, SHEETS } from './animation';
+import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { HeldKeys, mergeInputs } from './controls';
 import { TouchPad } from './touch';
 
@@ -16,6 +17,11 @@ const MAX_TICKS_PER_FRAME = 5;
 /** After a stage ends, ignore buttons this long so a mashing player sees the result screen. */
 const RESTART_DELAY_TICKS = TICK_HZ;
 const HURT_BUZZ_MS = 40;
+/** How long a bark stays up, and how long before chatter may replace it. */
+const BARK_TICKS = 100;
+const BARK_MIN_TICKS = 40;
+/** How far above TOKEN's feet a bark sits. */
+const BARK_RISE = 70;
 
 const INK = 0x101010;
 const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
@@ -28,6 +34,11 @@ const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
 /** Where a fighter's feet land on screen, in world pixels (the camera handles scroll). */
 export function feetPosition(f: Fighter): { x: number; y: number } {
   return { x: Math.round(f.x), y: Math.round(STREET_TOP + f.z - f.y) };
+}
+
+/** A KO'd enemy blinks out before it is removed. TOKEN lies still while it reboots. */
+function isFadingCorpse(f: Fighter): boolean {
+  return f.state === 'dead' && f.team === 'enemy' && f.stateTick % 6 < 3;
 }
 
 function restartHint(touch: boolean): string {
@@ -48,6 +59,9 @@ export class GameScene extends Phaser.Scene {
   private hud!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private bannerText!: Phaser.GameObjects.Text;
+  private tokenText!: Phaser.GameObjects.Text;
+  private barkText!: Phaser.GameObjects.Text;
+  private barkTicks = 0;
 
   constructor() {
     super('game');
@@ -75,6 +89,15 @@ export class GameScene extends Phaser.Scene {
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
     this.scoreText = this.add.text(8, 16, '', HUD_TEXT).setScrollFactor(0).setDepth(1001);
+    this.tokenText = this.add
+      .text(SCREEN_W - 8, 16, '', { ...HUD_TEXT, align: 'right' })
+      .setOrigin(1, 0)
+      .setScrollFactor(0)
+      .setDepth(1001);
+    this.barkText = this.add
+      .text(0, 0, '', { ...HUD_TEXT, backgroundColor: '#101010', padding: { x: 2, y: 1 } })
+      .setOrigin(0.5, 1)
+      .setDepth(999);
     this.bannerText = this.add
       .text(SCREEN_W / 2, 80, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
       .setOrigin(0.5)
@@ -105,6 +128,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     step(this.world, [frame]);
+    this.showBarks();
     const hp = players(this.world)[0]?.hp ?? 0;
     if (hp < this.lastHp) this.touch.buzz(HURT_BUZZ_MS);
     this.lastHp = hp;
@@ -115,6 +139,20 @@ export class GameScene extends Phaser.Scene {
     this.accumulator = 0;
     this.endedTicks = 0;
     this.lastHp = players(this.world)[0]?.hp ?? 0;
+    this.barkTicks = 0;
+  }
+
+  /** Turn this tick's sim events into TOKEN's speech bubble. */
+  private showBarks(): void {
+    if (this.barkTicks > 0) this.barkTicks--;
+    const tokenId = sidekick(this.world)?.id;
+    for (const event of this.world.events) {
+      const bark = barkFor(event, tokenId, this.world.tick);
+      if (!bark) continue;
+      if (!bark.urgent && this.barkTicks > BARK_TICKS - BARK_MIN_TICKS) continue;
+      this.barkText.setText(bark.text);
+      this.barkTicks = BARK_TICKS;
+    }
   }
 
   private drawStreet(): void {
@@ -162,7 +200,7 @@ export class GameScene extends Phaser.Scene {
         .setPosition(feet.x, feet.y)
         .setFlipX(f.facing === -1)
         .setDepth(f.z)
-        .setVisible(visible && !(f.state === 'dead' && f.stateTick % 6 < 3));
+        .setVisible(visible && !isFadingCorpse(f));
     }
     this.prune(this.sprites, seen);
     this.prune(this.placeholders, seen);
@@ -188,6 +226,39 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  /** TOKEN's bar and standing order, top right, plus its speech bubble. */
+  private drawToken(): void {
+    const token = sidekick(this.world);
+    const order = DIRECTIVE_LABELS[this.world.directive];
+    this.touch.setOrderLabel(`TOKEN: ${order}`);
+    if (!token) {
+      this.tokenText.setText('');
+      this.barkText.setVisible(false);
+      return;
+    }
+    const width = 60;
+    const left = SCREEN_W - 8 - width;
+    const fill = token.state === 'dead' ? 0 : Math.round((width * token.hp) / KINDS.token.maxHp);
+    this.hud.fillStyle(INK).fillRect(left - 1, 5, width + 2, 8);
+    this.hud.fillStyle(0x803030).fillRect(left, 6, width, 6);
+    this.hud.fillStyle(0x60c0e0).fillRect(left, 6, fill, 6);
+    const hint = this.touch.active ? '' : ' [Q]';
+    const status = token.state === 'dead' ? 'REBOOTING' : order;
+    this.tokenText.setText(`TOKEN ${status}${hint}`);
+
+    const feet = feetPosition(token);
+    this.barkText
+      .setVisible(this.barkTicks > 0)
+      .setPosition(
+        Phaser.Math.Clamp(
+          feet.x,
+          this.world.cameraX + this.barkText.width / 2 + 2,
+          this.world.cameraX + SCREEN_W - this.barkText.width / 2 - 2,
+        ),
+        Math.max(feet.y - BARK_RISE, 34),
+      );
+  }
+
   private drawHud(): void {
     const matt = players(this.world)[0];
     const hp = matt?.hp ?? 0;
@@ -197,6 +268,7 @@ export class GameScene extends Phaser.Scene {
     this.hud.fillStyle(0x803030).fillRect(8, 6, 100, 6);
     this.hud.fillStyle(0xe0c040).fillRect(8, 6, Math.round((100 * hp) / max), 6);
     this.scoreText.setText(`MATT  ${String(matt?.score ?? 0).padStart(6, '0')}`);
+    this.drawToken();
 
     const go = this.world.goPrompt > 0 && Math.floor(this.world.tick / 15) % 2 === 0;
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';

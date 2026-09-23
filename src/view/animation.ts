@@ -1,4 +1,5 @@
 import { ATTACKS, type AttackId, type FighterKind } from '../sim/fighters';
+import { REBOOT_TICKS } from '../sim/sidekick';
 import type { Fighter } from '../sim/world';
 
 /** One generated sprite sheet: a single row of equal frames, all facing right. */
@@ -30,6 +31,13 @@ export const SHEETS = {
     hurt: { frames: 2, ...ENEMY_FRAME },
     knockdown: { frames: 4, ...ENEMY_FRAME },
   },
+  token: {
+    idle: { frames: 4, ...ENEMY_FRAME },
+    walk: { frames: 6, ...ENEMY_FRAME },
+    punch: { frames: 4, ...ENEMY_FRAME },
+    hurt: { frames: 2, ...ENEMY_FRAME },
+    knockdown: { frames: 4, ...ENEMY_FRAME },
+  },
 } as const satisfies Record<FighterKind, Record<string, SheetDef>>;
 
 export interface Pose {
@@ -43,6 +51,8 @@ export function sheetKey(kind: FighterKind, sheet: string): string {
 
 const IDLE_TICKS_PER_FRAME = 10;
 const WALK_TICKS_PER_FRAME = 7;
+/** TOKEN's loading-bar frame shows for this long before it gets back up. */
+const TOKEN_LOADING_TICKS = 90;
 
 /** Which frame of which sheet a fighter shows. Pure, so it is tested without Phaser. */
 export function poseFor(f: Fighter): Pose {
@@ -62,8 +72,14 @@ export function poseFor(f: Fighter): Pose {
     case 'getup':
       return { sheet: 'knockdown', frame: f.stateTick < 12 ? 2 : 3 };
     case 'dead':
-      return { sheet: 'knockdown', frame: 1 };
+      return deadPose(f);
   }
+}
+
+/** A KO'd TOKEN lies with a dark screen, then shows its loading bar as the reboot finishes. */
+function deadPose(f: Fighter): Pose {
+  const loading = f.kind === 'token' && f.stateTick >= REBOOT_TICKS - TOKEN_LOADING_TICKS;
+  return { sheet: 'knockdown', frame: loading ? 2 : 1 };
 }
 
 function loop(sheet: string, frames: number, tick: number, ticksPerFrame: number): Pose {
@@ -86,6 +102,11 @@ function attackPose(attack: AttackId, tick: number): Pose {
   const def = ATTACKS[attack];
   const active = tick >= def.startup && tick < def.startup + def.active;
   switch (attack) {
+    case 'zap1':
+    case 'zap2': {
+      const base = attack === 'zap1' ? 0 : 2;
+      return { sheet: 'punch', frame: base + (active ? 1 : 0) };
+    }
     case 'jab1':
     case 'jab2': {
       const base = attack === 'jab1' ? 0 : 2;

@@ -1,6 +1,7 @@
 export type Team = 'player' | 'enemy';
-export type FighterKind = 'matt' | 'ats';
-export type AttackId = 'jab1' | 'jab2' | 'haymaker' | 'jumpkick' | 'special' | 'shred';
+export type FighterKind = 'matt' | 'token' | 'ats';
+export type AttackId =
+  'jab1' | 'jab2' | 'haymaker' | 'jumpkick' | 'special' | 'zap1' | 'zap2' | 'shred';
 
 export interface AttackDef {
   /** Ticks before the hitbox appears. */
@@ -82,6 +83,26 @@ export const ATTACKS: Record<AttackId, AttackDef> = {
     knockdown: true,
     hitstop: 8,
   },
+  zap1: {
+    startup: 5,
+    active: 2,
+    recovery: 10,
+    damage: 7,
+    reach: 30,
+    omni: false,
+    knockdown: false,
+    hitstop: 4,
+  },
+  zap2: {
+    startup: 5,
+    active: 3,
+    recovery: 18,
+    damage: 9,
+    reach: 32,
+    omni: false,
+    knockdown: true,
+    hitstop: 6,
+  },
   shred: {
     startup: 20,
     active: 3,
@@ -94,8 +115,17 @@ export const ATTACKS: Record<AttackId, AttackDef> = {
   },
 };
 
-/** The 3-hit chain, in order. Whiffing resets it to the first jab. */
+/** Matt's 3-hit chain, in order. Whiffing resets it to the first jab. */
 export const CHAIN: readonly AttackId[] = ['jab1', 'jab2', 'haymaker'];
+/** TOKEN's one-two: the second punch knocks down. */
+export const TOKEN_CHAIN: readonly AttackId[] = ['zap1', 'zap2'];
+
+/** The ground chain a kind cycles through, or null for a single repeated attack. */
+export function chainFor(kind: FighterKind): readonly AttackId[] | null {
+  if (kind === 'matt') return CHAIN;
+  if (kind === 'token') return TOKEN_CHAIN;
+  return null;
+}
 
 /** Health the special costs (Streets of Rage rule). It cannot kill: needs hp above this. */
 export const SPECIAL_COST = 8;
@@ -108,6 +138,16 @@ export const KINDS: Record<FighterKind, KindStats> = {
     maxHp: 100,
     walkX: 1.5,
     walkZ: 1.0,
+    halfWidth: 10,
+    height: 64,
+    hitstun: 16,
+    score: 0,
+  },
+  token: {
+    team: 'player',
+    maxHp: 60,
+    walkX: 1.35,
+    walkZ: 0.9,
     halfWidth: 10,
     height: 64,
     hitstun: 16,

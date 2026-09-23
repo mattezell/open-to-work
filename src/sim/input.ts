@@ -7,6 +7,8 @@ export interface InputFrame {
   attack: boolean;
   jump: boolean;
   special: boolean;
+  /** Give TOKEN the next order: Go wild, then Focus, then Guard. */
+  order: boolean;
 }
 
 export const NO_INPUT: Readonly<InputFrame> = Object.freeze({
@@ -17,6 +19,7 @@ export const NO_INPUT: Readonly<InputFrame> = Object.freeze({
   attack: false,
   jump: false,
   special: false,
+  order: false,
 });
 
 export function input(partial: Partial<InputFrame>): InputFrame {

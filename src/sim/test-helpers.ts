@@ -20,9 +20,9 @@ export function player(world: World): Fighter {
   return p;
 }
 
-/** A world with Matt and one passive ATS Bot standing right in front of him. */
+/** A world with Matt and one passive ATS Bot standing right in front of him. No TOKEN. */
 export function duel(gap = 24): { world: World; matt: Fighter; bot: Fighter } {
-  const world = createWorld(EMPTY_STAGE, 1);
+  const world = createWorld(EMPTY_STAGE, 1, { sidekick: false });
   const matt = player(world);
   const bot = spawnFighter(world, 'ats', matt.x + gap, matt.z);
   bot.cooldown = 100_000;

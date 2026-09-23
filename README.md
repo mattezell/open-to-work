@@ -9,7 +9,7 @@ Built in four days (2026-09-22 to 2026-09-25) for a The New Guard Deep Dive.
 
 ## Status
 
-M1 playable: Stage 1 (the Job Board) with Matt against ATS BOTs. See
+Stage 1 (the Job Board) is playable: Matt and TOKEN against ATS BOTs. See
 `DESIGN.md` for the game and `ROADMAP.md` for progress.
 
 ## Run it
@@ -29,6 +29,7 @@ npm run build      # static build in dist/
 | Attack (tap three times for the jab, jab, haymaker chain) | J or Z |
 | Jump (attack in the air for a jump kick) | K, X or Space |
 | Special (spinning clothesline, costs health, invulnerable) | L or C |
+| Give TOKEN its next order (Go wild, Focus, Guard) | Q or Tab |
 | Restart after the stage ends | Enter |
 
 On phones and tablets an on-screen pad appears: a floating stick (put your
@@ -38,7 +39,22 @@ Portrait puts the game on top and the pad below; landscape puts the pad in
 the side bars. On Android the first touch asks for fullscreen and a landscape
 lock; iPhone Safari has no fullscreen API, so there the page stays as is. The
 pad also appears on a laptop touchscreen at the first touch and hides again
-on the next keypress.
+on the next keypress. The cyan pill above the buttons shows TOKEN's current
+order; tap it for the next one.
+
+## TOKEN
+
+TOKEN, the AI sidekick, fights on its own through the same controls a
+player uses. You give it one standing order at a time:
+
+| Order | What TOKEN does |
+|---|---|
+| Go wild | Hits whichever crowd is biggest. Sometimes swings at an enemy that already left. |
+| Focus | Goes after the enemy you last hit, for double damage. |
+| Guard | Stays at your side and takes hits meant for you, at half damage. |
+
+When TOKEN is knocked out it reboots, and gets back up after five seconds
+at half health. Losing TOKEN never ends the game; losing Matt does.
 
 ## Layout
 

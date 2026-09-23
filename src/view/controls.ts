@@ -1,6 +1,9 @@
 import type { InputFrame } from '../sim/input';
 
-/** KeyboardEvent.code values per action. Arrows or WASD to move; J/K/L or Z/X/C to act. */
+/**
+ * KeyboardEvent.code values per action. Arrows or WASD to move; J/K/L or Z/X/C
+ * to act; Q or Tab to give TOKEN its next order.
+ */
 export const KEY_BINDINGS: Readonly<Record<keyof InputFrame, readonly string[]>> = {
   left: ['ArrowLeft', 'KeyA'],
   right: ['ArrowRight', 'KeyD'],
@@ -9,6 +12,7 @@ export const KEY_BINDINGS: Readonly<Record<keyof InputFrame, readonly string[]>>
   attack: ['KeyJ', 'KeyZ'],
   jump: ['KeyK', 'KeyX', 'Space'],
   special: ['KeyL', 'KeyC'],
+  order: ['KeyQ', 'Tab'],
 };
 
 /** Snapshot held keys into the sim's input data. Opposite directions cancel. */
@@ -23,6 +27,7 @@ export function keysToInput(held: ReadonlySet<string>): InputFrame {
     attack: pressed('attack'),
     jump: pressed('jump'),
     special: pressed('special'),
+    order: pressed('order'),
   });
 }
 
@@ -41,6 +46,7 @@ export function mergeInputs(...frames: readonly InputFrame[]): InputFrame {
     attack: any('attack'),
     jump: any('jump'),
     special: any('special'),
+    order: any('order'),
   };
 }
 

@@ -62,6 +62,14 @@ describe('TouchState', () => {
     expect(touch.stickVisual()).toEqual({ x: 0, y: 0, knobX: STICK_RADIUS, knobY: 0 });
   });
 
+  it('latches an order tap like any other button', () => {
+    const touch = new TouchState();
+    touch.buttonDown(4, 'order');
+    touch.release(4);
+    expect(touch.snapshot().order).toBe(true);
+    expect(touch.snapshot().order).toBe(false);
+  });
+
   it('forgets everything on releaseAll', () => {
     const touch = new TouchState();
     touch.stickStart(1, 0, 0);
