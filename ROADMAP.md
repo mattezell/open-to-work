@@ -32,7 +32,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] Stage 1 complete (Tue night, ahead of M4, 4b35385): Spam Recruiter, The
   Unpaid Take Home, coffee, Stage 1 wave layout
 - [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, ad0a5ae)
-- [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule)
+- [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule, 53b4f84)
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
