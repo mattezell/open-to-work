@@ -42,7 +42,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     (19e1c15)
   - [x] 2. Bitmap pixel font (8 px text is blurry) (58a4496)
   - [x] 3. Pause and help overlay: Esc or P pauses, H or ? for controls,
-    TOKEN's orders, the enemy roster
+    TOKEN's orders, the enemy roster (34b117d)
   - [ ] 4. Title screen, attract mode (the bot plays a demo after 20 s
     idle), roster page, first-appearance name cards
   - [ ] 5. HIRED screen: score, credits, "Hire the real Matt" links to
