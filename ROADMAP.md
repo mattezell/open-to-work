@@ -28,7 +28,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [ ] M2 (Wed): asset pipeline and all actor sheets; Stage 1 playable
 - [x] Touch controls (added Tue, not in the original plan): the audience
   for this sees it on a phone
-- [x] M3 (Wed): sidekick AI with directives (shipped Tue evening)
+- [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, ce03da4)
 - [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
