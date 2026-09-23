@@ -10,7 +10,9 @@ Built in four days (2026-09-22 to 2026-09-25) for a The New Guard Deep Dive.
 ## Status
 
 Stage 1 (the Job Board) is complete: Matt and TOKEN against ATS BOTs and
-Spam Recruiters, with The Unpaid Take Home as the stage boss. See
+Spam Recruiters, with The Unpaid Take Home as the stage boss. Clearing it
+leads into Stage 2, the Take-Home Tunnel, a hover-board run. Stage 3 is not
+built yet; clearing the tunnel ends the run. See
 `DESIGN.md` for the game and `ROADMAP.md` for progress.
 
 ## Run it
@@ -21,6 +23,9 @@ npm run dev        # http://127.0.0.1:5180
 npm run check      # typecheck, lint, format check, vitest, pipeline unit tests
 npm run build      # static build in dist/
 ```
+
+Add `?stage=2` to the URL to start in the tunnel without clearing the street
+first (`http://127.0.0.1:5180/?stage=2`).
 
 ## Controls
 
@@ -67,6 +72,23 @@ at half health. Losing TOKEN never ends the game; losing Matt does.
 
 Coffee on the street heals 30 when Matt walks over it hurt. It stays put
 while he is at full health, and TOKEN leaves it for him.
+
+## Stage 2: the Take-Home Tunnel
+
+The track scrolls on its own and speeds up twice. Up and down steer Matt
+across three lanes; jump clears the hurdles, and walls have to be steered
+around (the red floor shows which lanes a wall closes). A crash costs 15 hp.
+At 0 hp the run rewinds to the last checkpoint at 60 hp instead of ending,
+and every retry comes off the clear bonus. Matt starts the tunnel with the
+health he finished the street with, but never below 60.
+
+TOKEN rides behind and calls the next hazard. Its order still matters:
+
+| Order | In the tunnel |
+|---|---|
+| Go wild | Calls every hazard, and one call in four is confidently wrong. |
+| Focus | Every call is right. |
+| Guard | Takes the first crash of each section for Matt. |
 
 ## Layout
 

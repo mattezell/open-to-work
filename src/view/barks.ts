@@ -1,4 +1,5 @@
 import type { Directive } from '../sim/sidekick';
+import type { Call, TunnelEvent } from '../sim/tunnel';
 import type { SimEvent } from '../sim/world';
 
 /** What the HUD calls each order. */
@@ -31,6 +32,10 @@ const LINES = {
     'Now it is a two-week project.',
   ],
   ko: ['Rejected.', 'Per my last email.', 'Moving forward with other candidates.'],
+  shield: ['Airbag deployed.', 'Absorbed. Barely.', 'That one was on me.'],
+  crash: ['Ouch. Noted.', 'That will be in the feedback.', 'Walk it off. Ride it off.'],
+  retry: ['Rolling back to last save.', 'git checkout checkpoint', 'From the top. Again.'],
+  checkpoint: ['Checkpoint. Progress saved.', 'Committed. Pushed.', 'Autosaved. You are welcome.'],
 } as const satisfies Record<string, readonly string[]>;
 
 export interface Bark {
@@ -59,5 +64,33 @@ export function barkFor(event: SimEvent, tokenId: number | undefined, pick: numb
       return { text: choose(LINES.reinforcements), urgent: true };
     case 'ko':
       return event.by === tokenId ? { text: choose(LINES.ko), urgent: false } : null;
+  }
+}
+
+/** TOKEN calls every hazard the same way, right or wrong. */
+const CALL_SHOUTS: Readonly<Record<Call, string>> = {
+  jump: 'JUMP!',
+  high: 'GO HIGH!',
+  middle: 'MIDDLE!',
+  low: 'GO LOW!',
+};
+
+/** The line TOKEN says for a tunnel event, if any. Calls cut in over everything. */
+export function tunnelBarkFor(event: TunnelEvent, pick: number): Bark | null {
+  const choose = (lines: readonly string[]): string => lines[pick % lines.length] ?? '';
+  switch (event.type) {
+    case 'call':
+      return { text: CALL_SHOUTS[event.call], urgent: true };
+    case 'order':
+      return { text: choose(LINES[event.directive]), urgent: true };
+    case 'shield':
+    case 'retry':
+      return { text: choose(LINES[event.type]), urgent: true };
+    case 'crash':
+    case 'checkpoint':
+      return { text: choose(LINES[event.type]), urgent: false };
+    case 'cleared-hazard':
+    case 'cleared':
+      return null;
   }
 }

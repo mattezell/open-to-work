@@ -35,6 +35,14 @@ All notable changes to this project are documented here. Format follows
   creep (an extra ATS BOT) at two thirds and one third health, with a named
   health bar along the bottom of the screen. Two coffees on the street heal
   30 each.
+- Stage 2, the Take-Home Tunnel: an autoscrolling hover-board run after the
+  street. Three lanes, hurdles to jump and walls to steer around, three
+  sections that speed up, checkpoints, and a rewind instead of a game over.
+  TOKEN rides along calling hazards (wrong one time in four on Go wild) or
+  taking the first crash of each section on Guard. Score, health and
+  TOKEN's order carry over from the street. `?stage=2` starts in the tunnel.
+- Hover-board art: Matt riding and wiping out, TOKEN on its hover disc,
+  hurdle and paperwork-wall props.
 
 ### Changed
 

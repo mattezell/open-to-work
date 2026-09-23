@@ -4,6 +4,77 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 20:15 CDT: Stage 2, the Take-Home Tunnel
+
+**What.** The second stage is playable end to end: clear the street, press
+Enter, and Matt and TOKEN drop onto hover-boards for a 45-second
+autoscrolling run. Hurdles to jump, paperwork walls to steer around, three
+sections that speed up, checkpoints, and a rewind instead of a game over.
+Built autonomously while Matt was away; assumptions below.
+
+**Shape.** The tunnel is its own sim (`src/sim/tunnel.ts`, `TunnelWorld`,
+`stepTunnel`), not the brawler with a flag: it shares no rules with the
+belt fight. The same `InputFrame` drives both, so keyboard, touch pad and
+bots work unchanged. `src/sim/campaign.ts` carries score, health and TOKEN's
+order between stages. The view got two small extractions on the way:
+`hud.ts` (shared constants and the health bar) and `devices.ts`, a
+per-game singleton for the keyboard and touch pad. Without it every scene
+switch would have built a second touch pad and a second set of key
+listeners.
+
+**The bot-modeling lesson (the interesting part for the Deep Dive).** The
+first CASUAL tunnel bot copied the brawler bot: it decided every 15 ticks
+and held that input in between. It was terrible in ways that said nothing
+about the track.
+
+1. Every seed played out identically. The tunnel has no randomness a bot
+   reacts to, so a seeded bot needs its own jitter or a 10-seed sweep is one
+   run counted ten times.
+2. It looped forever on seed 3: after a rewind it replayed the exact same
+   mistake, because the jitter did not change between attempts. Now it
+   re-rolls per retry.
+3. It overshot lanes: holding "up" for 15 ticks moves 22.5 px against an
+   18 px lane gap. A human does not hold a direction blindly between
+   decisions; they steer to a target. The fix was to separate *when you
+   decide* (reaction cadence, every 15 ticks) from *how precisely you
+   execute* (steer to the chosen lane every tick, jump timing jittered).
+
+The general rule: a reaction cadence is not a timing error. Model them
+separately or the bot measures its own clumsiness, not the level.
+
+**Result.** 10 seeds: SHARP never crashes; CASUAL takes 0 to 2 crashes and
+never rewinds (hp 70 to 100); CASUAL on Guard takes no damage. Section 3
+went from 3.4 to 3.6 px a tick with the open lane swapping edge to edge. A
+slower steer (1.2) changed nothing, so it went back to 1.5.
+
+**Assumptions made without Matt (overrule freely).**
+
+- The tunnel is a breather after the boss, not a Battletoads wall. The bot
+  cannot model the real trap (a human trusting a wrong Go wild call at
+  speed), so real difficulty is a playtest question for Matt, listed in the
+  ROADMAP tuning notes.
+- Go wild calls are wrong 25 percent of the time. Often enough to notice,
+  rare enough that listening still pays.
+- Matt enters the tunnel with his street health, floored at 60 (the retry
+  health), so a scraped boss win is not punished twice.
+- Losing on the street and restarting starts a fresh run; it does not keep
+  the tunnel's carry. There is nothing to carry into a restart yet.
+- Clearing the tunnel shows "next: the interview tower (coming soon)" and
+  Enter goes back to the street, until Stage 3 exists.
+- The hover-board came out red and blue instead of grey and orange. It
+  reads fine; not worth a regeneration tonight.
+- Walls block lanes, but a 20 px pillar at a depth line is ambiguous in
+  2.5D, so each blocked lane also gets a red strip painted on the floor.
+  Found by looking at the screenshots, not by any test.
+- `?stage=2` boots straight into the tunnel, for playtesting it alone.
+
+**Verified.** `npm run check` green (141 tests). Playwright probe against
+the dev server: the intro banner, a JUMP! call at 282 px, a hurdle crash
+(-15), a timed jump clearing the second hurdle (+200), an order change,
+the clear banner, Enter back to the street, and a street clear with hp 37,
+score 4242 and Guard arriving in the tunnel as hp 60, score 4242, Guard. No
+page errors.
+
 ## 2026-09-22 19:57 CDT: M4 Stage 1, the rest of the cast
 
 **What.** Stage 1 now has its full design cast: the Spam Recruiter (a

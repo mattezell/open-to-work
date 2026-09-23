@@ -16,6 +16,7 @@ import { collectPickups } from './pickups';
 import { callReinforcements } from './boss';
 import { enemyIntent } from './ai';
 import { nextDirective, sidekickIntent, updateSidekick, type Directive } from './sidekick';
+import type { Carry } from './campaign';
 
 export type FighterState =
   'idle' | 'walk' | 'jump' | 'attack' | 'hurt' | 'knockdown' | 'getup' | 'dead';
@@ -128,6 +129,8 @@ export interface World {
 export interface WorldOptions {
   /** Spawn TOKEN beside Matt. Off in duel tests that need Matt alone. */
   sidekick?: boolean;
+  /** Where the last stage left Matt and TOKEN's order. */
+  carry?: Carry;
 }
 
 export function spawnFighter(
@@ -190,7 +193,12 @@ export function createWorld(stage: StageDef, seed: number, options: WorldOptions
     phantom: null,
     events: [],
   };
-  spawnFighter(world, 'matt', 60, DEPTH / 2);
+  const matt = spawnFighter(world, 'matt', 60, DEPTH / 2);
+  if (options.carry) {
+    matt.hp = options.carry.hp;
+    matt.score = options.carry.score;
+    world.directive = options.carry.directive;
+  }
   if (options.sidekick ?? true) spawnFighter(world, 'token', 20, DEPTH / 2 - 12);
   for (const pickup of stage.pickups ?? []) world.pickups.push({ id: world.nextId++, ...pickup });
   return world;

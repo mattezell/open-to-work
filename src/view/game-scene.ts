@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { DEPTH, SCREEN_H, SCREEN_W, TICK_HZ } from '../sim/constants';
+import { carryFromStreet, type Carry } from '../sim/campaign';
+import { DEPTH, SCREEN_H, SCREEN_W } from '../sim/constants';
 import { KINDS, PROJECTILES, type FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
 import { STAGE_1 } from '../sim/stage';
@@ -15,24 +16,28 @@ import {
 } from '../sim/world';
 import { poseFor, sheetKey, SHEETS } from './animation';
 import { barkFor, DIRECTIVE_LABELS } from './barks';
-import { HeldKeys, mergeInputs } from './controls';
-import { TouchPad } from './touch';
+import { mergeInputs, type HeldKeys } from './controls';
+import { sharedDevices } from './devices';
+import {
+  BARK_MIN_TICKS,
+  BARK_TICKS,
+  drawBar,
+  FLOOR_TOP,
+  HUD_TEXT,
+  HURT_BUZZ_MS,
+  INK,
+  MAX_TICKS_PER_FRAME,
+  RESTART_DELAY_TICKS,
+  restartHint,
+  TICK_MS,
+} from './hud';
+import type { TouchPad } from './touch';
 
 /** Screen y of the back edge of the walkable street (z = 0). */
-const STREET_TOP = SCREEN_H - DEPTH - 18;
-const TICK_MS = 1000 / TICK_HZ;
-/** Never simulate more than this many ticks per rendered frame, so a stalled tab cannot spiral. */
-const MAX_TICKS_PER_FRAME = 5;
-/** After a stage ends, ignore buttons this long so a mashing player sees the result screen. */
-const RESTART_DELAY_TICKS = TICK_HZ;
-const HURT_BUZZ_MS = 40;
-/** How long a bark stays up, and how long before chatter may replace it. */
-const BARK_TICKS = 100;
-const BARK_MIN_TICKS = 40;
+const STREET_TOP = FLOOR_TOP;
 /** How far above TOKEN's feet a bark sits. */
 const BARK_RISE = 70;
 
-const INK = 0x101010;
 /** The boss name and bar share one line in the strip below the street, clear of any feet. */
 const BOSS_BAR_W = 150;
 const BOSS_BAR_Y = SCREEN_H - 11;
@@ -40,12 +45,6 @@ const BOSS_NAME_GAP = 6;
 const BOSS_NAMES: Partial<Record<FighterKind, string>> = { takehome: 'THE UNPAID TAKE HOME' };
 /** Coffee bobs gently so it reads as something to grab. */
 const PICKUP_BOB_TICKS = 40;
-const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
-  fontFamily: 'monospace',
-  fontSize: '8px',
-  color: '#f0f0e0',
-  resolution: 4,
-};
 
 /** Where a fighter's feet land on screen, in world pixels (the camera handles scroll). */
 export function feetPosition(f: Fighter): { x: number; y: number } {
@@ -55,10 +54,6 @@ export function feetPosition(f: Fighter): { x: number; y: number } {
 /** A KO'd enemy blinks out before it is removed. TOKEN lies still while it reboots. */
 function isFadingCorpse(f: Fighter): boolean {
   return f.state === 'dead' && f.team === 'enemy' && f.stateTick % 6 < 3;
-}
-
-function restartHint(touch: boolean): string {
-  return touch ? 'tap a button' : 'press enter';
 }
 
 export class GameScene extends Phaser.Scene {
@@ -81,9 +76,15 @@ export class GameScene extends Phaser.Scene {
   private barkText!: Phaser.GameObjects.Text;
   private bossText!: Phaser.GameObjects.Text;
   private barkTicks = 0;
+  /** Set when the scene is entered from an earlier stage; a restart after a loss starts fresh. */
+  private carry: Carry | undefined;
 
   constructor() {
     super('game');
+  }
+
+  init(data: { carry?: Carry }): void {
+    this.carry = data.carry;
   }
 
   preload(): void {
@@ -104,8 +105,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.keys = new HeldKeys(window);
-    this.touch = new TouchPad(document.body, () => this.scale.refresh());
+    ({ keys: this.keys, touch: this.touch } = sharedDevices(this.game));
     this.drawStreet();
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
@@ -130,7 +130,7 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(1001);
     this.input.keyboard?.on('keydown-ENTER', () => {
-      if (this.world.status !== 'playing') this.restart();
+      if (this.world.status !== 'playing') this.advance();
     });
     this.restart();
   }
@@ -152,7 +152,7 @@ export class GameScene extends Phaser.Scene {
     if (this.world.status !== 'playing') {
       this.endedTicks++;
       const pressed = frame.attack || frame.jump || frame.special;
-      if (pressed && this.endedTicks > RESTART_DELAY_TICKS) this.restart();
+      if (pressed && this.endedTicks > RESTART_DELAY_TICKS) this.advance();
       return;
     }
     step(this.world, [frame]);
@@ -162,8 +162,18 @@ export class GameScene extends Phaser.Scene {
     this.lastHp = hp;
   }
 
+  /** Off to the tunnel after a clear; back to the top of the street after a loss. */
+  private advance(): void {
+    if (this.world.status === 'cleared') {
+      this.scene.start('tunnel', { carry: carryFromStreet(this.world) });
+      return;
+    }
+    this.carry = undefined;
+    this.restart();
+  }
+
   private restart(): void {
-    this.world = createWorld(STAGE_1, Date.now() >>> 0);
+    this.world = createWorld(STAGE_1, Date.now() >>> 0, { carry: this.carry });
     this.accumulator = 0;
     this.endedTicks = 0;
     this.lastHp = players(this.world)[0]?.hp ?? 0;
@@ -309,11 +319,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     const width = 60;
-    const left = SCREEN_W - 8 - width;
-    const fill = token.state === 'dead' ? 0 : Math.round((width * token.hp) / KINDS.token.maxHp);
-    this.hud.fillStyle(INK).fillRect(left - 1, 5, width + 2, 8);
-    this.hud.fillStyle(0x803030).fillRect(left, 6, width, 6);
-    this.hud.fillStyle(0x60c0e0).fillRect(left, 6, fill, 6);
+    const health = token.state === 'dead' ? 0 : token.hp / KINDS.token.maxHp;
+    drawBar(this.hud, SCREEN_W - 8 - width, 6, width, health, 0x60c0e0);
     const hint = this.touch.active ? '' : ' [Q]';
     const status = token.state === 'dead' ? 'REBOOTING' : order;
     this.tokenText.setText(`TOKEN ${status}${hint}`);
@@ -341,20 +348,13 @@ export class GameScene extends Phaser.Scene {
     const nameLeft = Math.round((SCREEN_W - this.bossText.width - BOSS_NAME_GAP - BOSS_BAR_W) / 2);
     this.bossText.setX(nameLeft);
     const left = nameLeft + Math.round(this.bossText.width) + BOSS_NAME_GAP;
-    const fill = Math.round((BOSS_BAR_W * boss.hp) / KINDS[boss.kind].maxHp);
-    this.hud.fillStyle(INK).fillRect(left - 1, BOSS_BAR_Y - 1, BOSS_BAR_W + 2, 8);
-    this.hud.fillStyle(0x803030).fillRect(left, BOSS_BAR_Y, BOSS_BAR_W, 6);
-    this.hud.fillStyle(0xe0a040).fillRect(left, BOSS_BAR_Y, fill, 6);
+    drawBar(this.hud, left, BOSS_BAR_Y, BOSS_BAR_W, boss.hp / KINDS[boss.kind].maxHp, 0xe0a040);
   }
 
   private drawHud(): void {
     const matt = players(this.world)[0];
-    const hp = matt?.hp ?? 0;
-    const max = KINDS.matt.maxHp;
     this.hud.clear();
-    this.hud.fillStyle(INK).fillRect(7, 5, 102, 8);
-    this.hud.fillStyle(0x803030).fillRect(8, 6, 100, 6);
-    this.hud.fillStyle(0xe0c040).fillRect(8, 6, Math.round((100 * hp) / max), 6);
+    drawBar(this.hud, 8, 6, 100, (matt?.hp ?? 0) / KINDS.matt.maxHp, 0xe0c040);
     this.scoreText.setText(`MATT  ${String(matt?.score ?? 0).padStart(6, '0')}`);
     this.drawToken();
     this.drawBoss();
@@ -363,7 +363,7 @@ export class GameScene extends Phaser.Scene {
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';
     const banner: Record<World['status'], string> = {
       playing: go ? 'GO >>' : '',
-      cleared: `OFFER EXTENDED\n\n${again}`,
+      cleared: `STAGE CLEAR\n\nnext: the take-home tunnel\n\n${again}`,
       gameover: `POSITION FILLED\n\n${again}`,
     };
     this.bannerText.setText(banner[this.world.status]);

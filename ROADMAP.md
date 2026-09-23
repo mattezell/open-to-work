@@ -31,7 +31,8 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, ce03da4)
 - [x] Stage 1 complete (Tue night, ahead of M4, 4b35385): Spam Recruiter, The
   Unpaid Take Home, coffee, Stage 1 wave layout
-- [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
+- [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, SHA_STAGE2)
+- [ ] M4 (Thu): Stage 3, The Panel, ending
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
@@ -56,6 +57,15 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   script (olive and peach panels shifted to the manila yellow). It reads
   right at 1x but is a little paler than idle; regenerate once the pipeline
   supports a shared per-character palette (below).
+- The tunnel is a breather, by design for now: over 10 seeds SHARP never
+  crashes and CASUAL (quarter-second lane reaction, jump timing jittered up
+  to 13 ticks) takes 0 to 2 crashes and never rewinds. The bot ignores
+  TOKEN's calls, so it cannot model the real trap: a human trusting a wrong
+  Go wild call at speed 3.6. Matt's playtest decides whether section 3 needs
+  more speed or tighter wall spacing (levers: `TUNNEL_1` in
+  `src/sim/tunnel.ts`, bands pinned in `tunnel-bot.test.ts`).
+- The hover-board came out red and blue, not the grey and orange in
+  `assets.yaml`. It reads fine; regenerate if it bothers anyone.
 - Barks are placeholder lines in `src/view/barks.ts`; M5 replaces them with
   the generated bank.
 - Each sheet gets its own 15-colour snap, so a character's colours drift a

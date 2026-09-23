@@ -69,6 +69,41 @@ pickups (Coffee) and a Referral power-up. Three stages, a boss, an ending.
    interviewer heads that attack in rotation. "FINISH HIM" on the last head;
    the finisher is handing over the offer letter. Ending: HIRED.
 
+## Stage 2 as built: the Take-Home Tunnel
+
+A separate mini-game, not a brawler stage with a flag. It has its own sim
+module (`src/sim/tunnel.ts`, its own `TunnelWorld` and `stepTunnel`) and its
+own Phaser scene, because it shares almost no rules with the belt brawler:
+no enemies, no attacks, an autoscrolling camera.
+
+- **Control.** The track scrolls at a fixed speed that rises section by
+  section. Up and down move Matt across the tunnel (the same depth band as
+  the street, three lanes wide); jump hops. Left and right do nothing:
+  one less thing to learn in a 60-second stage.
+- **Hazards.** Hurdles (knee-high "requirements", span every lane: jump) and
+  walls (tall stacks of paperwork, block one or two lanes: steer around).
+  Later sections combine them and close the gaps.
+- **Crashes.** A hit costs 15 hp and a second of flicker. At 0 hp Matt does
+  not die: the run rewinds to the last checkpoint at 60 hp and a retry is
+  counted against the stage score. Battletoads without the broken
+  controllers: the tunnel is hard but cannot end the game.
+- **TOKEN.** Rides behind Matt and calls the next hazard ("JUMP!", "GO
+  HIGH!", "GO LOW!"). The standing order still matters: Focus calls are
+  always right; Go wild calls are sometimes confidently wrong, the same joke
+  as the phantom swings; Guard makes TOKEN take the first crash of each
+  section for Matt.
+- **Flow.** Stage 1, then the tunnel, then Stage 3. Score, Matt's health and
+  TOKEN's order carry between stages (`src/sim/campaign.ts`).
+- **Beatability.** A tunnel bot reads the track the same way the brawler bot
+  reads telegraphs: SHARP must finish with no retries, CASUAL (quarter-second
+  reaction) must finish with at most a couple.
+- **Numbers as built.** Track 6100 px, sections at 0, 1900 and 3900 px
+  scrolling 2.2, 2.8 and 3.6 px a tick (about 45 seconds clean). TOKEN calls
+  a hazard 130 px ahead; on Go wild 25 percent of calls are wrong. Matt
+  enters with his street health floored at 60 (the retry health), so a
+  scraped street clear is not punished twice. A cleared tunnel shows "to be
+  continued" until Stage 3 exists.
+
 ## Architecture
 
 - **Phaser 3.90 + TypeScript + Vite + Vitest**, same stack as Craft Beer Hero.

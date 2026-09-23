@@ -758,3 +758,100 @@ assets:
       an angle, with small magenta motion streaks behind it, as a 16-bit
       video game projectile. Centered, alone, filling most of the frame.
       Blank card, no text.
+
+  # --- Stage 2, the Take-Home Tunnel -----------------------------------------
+  # Matt and TOKEN ride hover-boards through an autoscrolling tunnel. Same
+  # frame sizes and refs as their brawler sheets so the scale matches.
+
+  - id: matt_ride
+    group: tunnel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/ride.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: RIDING A HOVER-BOARD, a loop. He stands side-on in a low
+      surfer's crouch on a battered grey-and-orange hover-board, a wheel-less
+      skateboard deck with two small glowing blue jet thrusters underneath,
+      floating just above the ground. Arms out for balance, leaning forward
+      into the speed. Frame 1 neutral. Frame 2 the board dips slightly and he
+      sinks with it. Frame 3 lowest. Frame 4 rising back toward frame 1. The
+      board stays under his feet in every frame.
+
+  - id: matt_crash
+    group: tunnel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/crash.png
+    refs: [art/ref/matt.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: WIPEOUT OFF A HOVER-BOARD. The battered grey-and-orange
+      hover-board with small blue jet thrusters is still under or beside him.
+      Frame 1 he has just hit something: thrown backwards, arms flailing, eyes
+      squeezed shut, the board tipping up. Frame 2 tumbling mid-air, curled,
+      the board spinning beside him. Comic, not violent.
+
+  - id: token_ride
+    group: tunnel
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/ride.png
+    refs: [art/ref/token.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: RIDING A HOVER-BOARD, a loop. The robot stands side-on on a
+      small cream-and-teal hover-board, a wheel-less deck with one glowing
+      blue jet thruster underneath, floating just above the ground. Boxing
+      glove fists out for balance, screen face grinning. Frame 1 neutral.
+      Frame 2 the board dips slightly. Frame 3 lowest, antenna bulb swaying
+      back. Frame 4 rising back toward frame 1.
+
+  - id: prop_hurdle
+    group: tunnel
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/hurdle.png
+    width: 20
+    outline: "101010"
+    prompt: >
+      A single low, wide road barricade seen from the side, knee high: a
+      yellow-and-black striped plank on two short legs with a thick stack of
+      stapled white paper documents piled on top, as a 16-bit video game
+      obstacle to jump over. Blank paper, no text. Centered, alone, filling
+      most of the frame horizontally.
+
+  - id: prop_wall
+    group: tunnel
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/wall.png
+    width: 56
+    outline: "101010"
+    prompt: >
+      A single tall, narrow tower of stacked cardboard archive boxes and
+      bulging manila folders, taller than a man, slightly leaning, loose
+      paper sticking out everywhere, with a red warning light on top, as a
+      16-bit video game obstacle to steer around. Blank labels, no text.
+      Centered, alone, filling most of the frame vertically.

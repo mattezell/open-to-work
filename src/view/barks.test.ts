@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../sim/world';
-import { barkFor, DIRECTIVE_LABELS } from './barks';
+import type { TunnelEvent } from '../sim/tunnel';
+import { barkFor, DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 
 const TOKEN_ID = 2;
 /** Widest bubble that still fits between the screen edges at 8px monospace. */
@@ -48,5 +49,46 @@ describe('barkFor', () => {
 
   it('labels every order', () => {
     expect(Object.values(DIRECTIVE_LABELS)).toEqual(['GO WILD', 'FOCUS', 'GUARD']);
+  });
+});
+
+describe('tunnelBarkFor', () => {
+  it('shouts each call as a short command', () => {
+    const shout = (call: 'jump' | 'high' | 'middle' | 'low'): string | undefined =>
+      tunnelBarkFor({ type: 'call', call, correct: true }, 0)?.text;
+    expect(shout('jump')).toBe('JUMP!');
+    expect(shout('high')).toBe('GO HIGH!');
+    expect(shout('middle')).toBe('MIDDLE!');
+    expect(shout('low')).toBe('GO LOW!');
+  });
+
+  it('says a wrong call just as confidently as a right one', () => {
+    const wrong = tunnelBarkFor({ type: 'call', call: 'low', correct: false }, 0);
+    const right = tunnelBarkFor({ type: 'call', call: 'low', correct: true }, 0);
+    expect(wrong).toEqual(right);
+    expect(wrong?.urgent).toBe(true);
+  });
+
+  it('has a short line for every tunnel event TOKEN reacts to', () => {
+    const events: TunnelEvent[] = [
+      { type: 'order', directive: 'guard' },
+      { type: 'shield' },
+      { type: 'crash', kind: 'wall' },
+      { type: 'crash', kind: 'hurdle' },
+      { type: 'retry', checkpoint: 0 },
+      { type: 'checkpoint', x: 100 },
+    ];
+    for (const event of events) {
+      for (let pick = 0; pick < 6; pick++) {
+        const text = tunnelBarkFor(event, pick)?.text ?? '';
+        expect(text.length).toBeGreaterThan(0);
+        expect(text.length).toBeLessThanOrEqual(MAX_BARK_CHARS);
+      }
+    }
+  });
+
+  it('keeps quiet about clean passes and the finish line', () => {
+    expect(tunnelBarkFor({ type: 'cleared-hazard', kind: 'wall' }, 0)).toBeNull();
+    expect(tunnelBarkFor({ type: 'cleared', retries: 0 }, 0)).toBeNull();
   });
 });
