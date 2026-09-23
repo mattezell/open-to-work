@@ -4,6 +4,41 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 06:55 CDT: playtest item 5, the HIRED card
+
+**What.** The HIRED card now carries the credit ("Built in 2 days by Matt
+Ezell + Claude" today) and a "Hire the real Matt" menu: CONTACT (and CV
+once live) opens immatt.com in a new tab, PLAY AGAIN goes back to the
+street. Copy, menu and the day count live in `src/view/hire.ts`,
+Phaser-free, with 10 tests. Verified in headless Chromium: early presses
+ignored, Enter and a mouse click and a portrait touch tap on CONTACT each
+open exactly one tab at immatt.com/contact/, J on PLAY AGAIN restarts,
+the cursor wraps.
+
+**Decisions and assumptions.**
+- /cv/ is not live. `curl` gives 200, but the body is byte-identical to the
+  home page (the site's catch-all), so a status check alone would have
+  called it live. Per the plan the card falls back to /contact/ alone;
+  `CV_LIVE` is one constant, and the M6 deploy step rechecks it.
+- The hire link is the default choice. It is the point of the card, and
+  the one-second guard after the final blow already stops a mashed button
+  from opening a tab by accident.
+- Links open from `window` keydown and pointerdown listeners, not Phaser's
+  input: Phaser queues keyboard events until the next game step
+  (`KeyboardManager` pushes them to `queue`), outside the user gesture.
+  Chromium tolerates that for a few seconds; Safari's stricter blocker is
+  why this matters (inferred from its documented behaviour, not tested
+  here: there is no Safari on this box).
+  `opener` is cleared on the new tab; if the tab is blocked anyway the link
+  opens in the same tab rather than doing nothing.
+- "N days" comes from git (first to last commit date, both ends counted),
+  not from the build date, so a rebuild next month does not claim a month.
+  Getting it into the bundle hit a snag: `vite.config.ts` cannot call git
+  without `@types/node`, which this repo does not have, and installing
+  packages needs Matt's OK. So `tools/with-commit-dates.sh` exports
+  `VITE_FIRST_COMMIT` and `VITE_LAST_COMMIT` around `vite` in the dev and
+  build scripts, and the credit drops the number if they are missing.
+
 ## 2026-09-23 06:25 CDT: playtest item 4, title, attract mode, name cards
 
 **What.** The game now boots to a title screen (logo, Matt and TOKEN idling

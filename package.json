@@ -5,8 +5,8 @@
   "type": "module",
   "description": "A 16-bit co-op beat 'em up about the hiring process: laid off Tuesday, shipped by Friday",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "dev": "sh tools/with-commit-dates.sh vite",
+    "build": "tsc --noEmit && sh tools/with-commit-dates.sh vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

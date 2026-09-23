@@ -45,13 +45,16 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
     TOKEN's orders, the enemy roster (34b117d)
   - [x] 4. Title screen, attract mode (the bot plays a demo after 20 s
     idle), roster page, first-appearance name cards (1761465)
-  - [ ] 5. HIRED screen: score, credits, "Hire the real Matt" links to
+  - [x] 5. HIRED screen: score, credits, "Hire the real Matt" links to
     immatt.com/cv/ and /contact/ (fall back to /contact/ if /cv/ is not
-    live at deploy)
+    live at deploy). /cv/ was not live on 2026-09-23 (the site answers it
+    with its home page), so `CV_LIVE` is false: CONTACT only
   - [ ] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
     backgrounds kept as the fallback
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
-  (a subdomain of immatt.com; hostname to confirm at deploy)
+  (a subdomain of immatt.com; hostname to confirm at deploy). Before the
+  deploy build: recheck https://immatt.com/cv/ against the home page and
+  flip `CV_LIVE` in `src/view/hire.ts` if the CV is up
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 

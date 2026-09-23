@@ -7,6 +7,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- HIRED card call to action: "Hire the real Matt" with a link to
+  immatt.com/contact/ (and immatt.com/cv/ once that page is live), opened
+  in a new tab, plus PLAY AGAIN. The card also carries the credit "Built in
+  N days by Matt Ezell + Claude", N from the git history at build time.
 - Title screen: the logo, Matt and TOKEN on the street, the start hint for
   keyboard or touch, and a credit line. Enter, Space, J or a tap starts.
 - Arcade attract mode: after about 22 s idle the title shows the enemy
@@ -87,6 +91,8 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- The HIRED card no longer restarts on any button: left and right choose
+  an option and Enter or a button picks it.
 - Stage 1 is longer (2200 px, was 1600): Spam Recruiters join waves 2 and 3,
   and a fourth wave brings the boss.
 

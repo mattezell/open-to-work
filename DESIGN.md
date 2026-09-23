@@ -180,8 +180,16 @@ three enemies.
   ends on the last panelist (`endsOnLastWave`), not at the end of the
   floor.
 - **Ending.** `EndingScene`: Matt and TOKEN on the roof at sunset with the
-  letter, HIRED, the final score, and any button to go again from the
-  street.
+  letter, HIRED, the final score, and the credit ("Built in N days by Matt
+  Ezell + Claude", N counted from the first commit to the last by
+  `tools/with-commit-dates.sh` at build time). Under it, "Hire the real
+  Matt": a menu of immatt.com/cv/ (once it is live, `CV_LIVE` in
+  `src/view/hire.ts`), immatt.com/contact/, and PLAY AGAIN from the street.
+  Left and right choose; Enter, an action key, a pad button or a tap on
+  the option picks. Links open in a new tab from a window-level key or
+  pointer listener, because Phaser queues its own input to the next step
+  and popup blockers only trust the event itself; if the browser blocks the
+  tab anyway, the link opens in the same tab.
 - **Losing.** A loss in the tower retries the tower at full health with the
   score Matt walked in with. Sending a player who reached the last stage
   back to the street would be the one unfair thing in the game.
