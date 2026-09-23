@@ -56,9 +56,11 @@ pickups (Coffee) and a Referral power-up. Three stages, a boss, an ending.
 ## Stages
 
 1. **The Job Board.** A downtown street and a job fair. Enemies: ATS Bots
-   (shred your resume, slow), Spam Recruiters (fast, throw "5 years of
-   experience in a 2-year-old framework" cards). Mini-boss: The Unpaid Take
-   Home.
+   (walk up and shred your resume), Spam Recruiters (keep their distance and
+   throw "5 years of experience in a 2-year-old framework" cards along their
+   depth line; step off the line or jump). Boss: The Unpaid Take Home, armored
+   while it swings, calling in scope creep (one ATS Bot) at two thirds and
+   one third health. Coffee pickups heal. As built: see JOURNAL, M4 Stage 1.
 2. **The Take-Home Tunnel.** A Battletoads turbo-tunnel homage: an
    autoscrolling hover-bike run dodging walls of requirements. Short, hard,
    with checkpoints (unlike the original).

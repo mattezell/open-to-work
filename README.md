@@ -9,7 +9,8 @@ Built in four days (2026-09-22 to 2026-09-25) for a The New Guard Deep Dive.
 
 ## Status
 
-Stage 1 (the Job Board) is playable: Matt and TOKEN against ATS BOTs. See
+Stage 1 (the Job Board) is complete: Matt and TOKEN against ATS BOTs and
+Spam Recruiters, with The Unpaid Take Home as the stage boss. See
 `DESIGN.md` for the game and `ROADMAP.md` for progress.
 
 ## Run it
@@ -55,6 +56,17 @@ player uses. You give it one standing order at a time:
 
 When TOKEN is knocked out it reboots, and gets back up after five seconds
 at half health. Losing TOKEN never ends the game; losing Matt does.
+
+## Stage 1 enemies
+
+| Enemy | What it does | How to beat it |
+|---|---|---|
+| ATS BOT | Walks up and shreds your resume. | Hit it first; it winds up for a sixth of a second. |
+| Spam Recruiter | Keeps its distance and throws business cards along its depth line. Backs off if you close in. | Step up or down off its line, or jump the card, then chase it down. TOKEN on Guard catches cards for you. |
+| The Unpaid Take Home | The boss. Its slam knocks you down, and it keeps swinging through your hits once the slam has started. At two thirds and one third health it calls in scope creep: one more ATS BOT each time. | Hit it between slams, and sidestep when it raises its arms. |
+
+Coffee on the street heals 30 when Matt walks over it hurt. It stays put
+while he is at full health, and TOKEN leaves it for him.
 
 ## Layout
 

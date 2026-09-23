@@ -4,6 +4,85 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:57 CDT: M4 Stage 1, the rest of the cast
+
+**What.** Stage 1 now has its full design cast: the Spam Recruiter (a
+ranged thrower), The Unpaid Take Home (the stage boss) and coffee pickups.
+Worked autonomously while Matt was away; every judgment call is listed below
+so he can overrule any of them.
+
+**New sim pieces.** Projectiles (`projectiles.ts`): a card launches on the
+first active tick of the toss, flies 3.2 px a tick along the thrower's depth
+line, and hits the first vulnerable opponent it reaches. Hits go through the
+same `applyHit` as melee, so hitstun, score, KO events and TOKEN's Guard
+intercept all work for free. Pickups (`pickups.ts`). Boss reinforcements
+(`boss.ts`). Armor as a per-kind flag in `combat.ts`.
+
+**Assumptions made without Matt (overrule freely).**
+
+- A card flies at 40 px height with 20 px clearance, so a jump clears it and
+  a sidestep of one depth band dodges it. Classic belt-brawler rule; it makes
+  the Recruiter a positioning test, not a damage tax.
+- The Recruiter holds about 100 px away, backs off inside 48 px and never
+  throws from point blank. Without the back-off, mashing stunlocked it just
+  like the old ATS.
+- The Take Home is armored only mid-swing (it takes damage but is not
+  interrupted). Outside a swing it flinches like anyone. Full armor made it a
+  wall; no armor made it an ATS with more hp.
+- Scope creep: one ATS per threshold (2/3 and 1/3 hp), first from behind,
+  then from ahead. Two per threshold was the first draft; numbers below.
+- Coffee heals 30, only for Matt, and only when he is hurt, so a full-health
+  player does not waste it.
+- Name on the boss bar: THE UNPAID TAKE HOME.
+
+**The bot had to learn to dodge.** With the boss in, SHARP solo died on 10 of
+10 seeds: the frame-perfect bot mashed straight into armored slams. A human
+sees the arms go up and steps aside, so the bot now does too (`dodge()` in
+`bot.ts`: sidestep one band when an armored enemy nearby is winding up, or a
+card is incoming on its line). First version jittered: it picked the
+sidestep direction from its own depth instead of the attacker's, oscillated
+at z 42 and stayed inside the hit band. Fixed and pinned by a test (steps
+off the line on a slam, takes no damage).
+
+**Sweep** (10 seeds, 300 s budget, final code):
+
+| Setup | Cleared | Avg hp | Min hp |
+|---|---|---|---|
+| SHARP solo, 2 adds per call, no dodge | 0/10 | - | - |
+| SHARP solo, 2 adds per call, dodge | 9/10 | - | - |
+| CASUAL solo, 2 adds per call, dodge | 5/10 | - | - |
+| SHARP solo (chosen: 1 add per call) | 10/10 | 64 | 38 |
+| SHARP + TOKEN | 10/10 | 88 | 44 |
+| CASUAL solo | 6/10 | 21 | 0 |
+| CASUAL + TOKEN | 10/10 | 62 | 42 |
+
+Reading: the stage is beatable by a perfect player alone on every seed, a
+first-timer with TOKEN always gets through with a margin, and a first-timer
+alone loses about 4 in 10, nearly all on the boss. That is the intended
+shape for "the AI sidekick matters". The CASUAL band tests from the last
+entry still pass unchanged.
+
+**Art.** Spam Recruiter and Take Home designs and sheets, coffee and card
+props, all through `tools/genassets.py`. The Take Home walk and knockdown
+drifted peach against the manila-yellow model sheet, so I added an explicit
+colour line to both prompts and regenerated. The knockdown came back right.
+The walk came back olive-green, so instead of re-rolling I recoloured it by
+script: pixels with saturation above 0.3 and hue 45 to 90 degrees moved to
+hue 44 (saturation x1.3, value x1.1); peach pixels (hue 12 to 30, value
+above 0.8) moved to hue 42. Reads correctly at 1x, slightly paler than idle.
+The v1 and v2 sheets are kept in the session scratchpad, not the repo.
+
+**Browser check.** Playwright against the dev server, teleporting through
+the stage by editing the live `world`: coffee drawn and healed 40 to 70,
+a card in flight drawn at throwing height with its shadow, the boss bar
+named and filling, scope creep spawning one ATS at 60 percent. No page
+errors. The HUD's 8 px system monospace smears E into C in headless
+Chromium (the old TOKEN label does it too); the bitmap-font item in ROADMAP
+covers it.
+
+**Follow-ups.** Matt's playtest decides the CASUAL-solo loss rate. A
+per-character shared palette in the pipeline would remove the recolour step.
+
 ## 2026-09-22 19:43 CDT: Stage 1 difficulty
 
 **What.** The bot that proves beatability plays frame-perfect, so it said

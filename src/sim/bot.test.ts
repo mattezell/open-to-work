@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SCREEN_W, TICK_HZ } from './constants';
-import { ATTACKS } from './fighters';
+import { DEPTH_TOLERANCE, SCREEN_W, TICK_HZ } from './constants';
+import { ATTACKS, KINDS } from './fighters';
+import { EMPTY_STAGE } from './test-helpers';
 import { botInput, CASUAL, createBot, type BotSkill } from './bot';
 import { STAGE_1 } from './stage';
 import { NO_INPUT } from './input';
@@ -18,6 +19,32 @@ describe('beatability', () => {
     const matt = players(world)[0];
     expect(world.status).toBe('cleared');
     expect(matt?.hp ?? 0).toBeGreaterThan(20);
+  });
+});
+
+describe('beatability solo', () => {
+  it.each([1, 2, 3, 4, 5])('the sharp bot clears Stage 1 without TOKEN (seed %i)', (seed) => {
+    const world = createWorld(STAGE_1, seed, { sidekick: false });
+    while (world.status === 'playing' && world.tick < TIME_BUDGET_TICKS) {
+      step(world, [botInput(world)]);
+    }
+    expect(world.status).toBe('cleared');
+  });
+});
+
+describe('reading telegraphs', () => {
+  it('steps off the line when the Take Home winds up a slam', () => {
+    const world = createWorld(EMPTY_STAGE, 1, { sidekick: false });
+    const matt = players(world)[0];
+    if (!matt) throw new Error('no Matt');
+    const boss = spawnFighter(world, 'takehome', matt.x + 40, matt.z);
+    boss.cooldown = 0;
+    const startZ = matt.z;
+    for (let t = 0; t < 40 && boss.attack !== 'slam'; t++) step(world, [botInput(world)]);
+    expect(boss.attack).toBe('slam');
+    for (let t = 0; t < ATTACKS.slam.startup; t++) step(world, [botInput(world)]);
+    expect(Math.abs(matt.z - startZ)).toBeGreaterThan(DEPTH_TOLERANCE);
+    expect(matt.hp).toBe(KINDS.matt.maxHp);
   });
 });
 

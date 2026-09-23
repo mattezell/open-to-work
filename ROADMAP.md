@@ -29,6 +29,8 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] Touch controls (added Tue, not in the original plan): the audience
   for this sees it on a phone
 - [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, ce03da4)
+- [x] Stage 1 complete (Tue night, ahead of M4): Spam Recruiter, The
+  Unpaid Take Home, coffee, Stage 1 wave layout
 - [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
@@ -46,6 +48,14 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - Enemy RNG barely changes a run (SHARP ends at the same hp on every seed).
   Varied spawn timing or attack choice would help once there are more enemy
   types (M4).
+- Stage 1 with the full cast (10 seeds): SHARP clears solo 10/10, CASUAL
+  solo 6/10, CASUAL with TOKEN 10/10 (see JOURNAL, M4 Stage 1). A first-timer
+  without TOKEN losing 4 in 10 on the boss is intended; check it in Matt's
+  playtest.
+- The Take Home boss sheets: the walk was regenerated, then recoloured by
+  script (olive and peach panels shifted to the manila yellow). It reads
+  right at 1x but is a little paler than idle; regenerate once the pipeline
+  supports a shared per-character palette (below).
 - Barks are placeholder lines in `src/view/barks.ts`; M5 replaces them with
   the generated bank.
 - Each sheet gets its own 15-colour snap, so a character's colours drift a

@@ -15,6 +15,8 @@ const EVENTS: SimEvent[] = [
   { type: 'reboot' },
   { type: 'rebooted' },
   { type: 'ko', id: 9, by: TOKEN_ID },
+  { type: 'pickup', kind: 'coffee', by: 1 },
+  { type: 'reinforcements', by: 7 },
 ];
 
 describe('barkFor', () => {

@@ -6,11 +6,14 @@ import {
   SCREEN_MARGIN,
   SCREEN_W,
 } from './constants';
-import { KINDS, type AttackId, type FighterKind, type Team } from './fighters';
+import { KINDS, type AttackId, type FighterKind, type ProjectileKind, type Team } from './fighters';
 import { NO_INPUT, type InputFrame } from './input';
-import type { StageDef } from './stage';
+import type { PickupKind, StageDef } from './stage';
 import { stepFighter } from './fighter-step';
 import { resolveHits } from './combat';
+import { launchProjectiles, stepProjectiles } from './projectiles';
+import { collectPickups } from './pickups';
+import { callReinforcements } from './boss';
 import { enemyIntent } from './ai';
 import { nextDirective, sidekickIntent, updateSidekick, type Directive } from './sidekick';
 
@@ -53,6 +56,26 @@ export interface Fighter {
   score: number;
   /** Id of the last fighter this one hit, so TOKEN can focus on Matt's target. */
   lastTarget: number | null;
+  /** Bosses only: how many times it has called for reinforcements. */
+  summons: number;
+}
+
+export interface Projectile {
+  id: number;
+  kind: ProjectileKind;
+  /** The fighter that threw it, who gets the score. May be gone by the time it lands. */
+  ownerId: number;
+  team: Team;
+  x: number;
+  z: number;
+  vx: number;
+}
+
+export interface Pickup {
+  id: number;
+  kind: PickupKind;
+  x: number;
+  z: number;
 }
 
 /** Things that happened this tick, for the view to show and play. Cleared every step. */
@@ -62,7 +85,9 @@ export type SimEvent =
   | { type: 'intercept' }
   | { type: 'whiff' }
   | { type: 'reboot' }
-  | { type: 'rebooted' };
+  | { type: 'rebooted' }
+  | { type: 'pickup'; kind: PickupKind; by: number }
+  | { type: 'reinforcements'; by: number };
 
 /** Where TOKEN thinks an enemy still is after it has gone: the Go wild hallucination. */
 export interface Phantom {
@@ -79,6 +104,8 @@ export interface World {
   rng: number;
   stage: StageDef;
   fighters: Fighter[];
+  projectiles: Projectile[];
+  pickups: Pickup[];
   nextId: number;
   /** Left edge of the visible screen in belt coordinates. */
   cameraX: number;
@@ -135,6 +162,7 @@ export function spawnFighter(
     cooldown: 60,
     score: 0,
     lastTarget: null,
+    summons: 0,
   };
   world.fighters.push(fighter);
   return fighter;
@@ -146,6 +174,8 @@ export function createWorld(stage: StageDef, seed: number, options: WorldOptions
     rng: seed >>> 0,
     stage,
     fighters: [],
+    projectiles: [],
+    pickups: [],
     nextId: 1,
     cameraX: 0,
     activeWave: -1,
@@ -162,6 +192,7 @@ export function createWorld(stage: StageDef, seed: number, options: WorldOptions
   };
   spawnFighter(world, 'matt', 60, DEPTH / 2);
   if (options.sidekick ?? true) spawnFighter(world, 'token', 20, DEPTH / 2 - 12);
+  for (const pickup of stage.pickups ?? []) world.pickups.push({ id: world.nextId++, ...pickup });
   return world;
 }
 
@@ -219,7 +250,11 @@ export function step(world: World, inputs: readonly InputFrame[]): void {
   }
   world.prevInputs = inputs.map((i) => ({ ...i }));
 
+  launchProjectiles(world);
   resolveHits(world);
+  stepProjectiles(world);
+  callReinforcements(world);
+  collectPickups(world);
   clampToScreen(world);
   updateWaves(world);
   updateCamera(world);

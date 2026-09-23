@@ -26,6 +26,11 @@ const CROWD_REACH = 80;
 /** Ticks an enemy waits between swings. */
 const ENEMY_COOLDOWN_MIN = 45;
 const ENEMY_COOLDOWN_MAX = 80;
+/** A Spam Recruiter keeps this far off, throws from no closer than THROW_MIN, and backs off inside it. */
+const THROW_GAP = 100;
+const THROW_MIN = 48;
+const THROW_COOLDOWN_MIN = 90;
+const THROW_COOLDOWN_MAX = 140;
 
 function nearestTarget(world: World, enemy: Fighter): Fighter | null {
   let best: Fighter | null = null;
@@ -95,41 +100,110 @@ function separation(world: World, enemy: Fighter): number {
   return 0;
 }
 
-/** An enemy drives itself through the same controls a player uses. */
-export function enemyIntent(world: World, enemy: Fighter): InputFrame {
-  if (enemy.state !== 'idle' && enemy.state !== 'walk') return NO_INPUT;
-  const target = nearestTarget(world, enemy);
-  if (!target) return NO_INPUT;
+function isStanding(f: Fighter): boolean {
+  return f.state !== 'knockdown' && f.state !== 'getup';
+}
 
-  const gap = enemy.cooldown > 0 ? WAIT_GAP : ENGAGE_GAP;
-  const side = chooseSide(world, enemy, target, gap);
-  const dx = target.x + side * gap - enemy.x;
-  const dz = target.z - enemy.z;
-  const nudge = separation(world, enemy);
-  const facingTarget = (target.x - enemy.x) * enemy.facing >= 0;
-  const onScreen = isOnScreen(world, enemy.x);
-  const reach = ATTACKS.shred.reach + KINDS[target.kind].halfWidth;
-  const inRange = Math.abs(target.x - enemy.x) <= reach - 2 && Math.abs(dz) <= DEPTH_TOLERANCE - 2;
-  const targetStanding = target.state !== 'knockdown' && target.state !== 'getup';
+function canSwing(world: World, enemy: Fighter): boolean {
+  return enemy.cooldown === 0 && attackersInFlight(world) < MAX_CONCURRENT_ENEMY_ATTACKS;
+}
 
-  if (
-    inRange &&
-    onScreen &&
-    facingTarget &&
-    targetStanding &&
-    enemy.cooldown === 0 &&
-    attackersInFlight(world) < MAX_CONCURRENT_ENEMY_ATTACKS
-  ) {
-    enemy.cooldown = randomInt(world, ENEMY_COOLDOWN_MIN, ENEMY_COOLDOWN_MAX);
-    return input({ attack: true });
-  }
-
-  const wantRight = dx > DEADZONE || (!facingTarget && side === -1);
-  const wantLeft = dx < -DEADZONE || (!facingTarget && side === 1);
+function steer(
+  dx: number,
+  dz: number,
+  nudge: number,
+  turnRight: boolean,
+  turnLeft: boolean,
+): InputFrame {
+  const wantRight = dx > DEADZONE || turnRight;
+  const wantLeft = dx < -DEADZONE || turnLeft;
   return input({
     right: wantRight && !wantLeft,
     left: wantLeft && !wantRight,
     down: nudge === 1 || (nudge === 0 && dz > DEADZONE),
     up: nudge === -1 || (nudge === 0 && dz < -DEADZONE),
   });
+}
+
+/** Walk up, line up, swing: the ATS Bot and the Unpaid Take Home. */
+function brawlerIntent(world: World, enemy: Fighter, target: Fighter): InputFrame {
+  const gap = enemy.cooldown > 0 ? WAIT_GAP : ENGAGE_GAP;
+  const side = chooseSide(world, enemy, target, gap);
+  const dx = target.x + side * gap - enemy.x;
+  const dz = target.z - enemy.z;
+  const facingTarget = (target.x - enemy.x) * enemy.facing >= 0;
+  const reach = ATTACKS[KINDS[enemy.kind].basicAttack].reach + KINDS[target.kind].halfWidth;
+  const inRange = Math.abs(target.x - enemy.x) <= reach - 2 && Math.abs(dz) <= DEPTH_TOLERANCE - 2;
+
+  if (
+    inRange &&
+    isOnScreen(world, enemy.x) &&
+    facingTarget &&
+    isStanding(target) &&
+    canSwing(world, enemy)
+  ) {
+    enemy.cooldown = randomInt(world, ENEMY_COOLDOWN_MIN, ENEMY_COOLDOWN_MAX);
+    return input({ attack: true });
+  }
+  return steer(
+    dx,
+    dz,
+    separation(world, enemy),
+    !facingTarget && side === -1,
+    !facingTarget && side === 1,
+  );
+}
+
+/**
+ * The Spam Recruiter keeps its distance, lines up on the target's depth and
+ * flings business cards. Walk into it and it backs away; it never throws from
+ * off screen, where nobody could see the card coming.
+ */
+function throwerIntent(world: World, enemy: Fighter, target: Fighter): InputFrame {
+  const side = chooseSide(world, enemy, target, THROW_GAP);
+  const spot = clamp(
+    target.x + side * THROW_GAP,
+    world.cameraX + SCREEN_MARGIN,
+    world.cameraX + SCREEN_W - SCREEN_MARGIN,
+  );
+  const dz = target.z - enemy.z;
+  const distance = Math.abs(target.x - enemy.x);
+  const facing = target.x >= enemy.x ? 1 : -1;
+  const aligned = Math.abs(dz) <= DEPTH_TOLERANCE - 2;
+
+  if (
+    aligned &&
+    distance >= THROW_MIN &&
+    enemy.facing === facing &&
+    isOnScreen(world, enemy.x) &&
+    isStanding(target) &&
+    canSwing(world, enemy)
+  ) {
+    enemy.cooldown = randomInt(world, THROW_COOLDOWN_MIN, THROW_COOLDOWN_MAX);
+    return input({ attack: true });
+  }
+  // Close enough to throw from: stop and turn to face rather than drifting.
+  const settled = Math.abs(spot - enemy.x) <= 12 && distance >= THROW_MIN;
+  const dx = settled ? 0 : spot - enemy.x;
+  return steer(
+    dx,
+    dz,
+    separation(world, enemy),
+    settled && enemy.facing !== facing && facing === 1,
+    settled && enemy.facing !== facing && facing === -1,
+  );
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/** An enemy drives itself through the same controls a player uses. */
+export function enemyIntent(world: World, enemy: Fighter): InputFrame {
+  if (enemy.state !== 'idle' && enemy.state !== 'walk') return NO_INPUT;
+  const target = nearestTarget(world, enemy);
+  if (!target) return NO_INPUT;
+  return enemy.kind === 'spam'
+    ? throwerIntent(world, enemy, target)
+    : brawlerIntent(world, enemy, target);
 }

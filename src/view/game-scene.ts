@@ -1,9 +1,18 @@
 import Phaser from 'phaser';
 import { DEPTH, SCREEN_H, SCREEN_W, TICK_HZ } from '../sim/constants';
-import { KINDS, type FighterKind } from '../sim/fighters';
+import { KINDS, PROJECTILES, type FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
 import { STAGE_1 } from '../sim/stage';
-import { createWorld, players, sidekick, step, type Fighter, type World } from '../sim/world';
+import {
+  createWorld,
+  players,
+  sidekick,
+  step,
+  type Fighter,
+  type Pickup,
+  type Projectile,
+  type World,
+} from '../sim/world';
 import { poseFor, sheetKey, SHEETS } from './animation';
 import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { HeldKeys, mergeInputs } from './controls';
@@ -24,6 +33,13 @@ const BARK_MIN_TICKS = 40;
 const BARK_RISE = 70;
 
 const INK = 0x101010;
+/** The boss name and bar share one line in the strip below the street, clear of any feet. */
+const BOSS_BAR_W = 150;
+const BOSS_BAR_Y = SCREEN_H - 11;
+const BOSS_NAME_GAP = 6;
+const BOSS_NAMES: Partial<Record<FighterKind, string>> = { takehome: 'THE UNPAID TAKE HOME' };
+/** Coffee bobs gently so it reads as something to grab. */
+const PICKUP_BOB_TICKS = 40;
 const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: 'monospace',
   fontSize: '8px',
@@ -55,12 +71,15 @@ export class GameScene extends Phaser.Scene {
   private readonly sprites = new Map<number, Phaser.GameObjects.Sprite>();
   private readonly placeholders = new Map<number, Phaser.GameObjects.Rectangle>();
   private readonly missingSheets = new Set<string>();
+  private readonly projectileSprites = new Map<number, Phaser.GameObjects.Image>();
+  private readonly pickupSprites = new Map<number, Phaser.GameObjects.Image>();
   private shadows!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private bannerText!: Phaser.GameObjects.Text;
   private tokenText!: Phaser.GameObjects.Text;
   private barkText!: Phaser.GameObjects.Text;
+  private bossText!: Phaser.GameObjects.Text;
   private barkTicks = 0;
 
   constructor() {
@@ -72,6 +91,8 @@ export class GameScene extends Phaser.Scene {
       console.warn(`[otw] missing sprite sheet ${file.key}; drawing a placeholder box`);
       this.missingSheets.add(file.key);
     });
+    this.load.image('prop-card', 'sprites/props/card.png');
+    this.load.image('prop-coffee', 'sprites/props/coffee.png');
     for (const kind of Object.keys(SHEETS) as FighterKind[]) {
       for (const [sheet, def] of Object.entries(SHEETS[kind])) {
         this.load.spritesheet(sheetKey(kind, sheet), `sprites/${kind}/${sheet}.png`, {
@@ -98,6 +119,11 @@ export class GameScene extends Phaser.Scene {
       .text(0, 0, '', { ...HUD_TEXT, backgroundColor: '#101010', padding: { x: 2, y: 1 } })
       .setOrigin(0.5, 1)
       .setDepth(999);
+    this.bossText = this.add
+      .text(0, BOSS_BAR_Y - 2, '', HUD_TEXT)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(1001);
     this.bannerText = this.add
       .text(SCREEN_W / 2, 80, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
       .setOrigin(0.5)
@@ -117,6 +143,8 @@ export class GameScene extends Phaser.Scene {
     }
     this.cameras.main.scrollX = Math.round(this.world.cameraX);
     this.drawFighters();
+    this.drawProjectiles();
+    this.drawPickups();
     this.drawHud();
   }
 
@@ -206,6 +234,50 @@ export class GameScene extends Phaser.Scene {
     this.prune(this.placeholders, seen);
   }
 
+  /** Business cards in flight, at throwing height, with a small shadow so their depth line reads. */
+  private drawProjectiles(): void {
+    const seen = new Set<number>();
+    for (const p of this.world.projectiles) {
+      seen.add(p.id);
+      const ground = Math.round(STREET_TOP + p.z);
+      this.shadows.fillStyle(0x000000, 0.35).fillEllipse(Math.round(p.x), ground, 10, 3);
+      const sprite = this.spriteFor(this.projectileSprites, p, 'prop-card');
+      sprite
+        .setPosition(Math.round(p.x), ground - PROJECTILES[p.kind].height)
+        .setFlipX(p.vx < 0)
+        .setDepth(p.z + 0.5);
+    }
+    this.prune(this.projectileSprites, seen);
+  }
+
+  private drawPickups(): void {
+    const seen = new Set<number>();
+    const bob = Math.floor(this.world.tick / PICKUP_BOB_TICKS) % 2;
+    for (const pickup of this.world.pickups) {
+      seen.add(pickup.id);
+      const ground = Math.round(STREET_TOP + pickup.z);
+      this.shadows.fillStyle(0x000000, 0.35).fillEllipse(pickup.x, ground, 14, 4);
+      this.spriteFor(this.pickupSprites, pickup, `prop-${pickup.kind}`)
+        .setOrigin(0.5, 1)
+        .setPosition(pickup.x, ground - 1 - bob)
+        .setDepth(pickup.z);
+    }
+    this.prune(this.pickupSprites, seen);
+  }
+
+  private spriteFor(
+    sprites: Map<number, Phaser.GameObjects.Image>,
+    thing: Projectile | Pickup,
+    key: string,
+  ): Phaser.GameObjects.Image {
+    let sprite = sprites.get(thing.id);
+    if (!sprite) {
+      sprite = this.add.image(0, 0, key);
+      sprites.set(thing.id, sprite);
+    }
+    return sprite;
+  }
+
   private drawPlaceholder(f: Fighter, feet: { x: number; y: number }, visible: boolean): void {
     const stats = KINDS[f.kind];
     let box = this.placeholders.get(f.id);
@@ -259,6 +331,22 @@ export class GameScene extends Phaser.Scene {
       );
   }
 
+  /** A named health bar along the bottom while a boss is on the street. */
+  private drawBoss(): void {
+    const boss = this.world.fighters.find((f) => BOSS_NAMES[f.kind] && f.state !== 'dead');
+    const name = boss ? BOSS_NAMES[boss.kind] : undefined;
+    this.bossText.setText(name ?? '');
+    if (!boss || !name) return;
+    // Whole-pixel placement: text centred on a half pixel smears in the pixel font.
+    const nameLeft = Math.round((SCREEN_W - this.bossText.width - BOSS_NAME_GAP - BOSS_BAR_W) / 2);
+    this.bossText.setX(nameLeft);
+    const left = nameLeft + Math.round(this.bossText.width) + BOSS_NAME_GAP;
+    const fill = Math.round((BOSS_BAR_W * boss.hp) / KINDS[boss.kind].maxHp);
+    this.hud.fillStyle(INK).fillRect(left - 1, BOSS_BAR_Y - 1, BOSS_BAR_W + 2, 8);
+    this.hud.fillStyle(0x803030).fillRect(left, BOSS_BAR_Y, BOSS_BAR_W, 6);
+    this.hud.fillStyle(0xe0a040).fillRect(left, BOSS_BAR_Y, fill, 6);
+  }
+
   private drawHud(): void {
     const matt = players(this.world)[0];
     const hp = matt?.hp ?? 0;
@@ -269,6 +357,7 @@ export class GameScene extends Phaser.Scene {
     this.hud.fillStyle(0xe0c040).fillRect(8, 6, Math.round((100 * hp) / max), 6);
     this.scoreText.setText(`MATT  ${String(matt?.score ?? 0).padStart(6, '0')}`);
     this.drawToken();
+    this.drawBoss();
 
     const go = this.world.goPrompt > 0 && Math.floor(this.world.tick / 15) % 2 === 0;
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';

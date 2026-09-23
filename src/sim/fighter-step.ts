@@ -30,7 +30,8 @@ function startAttack(f: Fighter, id: AttackId): void {
 
 function groundAttack(f: Fighter): AttackId {
   const chain = chainFor(f.kind);
-  return chain ? (chain[f.chain] ?? chain[0] ?? 'shred') : 'shred';
+  const basic = KINDS[f.kind].basicAttack;
+  return chain ? (chain[f.chain] ?? basic) : basic;
 }
 
 /** Advance one fighter's state machine from its controls for this tick. */

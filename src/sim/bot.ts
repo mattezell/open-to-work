@@ -1,4 +1,4 @@
-import { DEPTH_TOLERANCE } from './constants';
+import { DEPTH, DEPTH_TOLERANCE } from './constants';
 import { ATTACKS, KINDS, SPECIAL_COST } from './fighters';
 import { input, NO_INPUT, type InputFrame } from './input';
 import { livingEnemies, players, type Fighter, type World } from './world';
@@ -6,6 +6,10 @@ import { livingEnemies, players, type Fighter, type World } from './world';
 const STRIKE_GAP = 22;
 const ALIGN_SLOP = 3;
 const CROWD_RADIUS = 44;
+/** A card this close on the bot's depth line, heading its way, is worth stepping off the line for. */
+const CARD_WATCH = 90;
+/** Depth a sidestep aims for: comfortably outside the hit band. */
+const SIDESTEP = DEPTH_TOLERANCE + 6;
 
 /** How well a scripted player plays. */
 export interface BotSkill {
@@ -45,11 +49,43 @@ function nearest(me: Fighter, enemies: Fighter[]): Fighter | undefined {
   }, undefined);
 }
 
+/** Step off the depth line toward whichever side has more room. */
+function sidestep(me: Fighter, from: number): InputFrame {
+  const down = me.z >= from ? from + SIDESTEP <= DEPTH : from - SIDESTEP < 0;
+  return input({ down, up: !down });
+}
+
+/**
+ * What a person learns after the first hit: an armored wind-up nearby, or a
+ * card sliding down your line, means get off the line instead of mashing.
+ */
+function dodge(world: World, me: Fighter, standing: Fighter[]): InputFrame | null {
+  for (const e of standing) {
+    if (!KINDS[e.kind].armored || e.attack === null) continue;
+    const def = ATTACKS[e.attack];
+    const reach = def.reach + KINDS[me.kind].halfWidth + 8;
+    const windingUp = e.attackTick < def.startup + def.active;
+    if (windingUp && Math.abs(e.x - me.x) <= reach && Math.abs(e.z - me.z) < SIDESTEP) {
+      return sidestep(me, e.z);
+    }
+  }
+  for (const card of world.projectiles) {
+    if (card.team === me.team) continue;
+    const toward = (me.x - card.x) * card.vx > 0;
+    if (toward && Math.abs(me.x - card.x) <= CARD_WATCH && Math.abs(card.z - me.z) < SIDESTEP) {
+      return sidestep(me, card.z);
+    }
+  }
+  return null;
+}
+
 /** What the bot decides to do right now: walk right, line up with the nearest enemy, mash, spin out when flanked. */
 function decide(world: World, me: Fighter, skill: BotSkill): Plan {
   const standing = livingEnemies(world).filter(
     (e) => e.state !== 'knockdown' && e.state !== 'getup',
   );
+  const evade = dodge(world, me, standing);
+  if (evade) return { kind: 'move', frame: evade };
   const target = nearest(me, standing);
   if (!target) {
     return livingEnemies(world).length === 0

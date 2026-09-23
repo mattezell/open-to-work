@@ -20,6 +20,16 @@ const LINES = {
   whiff: ['...where did it go?', 'Hallucinated that one.', 'Confidently wrong.'],
   reboot: ['Rebooting...', 'Turning myself off and on.', 'brb, updating'],
   rebooted: ['Back online.', 'Updates installed.', 'Where were we?'],
+  pickup: [
+    'Caffeinated. Allegedly.',
+    'Hydrate. Caffeinate. Iterate.',
+    'Free coffee. Great culture.',
+  ],
+  reinforcements: [
+    'Scope creep incoming!',
+    'They added requirements.',
+    'Now it is a two-week project.',
+  ],
   ko: ['Rejected.', 'Per my last email.', 'Moving forward with other candidates.'],
 } as const satisfies Record<string, readonly string[]>;
 
@@ -43,6 +53,10 @@ export function barkFor(event: SimEvent, tokenId: number | undefined, pick: numb
     case 'reboot':
     case 'rebooted':
       return { text: choose(LINES[event.type]), urgent: false };
+    case 'pickup':
+      return { text: choose(LINES.pickup), urgent: false };
+    case 'reinforcements':
+      return { text: choose(LINES.reinforcements), urgent: true };
     case 'ko':
       return event.by === tokenId ? { text: choose(LINES.ko), urgent: false } : null;
   }

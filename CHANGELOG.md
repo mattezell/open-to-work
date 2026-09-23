@@ -28,8 +28,18 @@ All notable changes to this project are documented here. Format follows
   at half damage). TOKEN reboots after a KO instead of staying down.
 - TOKEN's health bar and current order in the HUD, and speech bubbles when
   it takes an order, blocks a hit, lands a KO, whiffs or reboots.
+- Stage 1 is complete. Spam Recruiters keep their distance and throw
+  business cards along their depth line; step off the line or jump them,
+  and TOKEN on Guard catches them for you. The Unpaid Take Home ends the
+  stage: a slam that knocks Matt down, armor while it swings, and scope
+  creep (an extra ATS BOT) at two thirds and one third health, with a named
+  health bar along the bottom of the screen. Two coffees on the street heal
+  30 each.
 
 ### Changed
+
+- Stage 1 is longer (2200 px, was 1600): Spam Recruiters join waves 2 and 3,
+  and a fourth wave brings the boss.
 
 - Stage 1 fights back: ATS BOTs wind up faster (10 ticks, was 20) and swing
   again sooner, so mashing in front of one no longer stunlocks it forever.

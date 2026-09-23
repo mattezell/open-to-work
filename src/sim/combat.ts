@@ -12,7 +12,7 @@ function isActive(f: Fighter, def: AttackDef): boolean {
   return f.attackTick >= def.startup && f.attackTick < def.startup + def.active;
 }
 
-function isVulnerable(f: Fighter): boolean {
+export function isVulnerable(f: Fighter): boolean {
   return f.invuln === 0 && f.state !== 'dead' && f.state !== 'knockdown' && f.state !== 'getup';
 }
 
@@ -30,19 +30,17 @@ export function resolveHits(world: World): void {
   for (const attacker of world.fighters) {
     if (attacker.attack === null) continue;
     const def = ATTACKS[attacker.attack];
-    if (!isActive(attacker, def)) continue;
+    if (def.projectile || !isActive(attacker, def)) continue;
     for (const target of world.fighters) {
       if (target.team === attacker.team || !isVulnerable(target)) continue;
       if (attacker.attackHits.includes(target.id) || !inReach(attacker, def, target)) continue;
       attacker.attackHits.push(target.id);
       const guard = attacker.team === 'enemy' ? guardInterceptor(world, target) : undefined;
       if (guard && !attacker.attackHits.includes(guard.id)) {
-        // TOKEN steps in and takes it, at half damage.
         attacker.attackHits.push(guard.id);
-        world.events.push({ type: 'intercept' });
-        applyHit(world, attacker, def, guard, Math.ceil(def.damage / 2));
+        interceptHit(world, attacker, def, guard, attacker.x);
       } else {
-        applyHit(world, attacker, def, target, damageFor(world, attacker, def, target));
+        applyHit(world, attacker, def, target, damageFor(world, attacker, def, target), attacker.x);
       }
     }
   }
@@ -55,26 +53,42 @@ function damageFor(world: World, attacker: Fighter, def: AttackDef, target: Figh
   return focused ? def.damage * FOCUS_DAMAGE_SCALE : def.damage;
 }
 
-function applyHit(
+/** TOKEN steps in front of a hit meant for Matt and takes it, at half damage. */
+export function interceptHit(
   world: World,
-  attacker: Fighter,
+  attacker: Fighter | undefined,
+  def: AttackDef,
+  guard: Fighter,
+  fromX: number,
+): void {
+  world.events.push({ type: 'intercept' });
+  applyHit(world, attacker, def, guard, Math.ceil(def.damage / 2), fromX);
+}
+
+/**
+ * Land a hit. `fromX` is where it came from, which sets the knockback
+ * direction; for a thrown card that is the card, not the thrower. The
+ * attacker may be undefined when a projectile outlives its thrower.
+ */
+export function applyHit(
+  world: World,
+  attacker: Fighter | undefined,
   def: AttackDef,
   target: Fighter,
   damage: number,
+  fromX: number,
 ): void {
-  const chain = chainFor(attacker.kind);
-  const chainIndex = chain?.indexOf(attacker.attack ?? 'jab1') ?? -1;
-  if (chain && attacker.attackHits.length === 1 && chainIndex !== -1) {
-    attacker.chain = (chainIndex + 1) % chain.length;
-  }
-  attacker.lastTarget = target.id;
-
+  if (attacker) creditAttacker(attacker, target, damage);
   target.hp = Math.max(0, target.hp - damage);
-  target.attack = null;
-  const dir = target.x >= attacker.x ? 1 : -1;
-  target.facing = dir === 1 ? -1 : 1;
   world.hitstop = Math.max(world.hitstop, def.hitstop);
-  attacker.score += damage * 10;
+  const dir = target.x >= fromX ? 1 : -1;
+
+  // Armor: a heavy mid-swing takes the damage and keeps swinging.
+  const armored = KINDS[target.kind].armored && target.state === 'attack' && target.hp > 0;
+  if (armored) return;
+
+  target.attack = null;
+  target.facing = dir === 1 ? -1 : 1;
 
   if (def.knockdown || target.hp === 0 || target.y > 0) {
     setState(target, 'knockdown');
@@ -82,12 +96,22 @@ function applyHit(
     target.vy = KNOCKDOWN_VY;
     target.y = Math.max(target.y, 0.01);
     if (target.hp === 0) {
-      attacker.score += KINDS[target.kind].score;
-      world.events.push({ type: 'ko', id: target.id, by: attacker.id });
+      if (attacker) attacker.score += KINDS[target.kind].score;
+      world.events.push({ type: 'ko', id: target.id, by: attacker?.id ?? 0 });
       noteKo(world, target);
     }
   } else {
     setState(target, 'hurt');
     target.x += HIT_PUSHBACK * dir;
   }
+}
+
+function creditAttacker(attacker: Fighter, target: Fighter, damage: number): void {
+  const chain = chainFor(attacker.kind);
+  const chainIndex = chain?.indexOf(attacker.attack ?? 'jab1') ?? -1;
+  if (chain && attacker.attackHits.length === 1 && chainIndex !== -1) {
+    attacker.chain = (chainIndex + 1) % chain.length;
+  }
+  attacker.lastTarget = target.id;
+  attacker.score += damage * 10;
 }

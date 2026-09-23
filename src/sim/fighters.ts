@@ -1,7 +1,17 @@
 export type Team = 'player' | 'enemy';
-export type FighterKind = 'matt' | 'token' | 'ats';
+export type FighterKind = 'matt' | 'token' | 'ats' | 'spam' | 'takehome';
 export type AttackId =
-  'jab1' | 'jab2' | 'haymaker' | 'jumpkick' | 'special' | 'zap1' | 'zap2' | 'shred';
+  | 'jab1'
+  | 'jab2'
+  | 'haymaker'
+  | 'jumpkick'
+  | 'special'
+  | 'zap1'
+  | 'zap2'
+  | 'shred'
+  | 'toss'
+  | 'card'
+  | 'slam';
 
 export interface AttackDef {
   /** Ticks before the hitbox appears. */
@@ -18,7 +28,24 @@ export interface AttackDef {
   knockdown: boolean;
   /** Global freeze on connect, in ticks. */
   hitstop: number;
+  /** Instead of a hitbox, launch this projectile on the first active tick. */
+  projectile?: ProjectileKind;
 }
+
+export type ProjectileKind = 'card';
+
+export interface ProjectileDef {
+  /** The attack whose damage, hitstop and knockdown the projectile applies on contact. */
+  hit: AttackId;
+  speed: number;
+  /** Height above the ground it flies at. A fighter jumping higher than `clearance` dodges it. */
+  height: number;
+  clearance: number;
+}
+
+export const PROJECTILES: Record<ProjectileKind, ProjectileDef> = {
+  card: { hit: 'card', speed: 3.2, height: 40, clearance: 20 },
+};
 
 export interface KindStats {
   team: Team;
@@ -30,6 +57,10 @@ export interface KindStats {
   height: number;
   hitstun: number;
   score: number;
+  /** The ground attack when the kind has no chain. */
+  basicAttack: AttackId;
+  /** Hits while it is mid-attack hurt it but do not interrupt the attack. */
+  armored?: boolean;
 }
 
 export const ATTACKS: Record<AttackId, AttackDef> = {
@@ -113,6 +144,37 @@ export const ATTACKS: Record<AttackId, AttackDef> = {
     knockdown: false,
     hitstop: 5,
   },
+  toss: {
+    startup: 14,
+    active: 1,
+    recovery: 18,
+    damage: 0,
+    reach: 0,
+    omni: false,
+    knockdown: false,
+    hitstop: 0,
+    projectile: 'card',
+  },
+  card: {
+    startup: 0,
+    active: 1,
+    recovery: 0,
+    damage: 6,
+    reach: 0,
+    omni: false,
+    knockdown: false,
+    hitstop: 3,
+  },
+  slam: {
+    startup: 26,
+    active: 4,
+    recovery: 30,
+    damage: 18,
+    reach: 40,
+    omni: false,
+    knockdown: true,
+    hitstop: 10,
+  },
 };
 
 /** Matt's 3-hit chain, in order. Whiffing resets it to the first jab. */
@@ -142,6 +204,7 @@ export const KINDS: Record<FighterKind, KindStats> = {
     height: 64,
     hitstun: 16,
     score: 0,
+    basicAttack: 'jab1',
   },
   token: {
     team: 'player',
@@ -152,6 +215,7 @@ export const KINDS: Record<FighterKind, KindStats> = {
     height: 64,
     hitstun: 16,
     score: 0,
+    basicAttack: 'zap1',
   },
   ats: {
     team: 'enemy',
@@ -162,6 +226,30 @@ export const KINDS: Record<FighterKind, KindStats> = {
     height: 56,
     hitstun: 18,
     score: 500,
+    basicAttack: 'shred',
+  },
+  spam: {
+    team: 'enemy',
+    maxHp: 22,
+    walkX: 1.3,
+    walkZ: 0.9,
+    halfWidth: 10,
+    height: 64,
+    hitstun: 16,
+    score: 700,
+    basicAttack: 'toss',
+  },
+  takehome: {
+    team: 'enemy',
+    maxHp: 160,
+    walkX: 0.5,
+    walkZ: 0.45,
+    halfWidth: 22,
+    height: 96,
+    hitstun: 10,
+    score: 5000,
+    basicAttack: 'slam',
+    armored: true,
   },
 };
 

@@ -72,6 +72,29 @@ style:
     machine, no text on it. Same proportions, same palette, same silhouette,
     every time.
 
+  # Enemy 2. The Spam Recruiter: fast, pushy, throws business cards.
+  spam: >
+    SPAM RECRUITER, an enemy: a wiry, fast-moving humanoid made entirely of
+    junk mail. Its torso is a bulging, overstuffed envelope; its head is a
+    folded letter with a huge toothy salesman grin and two round, over-eager
+    eyes; a clip-on headset microphone curls to its mouth. A bright magenta
+    tie, thin legs in grey pinstripe trousers, pointed shiny shoes. Arms
+    like rolled-up flyers, one hand clutching a fan of blank business cards
+    ready to throw. Pushy and cheerful, clearly a paper creature and not a
+    human. Blank paper, no text. Same proportions, same palette, same
+    silhouette, every time.
+
+  # Stage 1 mini-boss. The Unpaid Take Home: the "four hour" assignment.
+  takehome: >
+    THE UNPAID TAKE HOME, a mini-boss: a hulking, top-heavy golem made of
+    an overstuffed manila file folder and towering stacks of printer paper,
+    twice the bulk of a man. A large brass stopwatch is embedded in its
+    chest. Its head is a spiral-bound notebook with two angry glowing yellow
+    eyes peering from under the cover. Huge fists made of crumpled paper
+    wads bound with giant black binder clips; paper clips as shoulder
+    armour. Loose pages flutter off it. Menacing but funny, blank pages,
+    no text. Same proportions, same palette, same silhouette, every time.
+
   strip2: >
     A single horizontal sprite strip of exactly 2 animation frames in 2 equal
     side-by-side slots, evenly spaced with clear empty space between them,
@@ -177,6 +200,30 @@ assets:
       separated by clear empty space: on the left, facing the viewer; on the
       right, in strict side profile facing LEFT, lurching forward with its
       shredder mouth open.
+
+  - id: spam_design
+    group: enemy-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/spam.png
+    prompt: >
+      Character model sheet for a video game enemy. {spam}
+      Two full-body views of the same character side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer with a
+      salesman's double thumbs-up; on the right, in strict side profile
+      facing LEFT, winding up to flick a business card.
+
+  - id: takehome_design
+    group: enemy-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/takehome.png
+    prompt: >
+      Character model sheet for a video game mini-boss. {takehome}
+      Two full-body views of the same golem side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer, fists
+      raised; on the right, in strict side profile facing LEFT, stomping
+      forward.
 
   # --- Matt animation sheets -----------------------------------------------
   # Every frame 128x96, body pinned to 80 px tall, feet on the bottom edge.
@@ -518,3 +565,196 @@ assets:
       {strip4} The attached image is the approved character model sheet: match
       this exact robot (use the side-profile view, but facing RIGHT). {ats}
       Animation: KNOCKDOWN. Frame 1 blown backwards off its feet, legs kicking up. Frame 2 flat on its back on the ground, lying horizontally, paper strips spilling out. Frame 3 pushing itself up on one claw, sparking. Frame 4 upright again, wobbly, red light blinking.
+
+  # --- Spam Recruiter sheets ---------------------------------------------
+  # Every frame 112x80, body pinned to 64 px tall.
+
+  - id: spam_idle
+    group: spam
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/spam/idle.png
+    refs: [art/designs/spam.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {spam}
+      Animation: IDLE LOOP, bouncing on its toes like an over-caffeinated salesman. Frame 1 neutral. Frame 2 up on its toes. Frame 3 back down, grin wider. Frame 4 shifting weight. The feet stay in place.
+
+  - id: spam_walk
+    group: spam
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/spam/walk.png
+    refs: [art/designs/spam.png]
+    frames: 6
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {spam}
+      Animation: WALK CYCLE, a fast eager power-walk, arms pumping, tie flapping. Frames alternate legs like a normal walk cycle; frame 1 and frame 4 are the contact poses.
+
+  - id: spam_throw
+    group: spam
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/spam/throw.png
+    refs: [art/designs/spam.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {spam}
+      Animation: ATTACK: flicking a business card. Frame 1 wind-up, card hand drawn back behind the head. Frame 2 arm whipping forward. Frame 3 arm fully extended forward, hand open, the card just released and flying ahead of the hand. Frame 4 recovering, grinning.
+
+  - id: spam_hurt
+    group: spam
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/spam/hurt.png
+    refs: [art/designs/spam.png]
+    frames: 2
+    frame_width: 112
+    frame_height: 80
+    target_height: 62
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {spam}
+      Animation: HIT REACTION. Frame 1 knocked back, envelope torso crumpling, eyes squeezed shut. Frame 2 staggering, headset knocked askew, a few blank cards spilling.
+
+  - id: spam_knockdown
+    group: spam
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/spam/knockdown.png
+    refs: [art/designs/spam.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 60
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {spam}
+      Animation: KNOCKDOWN. Frame 1 blown backwards off its feet, cards flying. Frame 2 flat on its back on the ground, lying horizontally, crumpled. Frame 3 pushing itself up on one arm. Frame 4 upright again, straightening its tie.
+
+  # --- Unpaid Take Home sheets -------------------------------------------
+  # Every frame 160x112, body pinned to 96 px tall.
+
+  - id: takehome_idle
+    group: takehome
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/takehome/idle.png
+    refs: [art/designs/takehome.png]
+    frames: 4
+    frame_width: 160
+    frame_height: 112
+    target_height: 96
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {takehome}
+      Animation: IDLE LOOP, looming and breathing heavily. Frame 1 neutral. Frame 2 shoulders rise, pages flutter. Frame 3 highest point, eyes glowing brighter. Frame 4 settling back. The feet do not move.
+
+  - id: takehome_walk
+    group: takehome
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/takehome/walk.png
+    refs: [art/designs/takehome.png]
+    frames: 6
+    frame_width: 160
+    frame_height: 112
+    target_height: 96
+    outline: "101010"
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {takehome} Colours exactly as the model sheet: golden manila-yellow folder panels, bright white paper, black binder clips; no peach, pink or orange tint anywhere.
+      Animation: WALK CYCLE, a slow heavy stomp forward, fists swinging, loose pages drifting off. Frames alternate legs like a normal walk cycle; frame 1 and frame 4 are the contact poses.
+
+  - id: takehome_slam
+    group: takehome
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/takehome/slam.png
+    refs: [art/designs/takehome.png]
+    frames: 4
+    frame_width: 160
+    frame_height: 112
+    target_height: 96
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {takehome}
+      Animation: ATTACK: a two-fisted overhead slam. Frame 1 both fists raised high above the head. Frame 2 fists coming down fast. Frame 3 both fists smashed into the ground in front of it, a burst of loose pages. Frame 4 straightening up.
+
+  - id: takehome_hurt
+    group: takehome
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/takehome/hurt.png
+    refs: [art/designs/takehome.png]
+    frames: 2
+    frame_width: 160
+    frame_height: 112
+    target_height: 94
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {takehome}
+      Animation: HIT REACTION. Frame 1 rocked backwards, pages bursting from its folder body, eyes squinting. Frame 2 staggering, one fist dragging.
+
+  - id: takehome_knockdown
+    group: takehome
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/takehome/knockdown.png
+    refs: [art/designs/takehome.png]
+    frames: 4
+    frame_width: 160
+    frame_height: 112
+    target_height: 88
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character (use the side-profile view, but facing RIGHT). {takehome} Colours exactly as the model sheet: golden manila-yellow folder panels, bright white paper, black binder clips; no peach, pink or orange tint anywhere.
+      Animation: KNOCKDOWN. Frame 1 toppling backwards, arms flailing. Frame 2 flat on its back on the ground, lying horizontally, papers scattered around it. Frame 3 heaving itself up on one fist. Frame 4 upright again, furious.
+
+  # --- Props ---------------------------------------------------------------
+
+  - id: prop_coffee
+    group: props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/coffee.png
+    width: 20
+    outline: "101010"
+    prompt: >
+      A single steaming takeaway coffee cup with a brown cardboard sleeve and
+      a white plastic lid, seen from the side, as a 16-bit video game health
+      pickup item. Centered, alone, filling most of the frame.
+
+  - id: prop_card
+    group: props
+    kind: icon
+    size: "1024x1024"
+    out: public/sprites/props/card.png
+    width: 12
+    outline: "101010"
+    prompt: >
+      A single blank white business card spinning through the air, tilted at
+      an angle, with small magenta motion streaks behind it, as a 16-bit
+      video game projectile. Centered, alone, filling most of the frame.
+      Blank card, no text.

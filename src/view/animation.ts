@@ -11,6 +11,7 @@ export interface SheetDef {
 
 const MATT_FRAME = { frameWidth: 128, frameHeight: 96 };
 const ENEMY_FRAME = { frameWidth: 112, frameHeight: 80 };
+const BOSS_FRAME = { frameWidth: 160, frameHeight: 112 };
 
 /** Every sheet the view loads, keyed by fighter kind then sheet name (the PNG's basename). */
 export const SHEETS = {
@@ -37,6 +38,20 @@ export const SHEETS = {
     punch: { frames: 4, ...ENEMY_FRAME },
     hurt: { frames: 2, ...ENEMY_FRAME },
     knockdown: { frames: 4, ...ENEMY_FRAME },
+  },
+  spam: {
+    idle: { frames: 4, ...ENEMY_FRAME },
+    walk: { frames: 6, ...ENEMY_FRAME },
+    throw: { frames: 4, ...ENEMY_FRAME },
+    hurt: { frames: 2, ...ENEMY_FRAME },
+    knockdown: { frames: 4, ...ENEMY_FRAME },
+  },
+  takehome: {
+    idle: { frames: 4, ...BOSS_FRAME },
+    walk: { frames: 6, ...BOSS_FRAME },
+    slam: { frames: 4, ...BOSS_FRAME },
+    hurt: { frames: 2, ...BOSS_FRAME },
+    knockdown: { frames: 4, ...BOSS_FRAME },
   },
 } as const satisfies Record<FighterKind, Record<string, SheetDef>>;
 
@@ -117,10 +132,24 @@ function attackPose(attack: AttackId, tick: number): Pose {
     case 'jumpkick':
       return { sheet: 'jump', frame: 3 };
     case 'haymaker':
-    case 'shred': {
-      const sheet = attack === 'haymaker' ? 'haymaker' : 'shred';
+    case 'shred':
+    case 'slam':
+    case 'toss': {
+      const sheet = HEAVY_SHEETS[attack];
       if (tick < def.startup) return { sheet, frame: tick < def.startup / 2 ? 0 : 1 };
-      return { sheet, frame: active ? 2 : 3 };
+      // A throw holds the release frame a beat so the card visibly leaves the hand.
+      const released = active || (attack === 'toss' && tick < def.startup + 6);
+      return { sheet, frame: released ? 2 : 3 };
     }
+    case 'card':
+      // A card is a projectile's hit, never a fighter's swing.
+      return { sheet: 'idle', frame: 0 };
   }
 }
+
+const HEAVY_SHEETS = {
+  haymaker: 'haymaker',
+  shred: 'shred',
+  slam: 'slam',
+  toss: 'throw',
+} as const satisfies Partial<Record<AttackId, string>>;
