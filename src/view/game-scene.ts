@@ -1,16 +1,21 @@
 import Phaser from 'phaser';
 import { DEPTH, SCREEN_H, SCREEN_W, TICK_HZ } from '../sim/constants';
 import { KINDS, type FighterKind } from '../sim/fighters';
+import type { InputFrame } from '../sim/input';
 import { STAGE_1 } from '../sim/stage';
 import { createWorld, players, step, type Fighter, type World } from '../sim/world';
 import { poseFor, sheetKey, SHEETS } from './animation';
-import { HeldKeys } from './controls';
+import { HeldKeys, mergeInputs } from './controls';
+import { TouchPad } from './touch';
 
 /** Screen y of the back edge of the walkable street (z = 0). */
 const STREET_TOP = SCREEN_H - DEPTH - 18;
 const TICK_MS = 1000 / TICK_HZ;
 /** Never simulate more than this many ticks per rendered frame, so a stalled tab cannot spiral. */
 const MAX_TICKS_PER_FRAME = 5;
+/** After a stage ends, ignore buttons this long so a mashing player sees the result screen. */
+const RESTART_DELAY_TICKS = TICK_HZ;
+const HURT_BUZZ_MS = 40;
 
 const INK = 0x101010;
 const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
@@ -25,10 +30,17 @@ export function feetPosition(f: Fighter): { x: number; y: number } {
   return { x: Math.round(f.x), y: Math.round(STREET_TOP + f.z - f.y) };
 }
 
+function restartHint(touch: boolean): string {
+  return touch ? 'tap a button' : 'press enter';
+}
+
 export class GameScene extends Phaser.Scene {
   private world!: World;
   private keys!: HeldKeys;
+  private touch!: TouchPad;
   private accumulator = 0;
+  private endedTicks = 0;
+  private lastHp = 0;
   private readonly sprites = new Map<number, Phaser.GameObjects.Sprite>();
   private readonly placeholders = new Map<number, Phaser.GameObjects.Rectangle>();
   private readonly missingSheets = new Set<string>();
@@ -58,12 +70,13 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.keys = new HeldKeys(window);
+    this.touch = new TouchPad(document.body, () => this.scale.refresh());
     this.drawStreet();
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
     this.scoreText = this.add.text(8, 16, '', HUD_TEXT).setScrollFactor(0).setDepth(1001);
     this.bannerText = this.add
-      .text(SCREEN_W / 2, 80, '', { ...HUD_TEXT, fontSize: '16px' })
+      .text(SCREEN_W / 2, 80, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(1001);
@@ -77,16 +90,31 @@ export class GameScene extends Phaser.Scene {
     this.accumulator = Math.min(this.accumulator + delta, TICK_MS * MAX_TICKS_PER_FRAME);
     while (this.accumulator >= TICK_MS) {
       this.accumulator -= TICK_MS;
-      if (this.world.status === 'playing') step(this.world, [this.keys.snapshot()]);
+      this.tick(mergeInputs(this.keys.snapshot(), this.touch.snapshot()));
     }
     this.cameras.main.scrollX = Math.round(this.world.cameraX);
     this.drawFighters();
     this.drawHud();
   }
 
+  private tick(frame: InputFrame): void {
+    if (this.world.status !== 'playing') {
+      this.endedTicks++;
+      const pressed = frame.attack || frame.jump || frame.special;
+      if (pressed && this.endedTicks > RESTART_DELAY_TICKS) this.restart();
+      return;
+    }
+    step(this.world, [frame]);
+    const hp = players(this.world)[0]?.hp ?? 0;
+    if (hp < this.lastHp) this.touch.buzz(HURT_BUZZ_MS);
+    this.lastHp = hp;
+  }
+
   private restart(): void {
     this.world = createWorld(STAGE_1, Date.now() >>> 0);
     this.accumulator = 0;
+    this.endedTicks = 0;
+    this.lastHp = players(this.world)[0]?.hp ?? 0;
   }
 
   private drawStreet(): void {
@@ -171,10 +199,11 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setText(`MATT  ${String(matt?.score ?? 0).padStart(6, '0')}`);
 
     const go = this.world.goPrompt > 0 && Math.floor(this.world.tick / 15) % 2 === 0;
+    const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';
     const banner: Record<World['status'], string> = {
       playing: go ? 'GO >>' : '',
-      cleared: 'OFFER EXTENDED\n\npress enter',
-      gameover: 'POSITION FILLED\n\npress enter',
+      cleared: `OFFER EXTENDED\n\n${again}`,
+      gameover: `POSITION FILLED\n\n${again}`,
     };
     this.bannerText.setText(banner[this.world.status]);
   }

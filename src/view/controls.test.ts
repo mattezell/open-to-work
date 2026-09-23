@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { NO_INPUT } from '../sim/input';
-import { HeldKeys, keysToInput } from './controls';
+import { input, NO_INPUT } from '../sim/input';
+import { HeldKeys, keysToInput, mergeInputs } from './controls';
 
 describe('keysToInput', () => {
   it('maps nothing held to no input', () => {
@@ -46,5 +46,22 @@ describe('HeldKeys', () => {
     expect(keys.snapshot().right).toBe(true);
     fire('blur');
     expect(keys.snapshot().right).toBe(false);
+  });
+});
+
+describe('mergeInputs', () => {
+  it('ORs buttons and directions across devices', () => {
+    const merged = mergeInputs(input({ right: true }), input({ attack: true }));
+    expect(merged).toEqual(input({ right: true, attack: true }));
+  });
+
+  it('cancels opposite directions coming from different devices', () => {
+    expect(mergeInputs(input({ left: true, up: true }), input({ right: true }))).toEqual(
+      input({ up: true }),
+    );
+  });
+
+  it('is no input with no sources', () => {
+    expect(mergeInputs()).toEqual(NO_INPUT);
   });
 });

@@ -4,6 +4,47 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:26 CDT: touch controls
+
+**What.** Phones and tablets get an on-screen pad: a floating 8-way stick on
+the left half, Genesis A/B/C buttons on the right, multi-touch by pointer id
+so one thumb walks while the other punches. Keyboard and touch merge into one
+`InputFrame` per tick, so the sim did not change at all. The pure part
+(`touch-state.ts`: 45 degree sector quantising, pointer ownership, the same
+tap latch as the keyboard) is unit tested; the DOM part is verified by
+Playwright driving CDP touch events against the dev server.
+
+**Assumptions made without Matt (he asked me to proceed and flag them):**
+- Button order and roles follow Streets of Rage 2: A special, B attack
+  (largest, under the thumb), C jump.
+- Portrait is supported rather than forcing a rotate prompt: game on top at
+  full width, pad below. Landscape puts the pad in the pillarbox bars; the
+  buttons overhang the right edge of the play field, so they go translucent
+  there.
+- On Android the first touch asks for fullscreen plus a landscape lock, once
+  (a player who leaves fullscreen is not dragged back). Momentum does the
+  same.
+- The pad shows on a coarse pointer or the first touch, and hides on a
+  keypress unless the device is touch-first, so touch laptops start on keys.
+- A 40 ms vibration when Matt loses health (Android only; iOS has no API).
+- Restart is any button after a one second pause, replacing Enter-only.
+
+**Bugs found by the playtest.**
+- The overlay's class was `touch`, and the touch-mode flag on `<html>` was
+  also `touch`, so the overlay's `display: none; position: fixed` hit the
+  root element and the whole page vanished on phones. Renamed the overlay to
+  `pad`. Only a real render catches that one; unit tests cannot.
+- First fight test scored 0 and I nearly chased an input bug. Isolating one
+  tap at a time showed every tap reaching the sim as an attack; the script
+  had walked Matt into the bots while mashing. With a fair setup, touch
+  cleared both bots (1660) and keyboard scored 970 on the same timing.
+- The HUD score read "000068" in screenshots when it was 0: the blurry 8 px
+  browser font. Added a dev-only `window.__otwGame` handle so playtests read
+  the sim instead of pixels. The bitmap font item gets more urgent.
+
+**Not verified:** real devices. Emulated Chromium says nothing about iOS
+Safari's gesture quirks or how the layout feels in a hand.
+
 ## 2026-09-22 19:20 CDT: M1 playable on the dev server
 
 **What.** Phaser view over the sim: sprites from the generated sheets,

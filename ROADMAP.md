@@ -26,6 +26,8 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   knockdown, one enemy type, wave lock; Phaser renders placeholder boxes
   (shipped with real sprites instead of boxes)
 - [ ] M2 (Wed): asset pipeline and all actor sheets; Stage 1 playable
+- [x] Touch controls (added Tue, not in the original plan): the audience
+  for this sees it on a phone
 - [ ] M3 (Wed): sidekick AI with directives
 - [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
 - [ ] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b
@@ -47,6 +49,10 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - HUD text is the browser monospace font, which blurs at 8 px. Replace with
   a bitmap font.
 - Stage art is a placeholder skyline drawn in code.
+- Touch pad is verified only in emulated Chromium (Playwright, CDP touch
+  events). Needs a real iPhone and Android pass: thumb reach of the button
+  cluster, whether the landscape buttons hide too much of the right edge,
+  and difficulty with a stick instead of keys.
 
 ## Open
 

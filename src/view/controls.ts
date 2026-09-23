@@ -15,18 +15,32 @@ export const KEY_BINDINGS: Readonly<Record<keyof InputFrame, readonly string[]>>
 export function keysToInput(held: ReadonlySet<string>): InputFrame {
   const pressed = (action: keyof InputFrame): boolean =>
     KEY_BINDINGS[action].some((code) => held.has(code));
-  const left = pressed('left');
-  const right = pressed('right');
-  const up = pressed('up');
-  const down = pressed('down');
+  return mergeInputs({
+    left: pressed('left'),
+    right: pressed('right'),
+    up: pressed('up'),
+    down: pressed('down'),
+    attack: pressed('attack'),
+    jump: pressed('jump'),
+    special: pressed('special'),
+  });
+}
+
+/** Combine several devices driving one player: any source pressing counts, opposites cancel. */
+export function mergeInputs(...frames: readonly InputFrame[]): InputFrame {
+  const any = (action: keyof InputFrame): boolean => frames.some((frame) => frame[action]);
+  const left = any('left');
+  const right = any('right');
+  const up = any('up');
+  const down = any('down');
   return {
     left: left && !right,
     right: right && !left,
     up: up && !down,
     down: down && !up,
-    attack: pressed('attack'),
-    jump: pressed('jump'),
-    special: pressed('special'),
+    attack: any('attack'),
+    jump: any('jump'),
+    special: any('special'),
   };
 }
 
