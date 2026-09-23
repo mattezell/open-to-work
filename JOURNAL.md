@@ -4,6 +4,48 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:05 CDT: sim core green, the bot found a real bug, strip slicing fixed
+
+**What.** Deterministic sim in `src/sim/` (pure TS, fixed 60 Hz, seeded
+mulberry32 on the world, input as data, enemies drive themselves through the
+same `InputFrame` a player uses). Belt movement, a jab-jab-haymaker chain
+that only advances on contact, a jump kick, a health-cost special with
+invulnerability, global hit-stop that still buffers presses, knockdown with
+getup invulnerability, wave camera lock with a GO prompt. 23 tests including
+a Momentum-style beatability bot across 5 seeds.
+
+**The bot earned its keep on day one.** It kept dying on seed 3. Cause: with
+the camera locked for a wave, the player was pinned at the screen edge and an
+ATS standing just off screen (dx 36, inside its reach) kept hitting him. The
+player cannot see or reach that enemy, so it is unfair, not hard. Fix: enemies
+pick the flank that is on screen, and may only start an attack while on
+screen. The first regression test I wrote for it passed with the fix
+reverted (a mutation check caught that), so it was replaced with a
+deterministic pinned-edge scenario that fails without the fix.
+
+**Art.** All 8 Matt sheets rendered first try (64 to 76 s each). Two
+post-processing bugs, both fixed with `--reuse-raw` and zero regenerations:
+
+1. Scale drift between sheets. Each sheet was scaled to fill its own frame,
+   so Matt changed size between idle and knockdown. Fix: `target_height`
+   per asset pins the body height across all of a character's sheets, and
+   `x_anchor: mass` centres frames on the alpha centroid so a punch does
+   not shove the body backwards.
+2. Clipped frames. Codex does not space poses evenly; the lying-down
+   knockdown frame and the flying kick crossed the equal-slot boundary and
+   got cut in half. Poses also overlap in x, so column gaps cannot separate
+   them. Fix: find the N largest connected blobs across the whole strip and
+   order them left to right, falling back to slots only when the strip does
+   not look like N figures. 0.3 s per strip.
+
+Also dropped saturation for Matt's sheets from 1.18 (inherited from
+an earlier game's neon palette) to 1.0: the brick-red tee was reading as fire-truck
+red. Saturation and contrast are now per asset.
+
+**Correction on record.** I told Matt Momentum was not on this box. It is
+`~/w/portals`; the wiki had it and `tng-wiki search` did not surface it.
+Captured an alias map in my wiki inbox.
+
 ## 2026-09-22 18:50 CDT: asset pipeline adapted, design candidates rendered
 
 **What.** Ported an earlier game's `genassets.py`/`pixelize.py`. Changes: the

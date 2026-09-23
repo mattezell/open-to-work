@@ -3,4 +3,5 @@ dist/
 .wrangler/
 tools/_staging/
 *.log
-ref/
+/ref/
+__pycache__/

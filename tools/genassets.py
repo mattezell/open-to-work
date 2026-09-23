@@ -215,8 +215,11 @@ def post_process(asset: dict, raw: Path, work: Path) -> bool:
             "--frame-width", str(asset["frame_width"]),
             "--frame-height", str(asset["frame_height"]),
             "--anchor", asset.get("anchor", "bottom"),
+            "--x-anchor", asset.get("x_anchor", "mass"),
+            "--target-height", str(asset.get("target_height", 0)),
             "--outline", asset.get("outline", ""),
-            "--saturation", "1.18", "--contrast", "1.10",
+            "--saturation", str(asset.get("saturation", 1.18)),
+            "--contrast", str(asset.get("contrast", 1.10)),
             "--brightness", bright,
         ])
 

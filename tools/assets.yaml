@@ -61,6 +61,30 @@ style:
     stubby legs with wide flat grey feet. Friendly, eager, slightly clumsy.
     Same proportions, same palette, same silhouette, every time.
 
+  # Enemy 1. The ATS Bot: the machine that reads your resume and says no.
+  ats: >
+    ATS BOT, an enemy robot built out of an office paper shredder: a squat
+    boxy grey-and-navy shredder body on two short hydraulic legs, the wide
+    black shredder slot on its front acting as a jagged grinning mouth with
+    strips of paper hanging out of it. A single red scanner-bar eye sweeps
+    across a dark visor above the slot. Two thin claw arms with grabber
+    pincers. A small blinking red light on top. Menacing but funny, clearly a
+    machine, no text on it. Same proportions, same palette, same silhouette,
+    every time.
+
+  strip2: >
+    A single horizontal sprite strip of exactly 2 animation frames in 2 equal
+    side-by-side slots, evenly spaced with clear empty space between them,
+    all the same scale, all facing RIGHT in strict side profile.
+  strip4: >
+    A single horizontal sprite strip of exactly 4 animation frames in 4 equal
+    side-by-side slots, evenly spaced with clear empty space between them,
+    all the same scale, all facing RIGHT in strict side profile.
+  strip6: >
+    A single horizontal sprite strip of exactly 6 animation frames in 6 equal
+    side-by-side slots, evenly spaced with clear empty space between them,
+    all the same scale, all facing RIGHT in strict side profile.
+
 assets:
   # --- design candidates: pick one per character, then it becomes the ref --
 
@@ -139,3 +163,275 @@ assets:
       same robot side by side, same scale, separated by clear empty space:
       on the left, facing the viewer with a happy screen face; on the right,
       in strict side profile facing RIGHT in a fighting stance, fists up.
+
+  # --- enemies: design first, same flow ------------------------------------
+
+  - id: ats_design
+    group: enemy-design
+    kind: design
+    size: "1536x1024"
+    out: art/designs/ats.png
+    prompt: >
+      Character model sheet for a video game enemy. {ats}
+      Two full-body views of the same robot side by side, same scale,
+      separated by clear empty space: on the left, facing the viewer; on the
+      right, in strict side profile facing LEFT, lurching forward with its
+      shredder mouth open.
+
+  # --- Matt animation sheets -----------------------------------------------
+  # Every frame 128x96, body pinned to 80 px tall, feet on the bottom edge.
+  # The approved design sheet is attached as a reference to every one.
+
+  - id: matt_idle
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/idle.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: FIGHTING STANCE IDLE LOOP, fists up in a boxer's guard, knees
+      bent. Frame 1 neutral. Frame 2 shoulders dip slightly as he breathes out.
+      Frame 3 lowest point. Frame 4 rising back toward frame 1. The feet do not
+      move. Subtle motion.
+
+  - id: matt_walk
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/walk.png
+    refs: [art/ref/matt.png]
+    frames: 6
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: WALK CYCLE, a confident brawler's swagger with fists held low
+      and ready. Six evenly spaced phases of one complete stride: contact,
+      down, passing, contact with the other foot, down, passing.
+
+  - id: matt_jab
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/jab.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: TWO QUICK JABS. Frame 1 guard, weight shifting forward.
+      Frame 2 lead fist fully extended straight forward at head height.
+      Frame 3 back in guard. Frame 4 rear fist fully extended straight forward
+      at head height. Short, snappy, no wind-up.
+
+  - id: matt_haymaker
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/haymaker.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: HAYMAKER FINISHER. Frame 1 big wind-up, rear fist drawn far
+      back, torso twisted away. Frame 2 fist swinging forward in a wide arc.
+      Frame 3 full follow-through, arm fully extended forward and slightly
+      upward, whole body committed, front foot planted. Frame 4 recovering,
+      fist coming back to guard.
+
+  - id: matt_jump
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/jump.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 78
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: JUMP AND FLYING KICK, all in mid-air except frame 1. Frame 1
+      crouched take-off, knees deeply bent. Frame 2 rising, knees tucked up,
+      fists up. Frame 3 falling, legs extending down. Frame 4 FLYING KICK:
+      body leaning back, lead leg shot straight forward horizontally, sole of
+      the sneaker first.
+
+  - id: matt_hurt
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/hurt.png
+    refs: [art/ref/matt.png]
+    frames: 2
+    frame_width: 128
+    frame_height: 96
+    target_height: 78
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: TAKING A HIT. Frame 1 head snapped back, eyes squeezed shut,
+      one foot stepping back, arms flung loose. Frame 2 hunched forward,
+      wincing, one hand on his stomach.
+
+  - id: matt_knockdown
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/knockdown.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 76
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: KNOCKED DOWN AND GETTING UP. Frame 1 blasted backwards off
+      his feet, body arched, arms flung forward. Frame 2 flat on his back on
+      the ground, fully horizontal, head toward the LEFT. Frame 3 pushing up
+      onto one knee, one hand on the ground. Frame 4 almost standing, shaking
+      it off.
+
+  - id: matt_special
+    group: matt
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/matt/special.png
+    refs: [art/ref/matt.png]
+    frames: 4
+    frame_width: 128
+    frame_height: 96
+    target_height: 80
+    outline: "101010"
+    saturation: 1.0
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact character. {matt}
+      Animation: SPINNING BACKFIST SPECIAL, a 360 degree spin with both arms
+      flung out wide. Frame 1 facing right, arms out. Frame 2 back turned to
+      the viewer mid-spin. Frame 3 facing left, arms out. Frame 4 facing the
+      viewer, completing the spin. Motion is fast and dramatic.
+
+  # --- TOKEN animation sheets ----------------------------------------------
+  # Every frame 112x80, body pinned to 64 px tall.
+
+  - id: token_idle
+    group: token
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/idle.png
+    refs: [art/ref/token.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: FIGHTING STANCE IDLE LOOP, fists up, bobbing eagerly. Frame 1
+      neutral. Frame 2 slight bounce down. Frame 3 lowest, antenna bulb
+      swaying. Frame 4 back up. The feet do not move.
+
+  - id: token_walk
+    group: token
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/walk.png
+    refs: [art/ref/token.png]
+    frames: 6
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: WALK CYCLE, a bouncy stompy robot march with fists pumping.
+      Six evenly spaced phases of one complete stride.
+
+  - id: token_punch
+    group: token
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/punch.png
+    refs: [art/ref/token.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 64
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: ONE-TWO PUNCH. Frame 1 wind-up. Frame 2 lead fist fully
+      extended forward, arm segments telescoped out. Frame 3 back to guard.
+      Frame 4 other fist fully extended forward. The screen face shows
+      fierce eyes throughout.
+
+  - id: token_hurt
+    group: token
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/hurt.png
+    refs: [art/ref/token.png]
+    frames: 2
+    frame_width: 112
+    frame_height: 80
+    target_height: 62
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: TAKING A HIT. Frame 1 monitor head knocked back, screen face
+      showing X eyes. Frame 2 wobbling forward, screen showing static noise.
+
+  - id: token_knockdown
+    group: token
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/token/knockdown.png
+    refs: [art/ref/token.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 60
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot. {token}
+      Animation: KNOCKED DOWN AND REBOOTING. Frame 1 blasted backwards off its
+      feet. Frame 2 flat on its back, fully horizontal, head toward the LEFT,
+      screen dark. Frame 3 sitting up, screen showing a small loading bar.
+      Frame 4 standing back up, screen face smiling.

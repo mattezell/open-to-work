@@ -1,0 +1,8 @@
+dist/
+node_modules/
+tools/
+art/
+ref/
+docs/*.png
+package-lock.json
+*.md

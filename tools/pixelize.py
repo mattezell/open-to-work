@@ -18,6 +18,7 @@ colour language because the console forces it.
 from __future__ import annotations
 
 import argparse
+from array import array
 import sys
 from pathlib import Path
 
@@ -321,31 +322,26 @@ def process(
     return out
 
 
-def largest_blob(im: Image.Image, threshold: int = 24) -> Image.Image:
-    """Keep only the biggest connected opaque region.
+def label_blobs(
+    im: Image.Image, threshold: int = 24, max_blobs: int = 250
+) -> tuple[array, dict[int, int]] | None:
+    """4-connected labelling of the opaque pixels: (label per pixel, size per label).
 
-    Generated strips routinely carry a few detached specks in a slot: a bit of
-    stray muzzle flash, a chip of armour that wandered out of the silhouette.
-    Left in, they inflate the frame's bounding box, which throws off the shared
-    scale for the WHOLE strip and makes the finished animation breathe. Dropping
-    everything but the main blob fixes the drift at the source.
+    Returns None past `max_blobs` components, which means pathological input.
     """
-    im = im.convert("RGBA")
     w, h = im.size
     alpha = im.getchannel("A").point(lambda v, t=threshold: 1 if v >= t else 0)
     solid = bytearray(alpha.tobytes())
-    label = bytearray(w * h)
-    best_id = 0
-    best_size = 0
+    label = array("I", bytes(4 * w * h))
+    sizes: dict[int, int] = {}
     current = 0
 
     for start in range(w * h):
         if not solid[start] or label[start]:
             continue
         current += 1
-        if current > 250:
-            # Pathological input; keep everything rather than guess.
-            return im
+        if current > max_blobs:
+            return None
         size = 0
         stack = [start]
         label[start] = current
@@ -360,21 +356,96 @@ def largest_blob(im: Image.Image, threshold: int = 24) -> Image.Image:
                     if solid[n] and not label[n]:
                         label[n] = current
                         stack.append(n)
-        if size > best_size:
-            best_size = size
-            best_id = current
+        sizes[current] = size
+    return label, sizes
 
-    if best_id == 0:
-        return im
-    keep = Image.frombytes("L", (w, h), bytes(255 if v == best_id else 0 for v in label))
+
+def _keep_labels(im: Image.Image, label, keep_ids: set[int]) -> Image.Image:
+    w, h = im.size
+    keep = Image.frombytes("L", (w, h), bytes(255 if v in keep_ids else 0 for v in label))
     out = im.copy()
     out.putalpha(ImageChops.multiply(im.getchannel("A"), keep))
     return out
 
 
+def largest_blob(im: Image.Image, threshold: int = 24) -> Image.Image:
+    """Keep only the biggest connected opaque region.
+
+    Generated strips routinely carry a few detached specks in a slot: a bit of
+    stray muzzle flash, a chip of armour that wandered out of the silhouette.
+    Left in, they inflate the frame's bounding box, which throws off the shared
+    scale for the WHOLE strip and makes the finished animation breathe. Dropping
+    everything but the main blob fixes the drift at the source.
+    """
+    im = im.convert("RGBA")
+    labelled = label_blobs(im, threshold)
+    if labelled is None or not labelled[1]:
+        # Pathological or empty input; keep everything rather than guess.
+        return im
+    label, sizes = labelled
+    best_id = max(sizes, key=sizes.__getitem__)
+    return _keep_labels(im, label, {best_id})
+
+
+def split_frames_by_blob(
+    im: Image.Image, frames: int, threshold: int = 24, min_share: float = 0.25
+) -> list[Image.Image] | None:
+    """Find each frame as one of the `frames` largest blobs, ordered left to right.
+
+    The image model does not space poses evenly: a wide pose (lying flat, a
+    flying kick) crosses the equal-slot boundary and gets clipped by slot
+    slicing, and poses often overlap in x so column gaps cannot separate them
+    either. Whole-strip blobs can. Returns None, meaning "fall back to slots",
+    when the strip does not look like `frames` separate figures: too few blobs,
+    or the smallest kept blob is under `min_share` of the median kept blob
+    (a detached limb, not a frame).
+    """
+    im = im.convert("RGBA")
+    labelled = label_blobs(im, threshold, max_blobs=20000)
+    if labelled is None:
+        return None
+    label, sizes = labelled
+    ranked = sorted(sizes, key=sizes.__getitem__, reverse=True)[:frames]
+    if len(ranked) < frames:
+        return None
+    kept = sorted(sizes[i] for i in ranked)
+    if kept[0] < min_share * kept[len(kept) // 2]:
+        return None
+
+    w = im.size[0]
+    sum_x = {i: 0 for i in ranked}
+    for idx, v in enumerate(label):
+        if v in sum_x:
+            sum_x[v] += idx % w
+    order = sorted(ranked, key=lambda i: sum_x[i] / sizes[i])
+
+    crops: list[Image.Image] = []
+    for blob_id in order:
+        cell = _keep_labels(im, label, {blob_id})
+        box = content_bbox(cell.getchannel("A"))
+        crops.append(cell.crop(box) if box else cell)
+    return crops
+
+
 # --------------------------------------------------------------------------
 # strip normalisation
 # --------------------------------------------------------------------------
+
+def slot_crops(im: Image.Image, frames: int, clean: bool) -> list[Image.Image]:
+    """Equal-width slot slicing: the fallback when frames cannot be found as blobs."""
+    W, H = im.size
+    slot_w = W / frames
+    crops: list[Image.Image] = []
+    for i in range(frames):
+        left = int(round(i * slot_w))
+        right = int(round((i + 1) * slot_w))
+        cell = im.crop((left, 0, right, H))
+        if clean:
+            cell = largest_blob(cell)
+        box = content_bbox(cell.getchannel("A"))
+        crops.append(cell.crop(box) if box else cell)
+    return crops
+
 
 def normalise_strip(
     im: Image.Image,
@@ -392,6 +463,8 @@ def normalise_strip(
     anchor: str,
     clean: bool = True,
     genesis_colors: int = 0,
+    target_height: int = 0,
+    x_anchor: str = "bbox",
 ) -> Image.Image:
     """Cut a generated sheet into frames and put them on one shared anchor.
 
@@ -399,25 +472,29 @@ def normalise_strip(
     size frame to frame. Scaling every frame by ONE shared factor (derived from
     the tallest frame) and aligning them all to one anchor is what stops the
     finished animation from breathing.
+
+    `target_height` pins the tallest frame to that many pixels so every sheet
+    of one character shares a body size; without it each sheet fills its own
+    frame and the character changes size between animations. `x_anchor="mass"`
+    centres each frame on its alpha centroid rather than its bounding box, so
+    an outstretched punch does not shove the body backwards.
     """
     im = im.convert("RGBA")
-    W, H = im.size
-    slot_w = W / frames
-
-    crops: list[Image.Image] = []
-    for i in range(frames):
-        left = int(round(i * slot_w))
-        right = int(round((i + 1) * slot_w))
-        cell = im.crop((left, 0, right, H))
+    crops = split_frames_by_blob(im, frames) if clean else None
+    if crops is None:
         if clean:
-            cell = largest_blob(cell)
-        box = content_bbox(cell.getchannel("A"))
-        crops.append(cell.crop(box) if box else cell)
+            print(f"pixelize: strip is not {frames} separate figures; slicing equal slots",
+                  file=sys.stderr)
+        crops = slot_crops(im, frames, clean)
 
     tallest = max(c.size[1] for c in crops)
     widest = max(c.size[0] for c in crops)
     # Leave a little headroom so an outline never clips the frame edge.
-    scale = min((frame_h - 2) / tallest, (frame_w - 2) / widest)
+    fit = min((frame_h - 2) / tallest, (frame_w - 2) / widest)
+    scale = target_height / tallest if target_height else fit
+    if scale > fit + 1e-9:
+        sys.exit(f"pixelize: target height {target_height} does not fit a "
+                 f"{frame_w}x{frame_h} frame (widest crop {widest}px); widen the frame")
 
     sheet = Image.new("RGBA", (frame_w * frames, frame_h), (0, 0, 0, 0))
     for i, cell in enumerate(crops):
@@ -437,12 +514,30 @@ def normalise_strip(
             outline=outline,
             trim=False,
         )
-        x = i * frame_w + (frame_w - w) // 2
+        if x_anchor == "mass":
+            offset = int(round(frame_w / 2 - alpha_centroid_x(small)))
+            offset = min(frame_w - w, max(0, offset))
+        else:
+            offset = (frame_w - w) // 2
+        x = i * frame_w + offset
         y = frame_h - h if anchor == "bottom" else (frame_h - h) // 2
         sheet.alpha_composite(small, (x, y))
     if genesis_colors:
         sheet = snap_sheet_genesis(sheet, genesis_colors)
     return sheet
+
+
+def alpha_centroid_x(im: Image.Image) -> float:
+    alpha = im.getchannel("A")
+    w, h = alpha.size
+    data = alpha.load()
+    total = 0
+    moment = 0.0
+    for x in range(w):
+        column = sum(1 for y in range(h) if data[x, y] >= 128)
+        total += column
+        moment += column * x
+    return moment / total if total else w / 2
 
 
 def snap_sheet_genesis(sheet: Image.Image, colors: int) -> Image.Image:
@@ -530,6 +625,10 @@ def main() -> None:
     strip.add_argument("--frame-width", type=int, required=True)
     strip.add_argument("--frame-height", type=int, required=True)
     strip.add_argument("--anchor", choices=["bottom", "center"], default="bottom")
+    strip.add_argument("--target-height", type=int, default=0,
+                       help="pin the tallest frame to this height (one body size per character)")
+    strip.add_argument("--x-anchor", choices=["bbox", "mass"], default="bbox",
+                       help="centre frames on the bounding box or the alpha centroid")
     strip.add_argument("--keep-specks", action="store_true",
                        help="do not drop detached fragments inside a frame")
 
@@ -587,6 +686,8 @@ def main() -> None:
             anchor=args.anchor,
             clean=not args.keep_specks,
             genesis_colors=genesis_colors,
+            target_height=args.target_height,
+            x_anchor=args.x_anchor,
         )
 
     out.save(args.out)
