@@ -70,7 +70,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   gated behind beating the game (Matt's ask, 2026-09-23): a
   `START  CV  CONTACT` row on the title with START the default, sharing
   `MenuRow` with the HIRED card, and a HIRE MATT help page listing the
-  URLs
+  URLs; live (07a3943)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 
