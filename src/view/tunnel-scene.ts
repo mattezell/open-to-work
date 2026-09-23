@@ -18,12 +18,12 @@ import { DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { sfxForTunnel, tunnelTempo } from './music';
+import { PixelBanner, PixelBubble, pixelFont, pixelText } from './pixel-text';
 import {
   BARK_MIN_TICKS,
   BARK_TICKS,
   drawBar,
   FLOOR_TOP,
-  HUD_TEXT,
   HURT_BUZZ_MS,
   MAX_TICKS_PER_FRAME,
   RESTART_DELAY_TICKS,
@@ -31,7 +31,7 @@ import {
   TICK_MS,
 } from './hud';
 import type { TouchPad } from './touch';
-import { hazardAlpha, popFor } from './tunnel-view';
+import { hazardAlpha, popFor, TUNNEL_CLEARED, TUNNEL_INTRO } from './tunnel-view';
 
 /** Matt rides at a fixed spot on screen; the track comes to him. */
 const MATT_X = 104;
@@ -93,12 +93,12 @@ export class TunnelScene extends Phaser.Scene {
   private shadows!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Graphics;
   private readonly hazardSprites = new Map<string, Phaser.GameObjects.Image>();
-  private scoreText!: Phaser.GameObjects.Text;
-  private tokenText!: Phaser.GameObjects.Text;
-  private barkText!: Phaser.GameObjects.Text;
-  private progressText!: Phaser.GameObjects.Text;
-  private bannerText!: Phaser.GameObjects.Text;
-  private popText!: Phaser.GameObjects.Text;
+  private scoreText!: Phaser.GameObjects.BitmapText;
+  private tokenText!: Phaser.GameObjects.BitmapText;
+  private barkText!: PixelBubble;
+  private progressText!: Phaser.GameObjects.BitmapText;
+  private bannerText!: PixelBanner;
+  private popText!: Phaser.GameObjects.BitmapText;
   private popTicks = 0;
 
   constructor() {
@@ -133,21 +133,14 @@ export class TunnelScene extends Phaser.Scene {
     this.matt = this.add.sprite(MATT_X, 0, 'matt-ride').setOrigin(0.5, 1);
     this.token = this.add.sprite(TOKEN_X, 0, 'token-ride').setOrigin(0.5, 1);
     this.hud = this.add.graphics().setDepth(1000);
-    this.scoreText = this.add.text(8, 16, '', HUD_TEXT).setDepth(1001);
-    this.tokenText = this.add
-      .text(SCREEN_W - 8, 6, '', { ...HUD_TEXT, align: 'right' })
+    this.scoreText = pixelText(this, 8, 16).setDepth(1001);
+    this.tokenText = pixelText(this, SCREEN_W - 8, 6)
       .setOrigin(1, 0)
       .setDepth(1001);
-    this.barkText = this.add
-      .text(TOKEN_X, 0, '', { ...HUD_TEXT, backgroundColor: '#101010', padding: { x: 2, y: 1 } })
-      .setOrigin(0, 1)
-      .setDepth(999);
-    this.progressText = this.add.text(8, PROGRESS_Y - 1, 'TAKE-HOME', HUD_TEXT).setDepth(1001);
-    this.bannerText = this.add
-      .text(SCREEN_W / 2, 84, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
-      .setOrigin(0.5)
-      .setDepth(1001);
-    this.popText = this.add.text(MATT_X, 0, '', HUD_TEXT).setOrigin(0.5, 1).setDepth(1001);
+    this.barkText = new PixelBubble(this, 0, 999);
+    this.progressText = pixelText(this, 8, PROGRESS_Y, 'TAKE-HOME').setDepth(1001);
+    this.bannerText = new PixelBanner(this, SCREEN_W / 2, 84, 1001);
+    this.popText = pixelText(this, MATT_X, 0).setOrigin(0.5, 1).setDepth(1001);
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.world.status === 'cleared') this.advance();
     });
@@ -177,7 +170,7 @@ export class TunnelScene extends Phaser.Scene {
     this.barkTicks = 0;
     this.popTicks = 0;
     sharedAudio().play('tunnel');
-    this.showBanner('THE TAKE-HOME TUNNEL\n\njump the hurdles\nsteer round the walls', INTRO_TICKS);
+    this.showBanner(TUNNEL_INTRO, INTRO_TICKS);
   }
 
   /** Up the Interview Tower with whatever health and score survived the ride. */
@@ -227,7 +220,7 @@ export class TunnelScene extends Phaser.Scene {
   private showPop(event: TunnelEvent): void {
     const pop = popFor(event);
     if (!pop) return;
-    this.popText.setText(pop.text).setColor(pop.color);
+    this.popText.setFont(pixelFont(this, pop.color)).setText(pop.text);
     this.popTicks = POP_TICKS;
     if (event.type === 'crash') {
       this.cameras.main.shake(CRASH_SHAKE_MS, CRASH_SHAKE);
@@ -332,7 +325,7 @@ export class TunnelScene extends Phaser.Scene {
 
     const again = this.endedTicks > RESTART_DELAY_TICKS ? restartHint(this.touch.active) : '';
     if (this.world.status === 'cleared') {
-      this.bannerText.setText(`TAKE-HOME SUBMITTED\n\nnext: the interview tower\n\n${again}`);
+      this.bannerText.setText(`${TUNNEL_CLEARED}\n\n${again}`);
     } else {
       this.bannerText.setText(this.bannerTicks > 0 ? this.banner : '');
     }

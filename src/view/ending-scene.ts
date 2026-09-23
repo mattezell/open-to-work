@@ -3,14 +3,9 @@ import { SCREEN_H, SCREEN_W } from '../sim/constants';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedAudio } from './audio';
 import { sharedDevices } from './devices';
-import {
-  HUD_TEXT,
-  INK,
-  MAX_TICKS_PER_FRAME,
-  RESTART_DELAY_TICKS,
-  restartHint,
-  TICK_MS,
-} from './hud';
+import { INK, MAX_TICKS_PER_FRAME, RESTART_DELAY_TICKS, restartHint, TICK_MS } from './hud';
+import { TITLE_SCALE } from './pixel-font';
+import { pixelText } from './pixel-text';
 import type { TouchPad } from './touch';
 
 /** The ending card holds a beat before the words come up over it. */
@@ -28,7 +23,7 @@ export class EndingScene extends Phaser.Scene {
   private touch!: TouchPad;
   private accumulator = 0;
   private ticks = 0;
-  private hint!: Phaser.GameObjects.Text;
+  private hint!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super('ending');
@@ -54,21 +49,20 @@ export class EndingScene extends Phaser.Scene {
       .rectangle(0, SCREEN_H - CAPTION_H, SCREEN_W, CAPTION_H, INK, 0.75)
       .setOrigin(0)
       .setAlpha(0);
-    const title = this.add
-      .text(SCREEN_W / 2, SCREEN_H - CAPTION_H + 6, 'HIRED', { ...HUD_TEXT, fontSize: '16px' })
+    const title = pixelText(this, SCREEN_W / 2, SCREEN_H - CAPTION_H + 4, 'HIRED')
+      .setScale(TITLE_SCALE)
       .setOrigin(0.5, 0)
       .setAlpha(0);
-    const lines = this.add
-      .text(
-        SCREEN_W / 2,
-        SCREEN_H - CAPTION_H + 26,
-        `FINAL SCORE  ${String(this.score).padStart(6, '0')}\nthanks for playing`,
-        { ...HUD_TEXT, align: 'center' },
-      )
+    const lines = pixelText(
+      this,
+      SCREEN_W / 2,
+      SCREEN_H - CAPTION_H + 24,
+      `FINAL SCORE  ${String(this.score).padStart(6, '0')}\nthanks for playing`,
+    )
+      .setCenterAlign()
       .setOrigin(0.5, 0)
       .setAlpha(0);
-    this.hint = this.add
-      .text(SCREEN_W / 2, SCREEN_H - 4, '', HUD_TEXT)
+    this.hint = pixelText(this, SCREEN_W / 2, SCREEN_H - 4)
       .setOrigin(0.5, 1)
       .setAlpha(0);
     this.tweens.add({

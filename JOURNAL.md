@@ -4,6 +4,55 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 05:50 CDT: playtest item 2, a pixel font
+
+**What.** Every `this.add.text` is now bitmap text in a font drawn for the
+game: `src/view/pixel-font.ts` holds 95 glyphs as `#`/`.` rows (5x7 caps,
+one descender row, 6x9 cell), `src/view/pixel-text.ts` bakes them into a
+canvas texture per colour and registers a Phaser RetroFont. Banners became
+`PixelBanner` (title line 2x, body 1x, centred as a block); the bark bubble
+became `PixelBubble` (text on an ink rectangle, since BitmapText has no
+background colour). 11 new tests.
+
+**Why.** Matt's playtest: the 8px text is blurry. Browser text at 8px is
+anti-aliased, then `Scale.FIT` stretches the 320px canvas by a fractional
+factor; no `resolution` setting fixes that. Bitmap glyphs on whole game
+pixels under `pixelArt: true` stay nearest-neighbour sharp at any size.
+
+**Assumptions (logged per the standing instruction).**
+- Hand-drawn glyphs in the repo rather than a downloaded font: no new
+  dependency or licence question, and the table is testable. Shapes follow
+  the classic 5x7 LCD character set.
+- Colours are baked per texture, not tinted: Phaser's canvas renderer does
+  not tint bitmap text, and a phone that falls back to canvas would show
+  every pop in cream. Four small textures at most.
+- A one-pixel ink drop shadow baked into every glyph. The first screenshots
+  showed cream titles fighting the tower's sunset; the shadow sits in the
+  cell's spare column and row, so metrics did not change.
+- Banners split at the first blank line: title 2x, body 1x. At 2x the old
+  single-object banners overflowed ("next: the take-home tunnel" is 311 px
+  at 12 px a letter); the title/body split reads more like an arcade card.
+- The ending caption was re-spaced inside its 58 px plate (title at +4,
+  lines at +24) because the new line height pushed the hint into the score.
+  Item 5 redoes this screen anyway.
+
+**What broke.** `RetroFont.Parse` returns the whole cache entry
+(`{data, texture, frame}`), but its typings say it returns the font data.
+Wrapping it again in `{data: ...}` gave glyphs with no `kerning` table and
+a `Cannot read properties of undefined (reading '84')` deep in
+`GetBitmapTextSize` on the first `setText`. Fix: add the returned entry to
+the cache as is, typed `unknown`, with a comment. Worth a gotcha note.
+
+**Rejected.** Tint on one white texture (canvas renderer). A web font such
+as Press Start 2P via CSS (network fetch, FOUT, still anti-aliased at
+fractional scale). Keeping `add.text` and raising `resolution` (the blur
+is the scaler, not the resolution).
+
+**Verified.** Playwright at 3x (960x672), WebGL renderer: street bark,
+tower intro card, round card and boss bar, tunnel intro, CRASH and CLEAR
+pops, ending caption. No console errors. `npm run check`: 208 TS tests,
+20 tools tests.
+
 ## 2026-09-23 05:37 CDT: playtest fixes 1, flicker, the Panel, tunnel feedback
 
 **What.** Matt's first playtest (Tue night) came back with a list; he

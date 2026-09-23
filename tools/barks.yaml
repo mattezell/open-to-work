@@ -11,7 +11,7 @@ seed: 22
 temperature: 0.9
 candidates: 14
 keep: 8
-# The speech bubble fits 40 characters at 8px; ask for less to leave margin.
+# The speech bubble fits 40 characters of the pixel font; ask for less to leave margin.
 max_chars: 40
 ask_chars: 32
 

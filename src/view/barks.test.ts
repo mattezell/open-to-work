@@ -5,7 +5,7 @@ import bank from './barks.json';
 import { barkFor, DIRECTIVE_LABELS, tunnelBarkFor } from './barks';
 
 const TOKEN_ID = 2;
-/** Widest bubble that still fits between the screen edges at 8px monospace. */
+/** Widest bubble that still fits between the screen edges in the 6px-wide pixel font. */
 const MAX_BARK_CHARS = 40;
 
 const EVENTS: SimEvent[] = [

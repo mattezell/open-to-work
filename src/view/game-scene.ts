@@ -20,12 +20,12 @@ import { barkFor, DIRECTIVE_LABELS } from './barks';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { sfxForSim } from './music';
+import { PixelBanner, PixelBubble, pixelText } from './pixel-text';
 import {
   BARK_MIN_TICKS,
   BARK_TICKS,
   drawBar,
   FLOOR_TOP,
-  HUD_TEXT,
   HURT_BUZZ_MS,
   INK,
   MAX_TICKS_PER_FRAME,
@@ -44,6 +44,7 @@ import {
   isFadingCorpse,
   isWaitingPanelist,
   panelBanner,
+  TOWER_INTRO,
   towerRetry,
   type BrawlStage,
 } from './stage-view';
@@ -53,6 +54,8 @@ import type { TouchPad } from './touch';
 const STREET_TOP = FLOOR_TOP;
 /** How far above TOKEN's feet a bark sits. */
 const BARK_RISE = 70;
+/** Keeps the bubble's ink plate clear of the screen edges. */
+const BARK_MARGIN = 5;
 
 /** The boss name and bar share one line in the strip below the street, clear of any feet. */
 const BOSS_BAR_W = 150;
@@ -92,11 +95,11 @@ export class GameScene extends Phaser.Scene {
   private shadows!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Graphics;
   private hotSeatMarker!: Phaser.GameObjects.Graphics;
-  private scoreText!: Phaser.GameObjects.Text;
-  private bannerText!: Phaser.GameObjects.Text;
-  private tokenText!: Phaser.GameObjects.Text;
-  private barkText!: Phaser.GameObjects.Text;
-  private bossText!: Phaser.GameObjects.Text;
+  private scoreText!: Phaser.GameObjects.BitmapText;
+  private bannerText!: PixelBanner;
+  private tokenText!: Phaser.GameObjects.BitmapText;
+  private barkText!: PixelBubble;
+  private bossText!: Phaser.GameObjects.BitmapText;
   private barkTicks = 0;
   private banner = '';
   private bannerTicks = 0;
@@ -149,26 +152,16 @@ export class GameScene extends Phaser.Scene {
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
     this.hotSeatMarker = this.add.graphics().setDepth(999.5);
-    this.scoreText = this.add.text(8, 16, '', HUD_TEXT).setScrollFactor(0).setDepth(1001);
-    this.tokenText = this.add
-      .text(SCREEN_W - 8, 16, '', { ...HUD_TEXT, align: 'right' })
+    this.scoreText = pixelText(this, 8, 16).setScrollFactor(0).setDepth(1001);
+    this.tokenText = pixelText(this, SCREEN_W - 8, 16)
       .setOrigin(1, 0)
       .setScrollFactor(0)
       .setDepth(1001);
-    this.barkText = this.add
-      .text(0, 0, '', { ...HUD_TEXT, backgroundColor: '#101010', padding: { x: 2, y: 1 } })
-      .setOrigin(0.5, 1)
-      .setDepth(999);
-    this.bossText = this.add
-      .text(0, BOSS_BAR_Y - 2, '', HUD_TEXT)
-      .setOrigin(0, 0)
+    this.barkText = new PixelBubble(this, 0.5, 999);
+    this.bossText = pixelText(this, 0, BOSS_BAR_Y - 1)
       .setScrollFactor(0)
       .setDepth(1001);
-    this.bannerText = this.add
-      .text(SCREEN_W / 2, 80, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(1001);
+    this.bannerText = new PixelBanner(this, SCREEN_W / 2, 80, 1001);
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.world.status !== 'playing') this.advance();
     });
@@ -234,7 +227,7 @@ export class GameScene extends Phaser.Scene {
     this.offer = undefined;
     sharedAudio().play(this.stage);
     if (this.stage === 'tower') {
-      this.showBanner('THE INTERVIEW TOWER\n\nthree rounds. one offer.', INTRO_TICKS);
+      this.showBanner(TOWER_INTRO, INTRO_TICKS);
     }
   }
 
@@ -484,8 +477,8 @@ export class GameScene extends Phaser.Scene {
       .setPosition(
         Phaser.Math.Clamp(
           feet.x,
-          this.world.cameraX + this.barkText.width / 2 + 2,
-          this.world.cameraX + SCREEN_W - this.barkText.width / 2 - 2,
+          this.world.cameraX + this.barkText.width / 2 + BARK_MARGIN,
+          this.world.cameraX + SCREEN_W - this.barkText.width / 2 - BARK_MARGIN,
         ),
         Math.max(feet.y - BARK_RISE, 34),
       );

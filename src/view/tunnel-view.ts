@@ -40,3 +40,6 @@ const PASSING_REACH = 36;
 export function hazardAlpha(laneZ: number, mattZ: number, offset: number): number {
   return laneZ > mattZ && Math.abs(offset) < PASSING_REACH ? PASSING_HAZARD_ALPHA : 1;
 }
+
+export const TUNNEL_INTRO = 'THE TAKE-HOME TUNNEL\n\njump the hurdles\nsteer round the walls';
+export const TUNNEL_CLEARED = 'TAKE-HOME SUBMITTED\n\nnext: the interview tower';

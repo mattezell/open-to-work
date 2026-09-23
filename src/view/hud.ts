@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { DEPTH, SCREEN_H, TICK_HZ } from '../sim/constants';
 
-/** What every stage scene shares: timing, the floor line, the HUD look. */
+/** What every stage scene shares: timing, the floor line, the bars. */
 
 /** Screen y of the back edge of the floor band (z = 0), on the street and in the tunnel. */
 export const FLOOR_TOP = SCREEN_H - DEPTH - 18;
@@ -16,12 +16,6 @@ export const BARK_TICKS = 100;
 export const BARK_MIN_TICKS = 40;
 
 export const INK = 0x101010;
-export const HUD_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
-  fontFamily: 'monospace',
-  fontSize: '8px',
-  color: '#f0f0e0',
-  resolution: 4,
-};
 
 export function restartHint(touch: boolean): string {
   return touch ? 'tap a button' : 'press enter';

@@ -80,6 +80,11 @@ All notable changes to this project are documented here. Format follows
   16 px apart and piled on top of each other), and each interviewer beaten
   opens up the room to the next desk.
 
+- All on-screen text is a pixel font drawn for the game (5 by 7 capitals,
+  lowercase with descenders) instead of the browser's 8px monospace, so it
+  stays sharp at any scale. Every letter carries a one-pixel ink shadow, and
+  the centre cards set their title line double size over a smaller body.
+
 ### Fixed
 
 - Starting a second run after clearing the tunnel froze the game on the

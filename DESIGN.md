@@ -190,6 +190,20 @@ three enemies.
   by replaying the input log through the sim server-side, like Momentum's
   anti-cheat. The leaderboard is a Friday stretch goal, not a blocker.
 
+## Text
+
+Every word on screen is the game's own pixel font, not browser text:
+anti-aliased 8px monospace scaled up by `Scale.FIT` smeared on every screen
+size. The glyph table lives in `src/view/pixel-font.ts` as rows of `#` and
+`.` (5 by 7 capitals, one descender row, a 6 by 9 cell), with the layout
+helpers, and is unit-tested: every printable ASCII character is present and
+distinct, every bark and banner fits the screen. `src/view/pixel-text.ts`
+draws the table into a canvas texture per colour on first use (baked, not
+tinted, because the canvas renderer cannot tint bitmap text), with a
+one-pixel ink shadow in each cell's spare column and row, and registers it
+as a Phaser RetroFont. `PixelBanner` sets a card's first line at 2x over the
+body; `PixelBubble` is TOKEN's speech bubble on an ink plate.
+
 ## Asset pipeline
 
 - `tools/assets.yaml` manifest: a `style` block (world paragraph, sprite

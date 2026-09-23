@@ -84,6 +84,8 @@ export function towerRetry(arrival: Carry): Carry {
   return { ...arrival, hp: KINDS.matt.maxHp };
 }
 
+export const TOWER_INTRO = 'THE INTERVIEW TOWER\n\nthree rounds. one offer.';
+
 export function clearedBanner(stage: BrawlStage, hint: string): string {
   return stage === 'tower'
     ? `OFFER EXTENDED\n\n${hint}`
