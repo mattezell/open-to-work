@@ -55,10 +55,10 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
   - [x] Every stage and the whole campaign cleared by the bot in
     `npm run check` (`src/sim/campaign-bot.test.ts`; the per-stage bots
-    were already there)
+    were already there) (1d65087)
   - [x] /cv/ rechecked 2026-09-23: live (its own body, "CV" title), so
     `CV_LIVE` is true and the card offers CV, CONTACT, PLAY AGAIN.
-    Recheck again before each deploy build
+    Recheck again before each deploy build (1d65087)
   - [ ] Deploy to Cloudflare on a subdomain of immatt.com (hostname to
     confirm with Matt; no publish without his go-ahead)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation

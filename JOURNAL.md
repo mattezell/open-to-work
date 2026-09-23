@@ -32,7 +32,7 @@ serves its own 21 KB page (title "CV", sections Professional Summary to
 Education), different from the home page, so `CV_LIVE` is true. The HIRED
 card shows CV, CONTACT, PLAY AGAIN on one row; in headless Chromium Enter
 on the default CV opened https://immatt.com/cv/ in a new tab, no errors.
-Another session deployed the CV page overnight; this session only reads
+Another session deployed the CV page; this session only reads
 it.
 
 **Next.** The Cloudflare deploy needs Matt: the hostname
