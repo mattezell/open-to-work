@@ -36,10 +36,10 @@ then back to the title. Enter, Space, J (any attack, jump or special
 button), or a tap, starts a run from any of them.
 
 The title's bottom row is a menu: `START  CV  CONTACT`, START chosen.
-Left and right move the cursor; the start keys pick, so they still just
-start unless you moved it. CV and CONTACT open immatt.com/cv/ and
-immatt.com/contact/ in a new tab. A tap on an option picks it; a tap
-anywhere else starts.
+Left and right (or the touch stick) move the cursor; the start keys and
+the pad buttons pick, so they still just start unless you moved it. CV
+and CONTACT open immatt.com/cv/ and immatt.com/contact/ in a new tab. A
+tap on an option picks it; a tap anywhere else, off the pad, starts.
 
 ## Deploy
 

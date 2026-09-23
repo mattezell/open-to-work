@@ -3,13 +3,13 @@ import { SCREEN_H, SCREEN_W, TICK_HZ } from '../sim/constants';
 import type { FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
 import { sheetKey, SHEETS } from './animation';
-import { attractScreen, startPressed, TITLE_SCENE, titleHint, type AttractScreen } from './attract';
+import { attractScreen, TITLE_SCENE, titleHint, type AttractScreen } from './attract';
 import { mergeInputs, type HeldKeys } from './controls';
 import { sharedDevices } from './devices';
 import { ROSTER, wrap } from './help';
 import { CV_LIVE, titleOptions } from './hire';
 import { FLOOR_TOP, INK, MAX_TICKS_PER_FRAME, TICK_MS } from './hud';
-import { listenForPicks, MenuRow, openInNewTab, PICK_CODES } from './menu-row';
+import { listenForPicks, MenuRow, openInNewTab } from './menu-row';
 import { CELL_H, CELL_W, TITLE_SCALE } from './pixel-font';
 import { HEAD_COLOR, pixelText } from './pixel-text';
 import type { GameData } from './game-scene';
@@ -77,21 +77,7 @@ export class TitleScene extends Phaser.Scene {
     this.rosterParts = this.drawRoster();
     this.menu = new MenuRow(this, titleOptions(CV_LIVE), SCREEN_H - 14);
     this.showHint();
-    listenForPicks(
-      this,
-      (e) => {
-        if (!e.repeat && PICK_CODES.includes(e.code)) this.pick();
-      },
-      (x, y) => {
-        const hit = this.menu.slotAt(x, y);
-        if (hit < 0) {
-          this.start();
-          return;
-        }
-        this.menu.select(hit);
-        this.pick();
-      },
-    );
+    listenForPicks(this, this.menu, { pick: () => this.pick(), tapScreen: () => this.start() });
     this.show({ screen: 'title' });
   }
 
@@ -111,9 +97,9 @@ export class TitleScene extends Phaser.Scene {
   }
 
   /**
-   * The stick and the keys move the cursor; the touch pad's buttons pick.
-   * Keyboard picks and taps arrive through `listenForPicks` instead, inside
-   * the event, so a link can open in a new tab.
+   * The stick and the arrow keys move the cursor. Picks (keys, pad buttons,
+   * taps) arrive through `listenForPicks` instead, inside the event, so a
+   * link can open in a new tab.
    */
   private step(): void {
     const pad = this.touch.snapshot();
@@ -122,7 +108,6 @@ export class TitleScene extends Phaser.Scene {
     this.lastFrame = frame;
     if (was && frame.left && !was.left) this.move(-1);
     if (was && frame.right && !was.right) this.move(1);
-    if (startPressed(pad)) this.pick();
   }
 
   /** Moving the cursor is someone at the cabinet: back to the title, and the attract loop starts over. */

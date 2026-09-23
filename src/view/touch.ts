@@ -17,6 +17,16 @@ export function prefersTouch(): boolean {
 }
 
 /**
+ * The pad control under a pointer event's target: 'stick' for the stick's
+ * zone, a button's action, or undefined off the pad. The pad's touches still
+ * reach window listeners, so screens with a menu use this to tell them apart.
+ */
+export function padControlAt(target: EventTarget | null): string | undefined {
+  if (!(target instanceof Element)) return undefined;
+  return target.closest<HTMLElement>('[data-pad-control]')?.dataset.padControl;
+}
+
+/**
  * The on-screen pad: a floating stick on the left half and three buttons on the
  * right, drawn as a DOM overlay so it stays crisp and hit-testable at any
  * canvas scale. It shows itself on a coarse pointer or the first touch, and
@@ -116,6 +126,7 @@ export class TouchPad {
   }
 
   private bindStick(zone: HTMLElement): void {
+    zone.dataset.padControl = 'stick';
     zone.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       zone.setPointerCapture(e.pointerId);
@@ -136,6 +147,7 @@ export class TouchPad {
   }
 
   private bindButton(button: HTMLElement, action: ButtonAction): void {
+    button.dataset.padControl = action;
     button.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       button.setPointerCapture(e.pointerId);

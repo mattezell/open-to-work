@@ -4,6 +4,39 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-23 08:43 CDT: the touch stick started the game from the title
+
+**What.** Matt, on his phone: pushing the stick right to reach CV started
+the game. The window `pointerdown` listener behind the title's "tap
+anywhere else starts" also hears touches on the pad, which is a DOM
+overlay and does not stop propagation. Before the menu that was harmless
+(every touch meant start); with a menu it broke two things: the stick
+started the game before its direction reached the next step, and a pad
+button with CV chosen started the game too, since the pointerdown ran
+before the pad's pick on the next step.
+
+**Fix.** The pad tags its controls (`data-pad-control`, read back by
+`padControlAt` in `touch.ts`) and `menuTouch` in `hire.ts` sorts each
+touch: an action button picks, inside the event so the tab still opens;
+an option under the touch picks that option; the rest of the stick zone
+and the order pill are ignored so the stick moves the cursor; anything
+else is a screen tap. The option check comes before the stick check
+because the stick's zone covers the left half of a landscape screen,
+START included. `listenForPicks` now takes the menu and does this for
+the title and the HIRED card, and the scenes no longer pick from the
+pad's per-step state, which on the HIRED card had picked on every tick a
+button was held.
+
+**Checked.** Playwright with CDP touch events on the dev server: a stick
+drag right moves the cursor (twice reaches CONTACT) and the title stays;
+B opens contact once; the order pill does nothing; the stick left twice
+and C starts; in landscape the START slot, measured inside the stick
+zone, starts and the CV slot opens; a sky tap starts; on the HIRED card
+the stick moves and B opens once.
+
+**Lesson.** The first round tested phone taps on slots and on the sky but
+not the stick: the input Matt was actually going to use.
+
 ## 2026-09-23 08:15 CDT: CV and contact on the title screen and in help
 
 **What.** Matt: expose the CV and contact links on the title screen, and

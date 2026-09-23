@@ -9,6 +9,7 @@ import {
   displayUrl,
   hireOptions,
   menuSlotXs,
+  menuTouch,
   optionHint,
   optionText,
   titleOptions,
@@ -99,6 +100,29 @@ describe('a menu row', () => {
       const before = optionText(labels[i - 1] ?? '', false);
       expect((xs[i] ?? 0) - (xs[i - 1] ?? 0)).toBe((before.length + 1) * CELL_W);
     }
+  });
+});
+
+describe('a touch on a menu', () => {
+  it('picks the chosen option from any action button, wherever the option is', () => {
+    for (const button of ['attack', 'jump', 'special']) {
+      expect(menuTouch(button, false)).toBe('pick');
+      expect(menuTouch(button, true)).toBe('pick');
+    }
+  });
+
+  it('picks the option under it, even inside the stick zone', () => {
+    expect(menuTouch(undefined, true)).toBe('slot');
+    expect(menuTouch('stick', true)).toBe('slot');
+  });
+
+  it('leaves the stick and the order pill to the pad, so the stick can move the cursor', () => {
+    expect(menuTouch('stick', false)).toBe('pad');
+    expect(menuTouch('order', false)).toBe('pad');
+  });
+
+  it('counts anywhere else as a tap on the screen', () => {
+    expect(menuTouch(undefined, false)).toBe('screen');
   });
 });
 

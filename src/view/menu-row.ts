@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 import { KEY_BINDINGS } from './controls';
-import { cycle, menuSlotXs, optionText, type HireOption } from './hire';
+import { cycle, menuSlotXs, menuTouch, optionText, type HireOption } from './hire';
 import { CELL_H } from './pixel-font';
 import { HEAD_COLOR, pixelFont, pixelText } from './pixel-text';
+import { padControlAt } from './touch';
 
 /** Keys that pick the chosen option: Enter plus the three action buttons. */
-export const PICK_CODES: readonly string[] = [
+const PICK_CODES: readonly string[] = [
   'Enter',
   ...KEY_BINDINGS.attack,
   ...KEY_BINDINGS.jump,
@@ -23,26 +24,54 @@ export function openInNewTab(url: string): void {
   else window.location.assign(url);
 }
 
+export interface MenuPicks {
+  /** Pick the menu's chosen option. */
+  pick: () => void;
+  /** A tap off the menu and off the touch pad. */
+  tapScreen?: () => void;
+  /** False while the menu takes no picks, such as while it fades in. */
+  ready?: () => boolean;
+}
+
 /**
- * Keys and taps read straight from the window for the life of `scene`, so a
- * link opens inside the event that asked for it (Phaser queues its own until
- * the next step, and popup blockers only trust the event itself). Taps come
- * in game pixels; ones from before the scene opened are ignored.
+ * Picks for `menu` read straight from the window for the life of `scene`, so
+ * a link opens inside the key or touch that asked for it (Phaser queues its
+ * own input until the next step, and popup blockers only trust the event
+ * itself). The pick keys and the pad's action buttons pick the chosen
+ * option, a tap on an option picks that one, and the stick is left alone so
+ * the scene can move the cursor with it. Taps from before the scene opened
+ * are ignored.
  */
-export function listenForPicks(
-  scene: Phaser.Scene,
-  onKey: (e: KeyboardEvent) => void,
-  onTap: (x: number, y: number) => void,
-): void {
+export function listenForPicks(scene: Phaser.Scene, menu: MenuRow, picks: MenuPicks): void {
   const openedAt = performance.now();
-  const tap = (e: PointerEvent): void => {
-    if (e.timeStamp >= openedAt)
-      onTap(scene.scale.transformX(e.pageX), scene.scale.transformY(e.pageY));
+  const ready = picks.ready ?? ((): boolean => true);
+  const key = (e: KeyboardEvent): void => {
+    if (!e.repeat && ready() && PICK_CODES.includes(e.code)) picks.pick();
   };
-  window.addEventListener('keydown', onKey);
+  const tap = (e: PointerEvent): void => {
+    if (e.timeStamp < openedAt || !ready()) return;
+    const x = scene.scale.transformX(e.pageX);
+    const y = scene.scale.transformY(e.pageY);
+    const slot = menu.slotAt(x, y);
+    switch (menuTouch(padControlAt(e.target), slot >= 0)) {
+      case 'pick':
+        picks.pick();
+        break;
+      case 'slot':
+        menu.select(slot);
+        picks.pick();
+        break;
+      case 'screen':
+        picks.tapScreen?.();
+        break;
+      case 'pad':
+        break;
+    }
+  };
+  window.addEventListener('keydown', key);
   window.addEventListener('pointerdown', tap);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('keydown', key);
     window.removeEventListener('pointerdown', tap);
   });
 }

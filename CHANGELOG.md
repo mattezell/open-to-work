@@ -132,6 +132,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- On a phone, touching the stick on the title screen started the game
+  instead of moving the menu cursor, and a pad button with CV chosen
+  started the game rather than opening the CV. The stick now moves the
+  cursor and the pad buttons pick, on the title and the HIRED card.
 - The HIRED card's menu row sat 2 to 3 pixels right of centre; it and the
   title's menu now share one centred layout.
 - Starting a second run after clearing the tunnel froze the game on the

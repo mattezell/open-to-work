@@ -66,6 +66,25 @@ export function cycle(index: number, step: number, count: number): number {
   return (((index + step) % count) + count) % count;
 }
 
+/** The touch pad buttons that pick a menu option, like the action keys. */
+const PICK_BUTTONS: readonly string[] = ['attack', 'jump', 'special'];
+
+/**
+ * What a touch means to a menu row. `padControl` is the touch pad control
+ * under it, if any (see `padControlAt` in touch.ts). The action buttons pick
+ * the chosen option; a touch on an option picks that one, even inside the
+ * stick's zone (it covers the left half of a landscape screen); the rest of
+ * the stick zone and the order pill are the pad's own, so the stick can move
+ * the cursor; anything else is a tap on the screen.
+ */
+export type MenuTouch = 'pick' | 'slot' | 'pad' | 'screen';
+
+export function menuTouch(padControl: string | undefined, onSlot: boolean): MenuTouch {
+  if (padControl !== undefined && PICK_BUTTONS.includes(padControl)) return 'pick';
+  if (onSlot) return 'slot';
+  return padControl === undefined ? 'screen' : 'pad';
+}
+
 /** The line under the menu: where a link goes, or what playing again does. */
 export function optionHint(action: HireAction): string {
   if (action.kind === 'play') return 'back to the street';

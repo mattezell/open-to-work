@@ -229,6 +229,10 @@ three enemies.
   START is chosen, so the start keys still just start; left or right moves
   the cursor, returns to the title panel and swaps the hint for the link's
   URL (`titleHint`). A tap on an option picks it, a tap elsewhere starts.
+  The touch pad's DOM sits over the page, so its touches reach the same
+  window listener: `menuTouch` sorts them (pad buttons pick, the stick is
+  left to move the cursor, an option under the thumb wins even inside the
+  stick's zone).
   Help's last page, HIRE MATT (`hirePage` in `src/view/help.ts`), lists
   the same links as text. `src/view/attract.ts` (Phaser-free, tested) says what shows at
   each tick: title for 10 s, then each `ROSTER` entry for 1.5 s, then the

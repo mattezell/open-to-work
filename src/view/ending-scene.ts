@@ -6,7 +6,7 @@ import { sharedAudio } from './audio';
 import { sharedDevices } from './devices';
 import { builtInDays, creditLine, CV_LIVE, hireOptions, optionHint } from './hire';
 import { INK, MAX_TICKS_PER_FRAME, RESTART_DELAY_TICKS, TICK_MS } from './hud';
-import { listenForPicks, MenuRow, openInNewTab, PICK_CODES } from './menu-row';
+import { listenForPicks, MenuRow, openInNewTab } from './menu-row';
 import { TITLE_SCALE } from './pixel-font';
 import { HEAD_COLOR, pixelText } from './pixel-text';
 import type { TouchPad } from './touch';
@@ -81,18 +81,7 @@ export class EndingScene extends Phaser.Scene {
     for (const part of parts) part.setAlpha(0);
     this.tweens.add({ targets: parts, alpha: 1, delay: TEXT_DELAY_MS, duration: FADE_MS });
     this.showHint();
-    listenForPicks(
-      this,
-      (e) => {
-        if (!e.repeat && this.ready() && PICK_CODES.includes(e.code)) this.pick();
-      },
-      (x, y) => {
-        const hit = this.menu.slotAt(x, y);
-        if (hit < 0 || !this.ready()) return;
-        this.menu.select(hit);
-        this.pick();
-      },
-    );
+    listenForPicks(this, this.menu, { pick: () => this.pick(), ready: () => this.ready() });
   }
 
   update(_time: number, delta: number): void {
@@ -105,8 +94,9 @@ export class EndingScene extends Phaser.Scene {
   }
 
   /**
-   * The stick and the keys move the cursor; the touch pad's buttons pick.
-   * Keyboard picks and taps arrive through `listenForPicks` instead, inside the event.
+   * The stick and the arrow keys move the cursor. Picks (keys, pad buttons,
+   * taps) arrive through `listenForPicks` instead, inside the event, so a
+   * link can open in a new tab.
    */
   private step(): void {
     const keys = this.keys.snapshot();
@@ -117,7 +107,6 @@ export class EndingScene extends Phaser.Scene {
     if (!this.ready() || !was) return;
     if (frame.left && !was.left) this.move(-1);
     if (frame.right && !was.right) this.move(1);
-    if (pad.attack || pad.jump || pad.special) this.pick();
   }
 
   private move(step: number): void {
