@@ -3,6 +3,7 @@ import { carryFromStreet, type Carry } from '../sim/campaign';
 import { DEPTH, SCREEN_H, SCREEN_W } from '../sim/constants';
 import { KINDS, PROJECTILES, type FighterKind } from '../sim/fighters';
 import type { InputFrame } from '../sim/input';
+import { hotSeat } from '../sim/panel';
 import {
   createWorld,
   players,
@@ -33,12 +34,14 @@ import {
   TICK_MS,
 } from './hud';
 import {
+  blinkedOut,
   BOSS_NAMES,
   bossOf,
   BRAWL_STAGES,
   clearedBanner,
   closingTime,
   fighterAlpha,
+  isFadingCorpse,
   isWaitingPanelist,
   panelBanner,
   towerRetry,
@@ -62,6 +65,9 @@ const BANNER_TICKS = 120;
 const INTRO_TICKS = 150;
 /** Waiting panelists sit in shadow behind their desks. */
 const WAITING_TINT = 0x707070;
+const HOT_SEAT_LIGHT = 0xffe070;
+/** How far above a panelist's feet the hot-seat arrow points: just over the tallest head. */
+const HOT_SEAT_ARROW_RISE = 84;
 const OFFER_FLIGHT_MS = 800;
 const OFFER_RISE = 100;
 const MATT_FALLBACK: Carry = { hp: 100, score: 0, directive: 'wild' };
@@ -69,11 +75,6 @@ const MATT_FALLBACK: Carry = { hp: 100, score: 0, directive: 'wild' };
 /** Where a fighter's feet land on screen, in world pixels (the camera handles scroll). */
 export function feetPosition(f: Fighter): { x: number; y: number } {
   return { x: Math.round(f.x), y: Math.round(STREET_TOP + f.z - f.y) };
-}
-
-/** A KO'd enemy blinks out before it is removed. TOKEN lies still while it reboots. */
-function isFadingCorpse(f: Fighter): boolean {
-  return f.state === 'dead' && f.team === 'enemy' && f.stateTick % 6 < 3;
 }
 
 export class GameScene extends Phaser.Scene {
@@ -90,6 +91,7 @@ export class GameScene extends Phaser.Scene {
   private readonly pickupSprites = new Map<number, Phaser.GameObjects.Image>();
   private shadows!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Graphics;
+  private hotSeatMarker!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private bannerText!: Phaser.GameObjects.Text;
   private tokenText!: Phaser.GameObjects.Text;
@@ -146,6 +148,7 @@ export class GameScene extends Phaser.Scene {
     else this.drawStreet();
     this.shadows = this.add.graphics().setDepth(-1);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(1000);
+    this.hotSeatMarker = this.add.graphics().setDepth(999.5);
     this.scoreText = this.add.text(8, 16, '', HUD_TEXT).setScrollFactor(0).setDepth(1001);
     this.tokenText = this.add
       .text(SCREEN_W - 8, 16, '', { ...HUD_TEXT, align: 'right' })
@@ -352,7 +355,7 @@ export class GameScene extends Phaser.Scene {
       const ground = Math.round(STREET_TOP + f.z);
       const alpha = fighterAlpha(f);
       this.shadows.fillStyle(0x000000, 0.35 * alpha).fillEllipse(feet.x, ground, 30, 6);
-      const visible = f.invuln === 0 || Math.floor(this.world.tick / 3) % 2 === 0;
+      const visible = !blinkedOut(f, this.world.tick);
       const pose = poseFor(f);
       const key = sheetKey(f.kind, pose.sheet);
       if (this.missingSheets.has(key)) {
@@ -376,6 +379,22 @@ export class GameScene extends Phaser.Scene {
     }
     this.prune(this.sprites, seen);
     this.prune(this.placeholders, seen);
+    this.drawHotSeat();
+  }
+
+  /** A pool of light under the interviewer whose turn it is, and a bobbing arrow over its head. */
+  private drawHotSeat(): void {
+    this.hotSeatMarker.clear();
+    const seat = hotSeat(this.world);
+    if (!seat || this.world.status !== 'playing') return;
+    const feet = feetPosition(seat);
+    this.shadows.fillStyle(HOT_SEAT_LIGHT, 0.22).fillEllipse(feet.x, feet.y, 64, 14);
+    const tip = feet.y - HOT_SEAT_ARROW_RISE + (Math.floor(this.world.tick / 12) % 2);
+    this.hotSeatMarker
+      .fillStyle(0x101010)
+      .fillTriangle(feet.x - 6, tip - 7, feet.x + 6, tip - 7, feet.x, tip + 1)
+      .fillStyle(HOT_SEAT_LIGHT)
+      .fillTriangle(feet.x - 4, tip - 6, feet.x + 4, tip - 6, feet.x, tip - 1);
   }
 
   /** Cards, forms and folders in flight at throwing height, shadowed so their depth line reads. */

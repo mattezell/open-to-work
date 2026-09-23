@@ -93,7 +93,11 @@ no enemies, no attacks, an autoscrolling camera.
 - **Hazards.** Hurdles (knee-high "requirements", span every lane: jump) and
   walls (tall stacks of paperwork, block one or two lanes: steer around).
   Later sections combine them and close the gaps.
-- **Crashes.** A hit costs 15 hp and a second of flicker. At 0 hp Matt does
+- **Crashes.** A hit costs 15 hp and a second of flicker, with a screen
+  shake, a red flash and CRASH -15 off Matt's board. A clean pass pops
+  CLEAR +200 with a chime, so the two never look alike. A hurdle spans all
+  three lanes, drawn as one hurdle per lane; the lanes in front of Matt turn
+  see-through as he passes, so they never hide the jump. At 0 hp Matt does
   not die: the run rewinds to the last checkpoint at 60 hp and a retry is
   counted against the stage score. Battletoads without the broken
   controllers: the tunnel is hard but cannot end the game.
@@ -142,7 +146,11 @@ three enemies.
   time: only the one in the hot seat is in play, the others wait greyed out
   and cannot be hit. Each beaten interviewer stays slumped in its chair and
   the next takes over, with a round card (ROUND 1, ROUND 2, FINAL ROUND).
-  Players cannot walk past the desk line. Each asks its own question from
+  The desks run in a diagonal from the front of the room to the back
+  (Screener front left, Hiring Manager back right, 60 px apart), so each
+  interviewer reads on its own; a pool of light and a bobbing arrow mark the
+  hot seat. Players cannot walk past the desk line of the interviewers still
+  to come, so each one beaten opens up the room to the next desk. Each asks its own question from
   the desk: the Screener throws screening forms along its depth line, the
   Tech Lead sends a wall of sticky notes across every depth (a *wide*
   projectile, so only a jump clears it), and the Hiring Manager delegates

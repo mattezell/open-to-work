@@ -112,9 +112,11 @@ export const STAGE_3: StageDef = {
     {
       triggerX: 1500,
       spawns: [
-        { kind: 'screener', side: 'right', z: 10, delay: 0, inset: 64 },
-        { kind: 'techlead', side: 'right', z: 28, delay: 0, inset: 56 },
-        { kind: 'manager', side: 'right', z: 46, delay: 0, inset: 48 },
+        // A diagonal from the front of the room to the back, one desk per lane and
+        // far enough apart that each interviewer reads on its own.
+        { kind: 'screener', side: 'right', z: 46, delay: 0, inset: 170 },
+        { kind: 'techlead', side: 'right', z: 28, delay: 0, inset: 110 },
+        { kind: 'manager', side: 'right', z: 10, delay: 0, inset: 50 },
       ],
     },
   ],

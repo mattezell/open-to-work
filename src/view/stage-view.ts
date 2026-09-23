@@ -53,6 +53,27 @@ export function fighterAlpha(f: Fighter): number {
   return f.ghost > RETURNING_TICKS ? GHOST_ALPHA : RETURNING_ALPHA;
 }
 
+const BLINK_TICKS = 3;
+
+/**
+ * Whether a fighter is in the off half of its invulnerability blink. Only
+ * recovery blinks (getting up, TOKEN rebooting): the special's invulnerability
+ * is shown by the spin itself, and a panelist behind its desk never blinks,
+ * or the whole Panel strobes in a busy fight.
+ */
+export function blinkedOut(f: Fighter, tick: number): boolean {
+  if (f.invuln === 0 || KINDS[f.kind].seated || f.attack === 'special') return false;
+  return Math.floor(tick / BLINK_TICKS) % 2 === 1;
+}
+
+/**
+ * A KO'd enemy blinks out before it is removed; TOKEN lies still while it
+ * reboots, and a beaten panelist stays slumped at its desk for good.
+ */
+export function isFadingCorpse(f: Fighter): boolean {
+  return f.state === 'dead' && f.team === 'enemy' && !KINDS[f.kind].seated && f.stateTick % 6 < 3;
+}
+
 /** A panelist waiting its turn sits greyed out behind its desk. */
 export function isWaitingPanelist(f: Fighter): boolean {
   return KINDS[f.kind].seated === true && f.ghost > 0 && f.hp > 0;

@@ -10,6 +10,7 @@ import {
   stepTunnel,
   TUNNEL_1,
   type HazardDef,
+  type TunnelEvent,
   type TunnelWorld,
 } from '../sim/tunnel';
 import { sharedAudio } from './audio';
@@ -30,6 +31,7 @@ import {
   TICK_MS,
 } from './hud';
 import type { TouchPad } from './touch';
+import { hazardAlpha, popFor } from './tunnel-view';
 
 /** Matt rides at a fixed spot on screen; the track comes to him. */
 const MATT_X = 104;
@@ -43,6 +45,13 @@ const TOKEN_BOB = 2;
 /** The far wall scrolls slower than the floor, so the tunnel has depth. */
 const WALL_PARALLAX = 0.6;
 const BANNER_TICKS = 90;
+/** A hazard's CLEAR or CRASH word rises off Matt's board for this long. */
+const POP_TICKS = 36;
+/** Above Matt's head and clear of TOKEN's speech bubble. */
+const POP_RISE = 84;
+const CRASH_SHAKE_MS = 180;
+const CRASH_SHAKE = 0.012;
+const CRASH_FLASH_MS = 120;
 /** A blocked lane is painted on the floor, so which lanes a wall closes reads at a glance. */
 const WALL_LANE_COLOR = 0xc03030;
 const WALL_LANE_REACH = 16;
@@ -89,6 +98,8 @@ export class TunnelScene extends Phaser.Scene {
   private barkText!: Phaser.GameObjects.Text;
   private progressText!: Phaser.GameObjects.Text;
   private bannerText!: Phaser.GameObjects.Text;
+  private popText!: Phaser.GameObjects.Text;
+  private popTicks = 0;
 
   constructor() {
     super('tunnel');
@@ -136,6 +147,7 @@ export class TunnelScene extends Phaser.Scene {
       .text(SCREEN_W / 2, 84, '', { ...HUD_TEXT, fontSize: '16px', align: 'center' })
       .setOrigin(0.5)
       .setDepth(1001);
+    this.popText = this.add.text(MATT_X, 0, '', HUD_TEXT).setOrigin(0.5, 1).setDepth(1001);
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.world.status === 'cleared') this.advance();
     });
@@ -163,6 +175,7 @@ export class TunnelScene extends Phaser.Scene {
     this.endedTicks = 0;
     this.lastHp = this.world.matt.hp;
     this.barkTicks = 0;
+    this.popTicks = 0;
     sharedAudio().play('tunnel');
     this.showBanner('THE TAKE-HOME TUNNEL\n\njump the hurdles\nsteer round the walls', INTRO_TICKS);
   }
@@ -197,7 +210,9 @@ export class TunnelScene extends Phaser.Scene {
   /** Turn this tick's events into TOKEN's bubble and the centre banner. */
   private react(): void {
     if (this.barkTicks > 0) this.barkTicks--;
+    if (this.popTicks > 0) this.popTicks--;
     for (const event of this.world.events) {
+      this.showPop(event);
       if (event.type === 'checkpoint') this.showBanner('CHECKPOINT', BANNER_TICKS);
       if (event.type === 'retry') this.showBanner('REWIND\n\nback to the checkpoint', BANNER_TICKS);
       const bark = tunnelBarkFor(event, this.world.tick);
@@ -205,6 +220,18 @@ export class TunnelScene extends Phaser.Scene {
       if (!bark.urgent && this.barkTicks > BARK_TICKS - BARK_MIN_TICKS) continue;
       this.barkText.setText(bark.text);
       this.barkTicks = event.type === 'call' ? CALL_TICKS : BARK_TICKS;
+    }
+  }
+
+  /** CLEAR or CRASH off Matt's board; a crash also jolts the screen red. */
+  private showPop(event: TunnelEvent): void {
+    const pop = popFor(event);
+    if (!pop) return;
+    this.popText.setText(pop.text).setColor(pop.color);
+    this.popTicks = POP_TICKS;
+    if (event.type === 'crash') {
+      this.cameras.main.shake(CRASH_SHAKE_MS, CRASH_SHAKE);
+      this.cameras.main.flash(CRASH_FLASH_MS, 200, 40, 40);
     }
   }
 
@@ -228,7 +255,10 @@ export class TunnelScene extends Phaser.Scene {
           sprite = this.add.image(0, 0, `prop-${hazard.kind}`).setOrigin(0.5, 1);
           this.hazardSprites.set(key, sprite);
         }
-        sprite.setPosition(x, ground).setDepth(10 + LANES[lane]);
+        sprite
+          .setPosition(x, ground)
+          .setDepth(10 + LANES[lane])
+          .setAlpha(hazardAlpha(LANES[lane], this.world.matt.z, offset));
         if (hazard.kind === 'wall') {
           this.shadows.fillStyle(WALL_LANE_COLOR, 0.45);
           this.shadows.fillRect(
@@ -271,6 +301,10 @@ export class TunnelScene extends Phaser.Scene {
       .setTexture('token-ride', cycle)
       .setPosition(TOKEN_X, tokenGround - 4 - bob)
       .setDepth(10 + tokenZ + 0.5);
+    const risen = Math.round(((POP_TICKS - this.popTicks) / POP_TICKS) * 12);
+    this.popText
+      .setVisible(this.popTicks > 0)
+      .setPosition(MATT_X, Math.max(mattGround - matt.y - POP_RISE - risen, 30));
     this.barkText
       .setVisible(this.barkTicks > 0)
       .setPosition(TOKEN_X - 20, Math.max(tokenGround - TOKEN_BARK_RISE, 34));

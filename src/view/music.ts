@@ -145,7 +145,8 @@ export type Sfx =
   | 'shield'
   | 'checkpoint'
   | 'retry'
-  | 'call';
+  | 'call'
+  | 'clear';
 
 export function sfxForSim(event: SimEvent): Sfx | null {
   switch (event.type) {
@@ -193,6 +194,6 @@ export function sfxForTunnel(event: TunnelEvent): Sfx | null {
     case 'cleared':
       return 'fanfare';
     case 'cleared-hazard':
-      return null;
+      return 'clear';
   }
 }

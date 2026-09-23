@@ -35,7 +35,22 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule, 53b4f84)
 - [x] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b (Tue night,
   ahead of schedule, fc843df)
+- [ ] Playtest polish (Matt's first playtest, Wed), in this order, one
+  commit each:
+  - [x] 1. Quick fixes: no blink on the special or on panelists, spread the
+    Panel desks with a hot-seat marker, tunnel CLEAR and CRASH feedback
+  - [ ] 2. Bitmap pixel font (8 px text is blurry)
+  - [ ] 3. Pause and help overlay: Esc or P pauses, H or ? for controls,
+    TOKEN's orders, the enemy roster
+  - [ ] 4. Title screen, attract mode (the bot plays a demo after 20 s
+    idle), roster page, first-appearance name cards
+  - [ ] 5. HIRED screen: score, credits, "Hire the real Matt" links to
+    immatt.com/cv/ and /contact/ (fall back to /contact/ if /cv/ is not
+    live at deploy)
+  - [ ] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
+    backgrounds kept as the fallback
 - [ ] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
+  (a subdomain of immatt.com; hostname to confirm at deploy)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 
@@ -96,9 +111,8 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   Only matters while art is generating.
 - `?stage=3` arrives with 60 hp and no score; a real arrival carries the
   street and tunnel score.
-- The three panel desks sit at depths 10, 28 and 46 and overlap heavily on
-  screen. Reads as one panel, but the waiting panelists are hard to tell
-  apart; try wider depth spacing or a small x stagger.
+- Panel desks: done in the playtest fixes (diagonal, 60 px apart, hot-seat
+  marker). Matt's call whether the arrow reads at phone size.
 - Touch pad is verified only in emulated Chromium (Playwright, CDP touch
   events). Needs a real iPhone and Android pass: thumb reach of the button
   cluster, whether the landscape buttons hide too much of the right edge,

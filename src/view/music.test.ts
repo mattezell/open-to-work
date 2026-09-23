@@ -88,9 +88,9 @@ describe('sound effects', () => {
     expect(sfxForSim({ type: 'hired' })).toBe('fanfare');
   });
 
-  it('stay quiet for hazards that pass harmlessly in the tunnel', () => {
+  it('chime a clean clear in the tunnel, so it never sounds like a crash', () => {
     const passed: TunnelEvent = { type: 'cleared-hazard', kind: 'hurdle' };
-    expect(sfxForTunnel(passed)).toBeNull();
+    expect(sfxForTunnel(passed)).toBe('clear');
     expect(sfxForTunnel({ type: 'crash', kind: 'hurdle' })).toBe('crash');
     expect(sfxForTunnel({ type: 'cleared', retries: 0 })).toBe('fanfare');
   });

@@ -314,6 +314,7 @@ const SFX: Readonly<Record<Sfx, (audio: GameAudio, at: number) => void>> = {
   checkpoint: (a, t) => a.arpeggio('square', [G5, C6], t, 0.08, 0.09),
   retry: (a, t) => a.arpeggio('square', [C5, 392, 261.63], t, 0.08, 0.08),
   call: (a, t) => a.arpeggio('square', [C6, C6], t, 0.07, 0.06),
+  clear: (a, t) => a.arpeggio('triangle', [E5, G5], t, 0.04, 0.12),
 };
 
 let shared: GameAudio | undefined;

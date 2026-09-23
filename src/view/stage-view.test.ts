@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { KINDS } from '../sim/fighters';
 import { NO_INPUT } from '../sim/input';
 import { EMPTY_STAGE } from '../sim/test-helpers';
-import { createWorld, spawnFighter, step, type World } from '../sim/world';
+import { createWorld, spawnFighter, step, type Fighter, type World } from '../sim/world';
 import {
+  blinkedOut,
   bossOf,
   clearedBanner,
   closingTime,
   fighterAlpha,
   GHOST_ALPHA,
+  isFadingCorpse,
   isWaitingPanelist,
   panelBanner,
   towerRetry,
@@ -87,5 +89,49 @@ describe('the tower view rules', () => {
   it('extends the offer at the top of the tower, and points at the tunnel from the street', () => {
     expect(clearedBanner('tower', 'press enter')).toMatch(/^OFFER EXTENDED/);
     expect(clearedBanner('street', 'press enter')).toMatch(/take-home tunnel/);
+  });
+});
+
+describe('the invulnerability blink', () => {
+  function fighter(kind: 'matt' | 'screener'): Fighter {
+    const world = createWorld(EMPTY_STAGE, 1, { sidekick: false });
+    return spawnFighter(world, kind, 100, 20);
+  }
+  const blinks = (f: Fighter): boolean => [0, 1, 2, 3, 4, 5].some((tick) => blinkedOut(f, tick));
+
+  it('blinks a fighter getting back up', () => {
+    const matt = fighter('matt');
+    matt.invuln = 40;
+    expect(blinks(matt)).toBe(true);
+    matt.invuln = 0;
+    expect(blinks(matt)).toBe(false);
+  });
+
+  it("does not blink Matt through his special's spin", () => {
+    const matt = fighter('matt');
+    matt.state = 'attack';
+    matt.attack = 'special';
+    matt.invuln = 20;
+    expect(blinks(matt)).toBe(false);
+  });
+
+  it('blinks out a beaten enemy, but leaves a beaten panelist slumped in its chair', () => {
+    const corpse = (kind: 'ats' | 'screener'): boolean[] => {
+      const world = createWorld(EMPTY_STAGE, 1, { sidekick: false });
+      const f = spawnFighter(world, kind, 100, 20);
+      f.state = 'dead';
+      return [0, 1, 2, 3, 4, 5].map((tick) => {
+        f.stateTick = tick;
+        return isFadingCorpse(f);
+      });
+    };
+    expect(corpse('ats')).toContain(true);
+    expect(corpse('screener')).not.toContain(true);
+  });
+
+  it('never blinks a panelist behind its desk', () => {
+    const screener = fighter('screener');
+    screener.invuln = 40;
+    expect(blinks(screener)).toBe(false);
   });
 });

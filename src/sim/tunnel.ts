@@ -28,7 +28,7 @@ const CRASH_INVULN = 60;
 export const RETRY_HP = 60;
 const RETRY_INVULN = 90;
 
-const HAZARD_SCORE = 200;
+export const HAZARD_SCORE = 200;
 const CLEAR_BONUS = 5000;
 const RETRY_PENALTY = 1000;
 

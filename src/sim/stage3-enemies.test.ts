@@ -7,7 +7,7 @@ import { input, NO_INPUT } from './input';
 import { DESK_GAP, hotSeat } from './panel';
 import { EMPTY_STAGE, player, run, tapAttack } from './test-helpers';
 import { createWorld, spawnFighter, step, type Fighter, type SimEvent, type World } from './world';
-import type { StageDef } from './stage';
+import { STAGE_3, type StageDef } from './stage';
 
 function soloWorld(stage: StageDef = EMPTY_STAGE): { world: World; matt: Fighter } {
   const world = createWorld(stage, 1, { sidekick: false });
@@ -100,6 +100,13 @@ describe('Ghoster', () => {
   });
 });
 
+/** The Panel's seating exactly as the tower lays it out. */
+function panelSeats(): StageDef['waves'][number]['spawns'] {
+  const seats = STAGE_3.waves.at(-1)?.spawns;
+  if (!seats) throw new Error('the tower has no waves');
+  return seats;
+}
+
 /** Matt at the foot of the Panel's desks, all three seated one per depth lane. */
 function panelRoom(): { world: World; matt: Fighter; panel: Fighter[] } {
   const stage: StageDef = {
@@ -109,11 +116,7 @@ function panelRoom(): { world: World; matt: Fighter; panel: Fighter[] } {
     waves: [
       {
         triggerX: 0,
-        spawns: [
-          { kind: 'screener', side: 'right', z: 10, delay: 0, inset: 64 },
-          { kind: 'techlead', side: 'right', z: 28, delay: 0, inset: 56 },
-          { kind: 'manager', side: 'right', z: 46, delay: 0, inset: 48 },
-        ],
+        spawns: panelSeats(),
       },
     ],
   };
@@ -178,6 +181,20 @@ describe('the Panel', () => {
     expect(world.fighters).toContain(screener);
     expect(screener.x).toBe(seatX);
     expect(screener.state).toBe('dead');
+  });
+
+  it('opens the room up to the next desk once an interviewer is beaten', () => {
+    const { world, matt, panel } = panelRoom();
+    const [screener, techlead] = ['screener', 'techlead'].map((k) =>
+      panel.find((f) => f.kind === k),
+    );
+    if (!screener || !techlead) throw new Error('panel missing');
+    expect(techlead.x - screener.x).toBeGreaterThan(40);
+    satisfy(world, matt, screener);
+    matt.z = techlead.z;
+    run(world, 200, input({ right: true }));
+    expect(matt.x).toBeGreaterThan(screener.x);
+    expect(matt.x).toBeLessThanOrEqual(techlead.x - DESK_GAP);
   });
 
   it('makes the offer when the last one is satisfied, and the stage ends there', () => {
