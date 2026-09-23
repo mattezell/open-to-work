@@ -104,7 +104,7 @@ export const ATTACKS: Record<AttackId, AttackDef> = {
     hitstop: 6,
   },
   shred: {
-    startup: 20,
+    startup: 10,
     active: 3,
     recovery: 22,
     damage: 8,

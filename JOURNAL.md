@@ -4,6 +4,42 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:43 CDT: Stage 1 difficulty
+
+**What.** The bot that proves beatability plays frame-perfect, so it said
+nothing about difficulty. I split it into skill profiles: SHARP (the old
+bot, still the must-always-win floor) and CASUAL, a first-time player who
+reacts a quarter second late (15 ticks), mashes at human speed (every 7
+ticks), lines up by eye (4 px extra depth slack, so some swings miss) and
+never uses the special. Then measured before touching anything.
+
+**The finding.** Across 10 seeds, every one of 120 enemy swings against
+CASUAL was interrupted before it landed. ATS startup was 20 ticks; Matt's
+jab is 3. Even a player 15 ticks late turns and hits first, so any enemy in
+front of Matt is stunlocked, and one behind him is too slow to matter.
+Enemy cooldown made no difference at all, because enemies spent the stage
+in hitstun, never on cooldown.
+
+**Sweep** (10 seeds each, average Matt hp at the end, all runs cleared):
+
+| shred startup | SHARP solo | CASUAL solo | CASUAL + TOKEN |
+|---|---|---|---|
+| 20 (old) | 92 | 100 | 99 |
+| 14 | 84 | 68 | 99 |
+| 12 | 76 | 52 | 86 |
+| 10 (chosen, cooldown 45-80) | 76 | 44 | 68 |
+
+**Assumptions made without Matt.** Stage 1 is the tutorial: CASUAL with
+TOKEN should clear every seed at hp 40-80, CASUAL solo should mostly clear
+but barely. 10 ticks (167 ms) of wind-up is short; the approach walk is the
+real telegraph, and the wind-up frames scale automatically from `startup`.
+If it plays unfair on a phone, the next lever is wave size, not speed.
+
+**Alternatives rejected.** Super armor on ATS (removes the satisfaction of
+the chain on the most basic enemy); making enemies avoid attacking a
+player who faces them (smarter, but hides the problem that the swing was
+simply too slow).
+
 ## 2026-09-22 19:39 CDT: TOKEN joins the fight (M3)
 
 **What.** TOKEN is a second fighter on Matt's team, piloted by

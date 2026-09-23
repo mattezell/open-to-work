@@ -29,6 +29,11 @@ All notable changes to this project are documented here. Format follows
 - TOKEN's health bar and current order in the HUD, and speech bubbles when
   it takes an order, blocks a hit, lands a KO, whiffs or reboots.
 
+### Changed
+
+- Stage 1 fights back: ATS BOTs wind up faster (10 ticks, was 20) and swing
+  again sooner, so mashing in front of one no longer stunlocks it forever.
+
 ### Fixed
 
 - Enemies no longer stack on one spot: they spread in depth and split

@@ -37,11 +37,15 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 
 ## Tuning notes
 
-- Stage 1 enemies are too passive: the bot clears it taking one hit, at hp
-  92 on every seed with or without TOKEN (the RNG never matters because
-  enemies barely swing). Tune after the first human playtest, keeping the
-  bot's pass criteria as the difficulty floor. Needs a sloppier bot to
-  measure against, since the current one plays perfectly.
+- Stage 1 difficulty is tuned against the CASUAL bot (reaction 15 ticks,
+  human mash rate, loose alignment, no special) and pinned by band tests in
+  `bot.test.ts`. The bands are a guess at "a first-timer clears the tutorial
+  and feels it"; Matt's first real playtest overrides them. Remaining lever
+  if it is still too easy: wave size, not wind-up speed (10 ticks is already
+  a short telegraph on a phone).
+- Enemy RNG barely changes a run (SHARP ends at the same hp on every seed).
+  Varied spawn timing or attack choice would help once there are more enemy
+  types (M4).
 - Barks are placeholder lines in `src/view/barks.ts`; M5 replaces them with
   the generated bank.
 - Each sheet gets its own 15-colour snap, so a character's colours drift a

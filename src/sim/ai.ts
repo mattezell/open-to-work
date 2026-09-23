@@ -23,6 +23,9 @@ const SIDEKICK_AGGRO_PENALTY = 60;
 const PERSONAL_SPACE_X = 24;
 const PERSONAL_SPACE_Z = 10;
 const CROWD_REACH = 80;
+/** Ticks an enemy waits between swings. */
+const ENEMY_COOLDOWN_MIN = 45;
+const ENEMY_COOLDOWN_MAX = 80;
 
 function nearestTarget(world: World, enemy: Fighter): Fighter | null {
   let best: Fighter | null = null;
@@ -117,7 +120,7 @@ export function enemyIntent(world: World, enemy: Fighter): InputFrame {
     enemy.cooldown === 0 &&
     attackersInFlight(world) < MAX_CONCURRENT_ENEMY_ATTACKS
   ) {
-    enemy.cooldown = randomInt(world, 70, 120);
+    enemy.cooldown = randomInt(world, ENEMY_COOLDOWN_MIN, ENEMY_COOLDOWN_MAX);
     return input({ attack: true });
   }
 
