@@ -1,0 +1,66 @@
+import type { InputFrame } from '../sim/input';
+
+/** KeyboardEvent.code values per action. Arrows or WASD to move; J/K/L or Z/X/C to act. */
+export const KEY_BINDINGS: Readonly<Record<keyof InputFrame, readonly string[]>> = {
+  left: ['ArrowLeft', 'KeyA'],
+  right: ['ArrowRight', 'KeyD'],
+  up: ['ArrowUp', 'KeyW'],
+  down: ['ArrowDown', 'KeyS'],
+  attack: ['KeyJ', 'KeyZ'],
+  jump: ['KeyK', 'KeyX', 'Space'],
+  special: ['KeyL', 'KeyC'],
+};
+
+/** Snapshot held keys into the sim's input data. Opposite directions cancel. */
+export function keysToInput(held: ReadonlySet<string>): InputFrame {
+  const pressed = (action: keyof InputFrame): boolean =>
+    KEY_BINDINGS[action].some((code) => held.has(code));
+  const left = pressed('left');
+  const right = pressed('right');
+  const up = pressed('up');
+  const down = pressed('down');
+  return {
+    left: left && !right,
+    right: right && !left,
+    up: up && !down,
+    down: down && !up,
+    attack: pressed('attack'),
+    jump: pressed('jump'),
+    special: pressed('special'),
+  };
+}
+
+/**
+ * Tracks held keys by KeyboardEvent.code, and forgets them all when the window loses focus.
+ * A key pressed and released between two snapshots still counts as held for one
+ * snapshot, so a quick tap is never lost between sim ticks.
+ */
+export class HeldKeys {
+  private readonly held = new Set<string>();
+  private readonly tapped = new Set<string>();
+
+  constructor(target: Pick<Window, 'addEventListener'>) {
+    target.addEventListener('keydown', (e) => {
+      if (isBound(e.code)) e.preventDefault();
+      this.held.add(e.code);
+      this.tapped.add(e.code);
+    });
+    target.addEventListener('keyup', (e) => this.held.delete(e.code));
+    target.addEventListener('blur', () => {
+      this.held.clear();
+      this.tapped.clear();
+    });
+  }
+
+  snapshot(): InputFrame {
+    const frame = keysToInput(new Set([...this.held, ...this.tapped]));
+    this.tapped.clear();
+    return frame;
+  }
+}
+
+const BOUND_CODES = new Set(Object.values(KEY_BINDINGS).flat());
+
+function isBound(code: string): boolean {
+  return BOUND_CODES.has(code);
+}

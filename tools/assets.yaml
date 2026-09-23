@@ -435,3 +435,86 @@ assets:
       feet. Frame 2 flat on its back, fully horizontal, head toward the LEFT,
       screen dark. Frame 3 sitting up, screen showing a small loading bar.
       Frame 4 standing back up, screen face smiling.
+
+  # --- ATS BOT animation sheets ---------------------------------------------
+  # Every frame 112x80, body pinned to 60 px tall. Ref is the approved design.
+
+  - id: ats_idle
+    group: ats
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ats/idle.png
+    refs: [art/designs/ats.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 60
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot (use the side-profile view, but facing RIGHT). {ats}
+      Animation: IDLE LOOP, hunched and humming. Frame 1 neutral. Frame 2 body dips slightly, paper strips sway. Frame 3 lowest, red scanner eye brighter. Frame 4 back up. The feet do not move.
+
+  - id: ats_walk
+    group: ats
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ats/walk.png
+    refs: [art/designs/ats.png]
+    frames: 6
+    frame_width: 112
+    frame_height: 80
+    target_height: 60
+    outline: "101010"
+    prompt: >
+      {strip6} The attached image is the approved character model sheet: match
+      this exact robot (use the side-profile view, but facing RIGHT). {ats}
+      Animation: WALK CYCLE, a heavy stomping lurch forward on the hydraulic legs, claws swinging, paper strips flapping. Frames alternate legs like a normal walk cycle; frame 1 and frame 4 are the contact poses.
+
+  - id: ats_shred
+    group: ats
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ats/shred.png
+    refs: [art/designs/ats.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 60
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot (use the side-profile view, but facing RIGHT). {ats}
+      Animation: ATTACK: a lunging shred grab. Frame 1 wind-up, leaning back, claws raised, scanner eye flaring red. Frame 2 lunging forward, mouth slot wide open. Frame 3 full extension, both claws snapping shut in front, paper confetti bursting from the mouth. Frame 4 recovering upright.
+
+  - id: ats_hurt
+    group: ats
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ats/hurt.png
+    refs: [art/designs/ats.png]
+    frames: 2
+    frame_width: 112
+    frame_height: 80
+    target_height: 58
+    outline: "101010"
+    prompt: >
+      {strip2} The attached image is the approved character model sheet: match
+      this exact robot (use the side-profile view, but facing RIGHT). {ats}
+      Animation: HIT REACTION. Frame 1 knocked back, body tilted away, visor glitching with the eye shown as a broken red zigzag. Frame 2 staggering, one claw limp, sparks at a seam.
+
+  - id: ats_knockdown
+    group: ats
+    kind: strip
+    size: "1536x1024"
+    out: public/sprites/ats/knockdown.png
+    refs: [art/designs/ats.png]
+    frames: 4
+    frame_width: 112
+    frame_height: 80
+    target_height: 56
+    outline: "101010"
+    prompt: >
+      {strip4} The attached image is the approved character model sheet: match
+      this exact robot (use the side-profile view, but facing RIGHT). {ats}
+      Animation: KNOCKDOWN. Frame 1 blown backwards off its feet, legs kicking up. Frame 2 flat on its back on the ground, lying horizontally, paper strips spilling out. Frame 3 pushing itself up on one claw, sparking. Frame 4 upright again, wobbly, red light blinking.

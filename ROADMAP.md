@@ -22,8 +22,9 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 ## Milestones
 
 - [x] M0 (Tue): repo, design, codex imagegen probe on this box
-- [ ] M1 (Tue): sim core with tests: belt movement, attack chain, hit-stop,
+- [x] M1 (Tue): sim core with tests: belt movement, attack chain, hit-stop,
   knockdown, one enemy type, wave lock; Phaser renders placeholder boxes
+  (shipped with real sprites instead of boxes)
 - [ ] M2 (Wed): asset pipeline and all actor sheets; Stage 1 playable
 - [ ] M3 (Wed): sidekick AI with directives
 - [ ] M4 (Thu): Stage 2 (tunnel), Stage 3, The Panel, ending
@@ -37,6 +38,15 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - Stage 1 enemies are too passive: the bot clears it taking one hit. Tune
   after the first human playtest, keeping the bot's pass criteria as the
   difficulty floor.
+
+- Enemies stack on the same spot when several approach one flank; they need
+  slot spreading in `ai.ts`.
+- Each sheet gets its own 15-colour snap, so a character's colours drift a
+  little between sheets (the ATS walk reads teal against the navy idle).
+  Snap all of a character's sheets to one shared palette line.
+- HUD text is the browser monospace font, which blurs at 8 px. Replace with
+  a bitmap font.
+- Stage art is a placeholder skyline drawn in code.
 
 ## Open
 

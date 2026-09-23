@@ -13,4 +13,6 @@ All notable changes to this project are documented here. Format follows
 - Beatability bot and fairness tests (no enemy attacks from off screen).
 - Asset pipeline: Genesis 9-bit colour snap, reference images, per-character
   body height, blob-based frame splitting.
-- Approved Matt and TOKEN designs, and all eight Matt animation sheets.
+- Approved Matt and TOKEN designs; all Matt, TOKEN and ATS BOT animation sheets.
+- Playable Stage 1 in the browser: Phaser view over the sim, keyboard
+  controls, health bar, score, GO prompt, end-of-stage banners.

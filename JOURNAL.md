@@ -4,6 +4,28 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-22 19:20 CDT: M1 playable on the dev server
+
+**What.** Phaser view over the sim: sprites from the generated sheets,
+bottom-anchored at the feet and sorted by depth, flipped for facing, shadows,
+invulnerability flicker, HP bar, score, GO prompt. A pure `poseFor(fighter)`
+maps sim state to sheet and frame; its test runs whole bot playthroughs and
+asserts every pose names a real sheet and frame. ATS BOT sheets rendered
+5/5. Served over HTTPS on my private network for phone testing.
+
+**Headless playtest found a real input bug.** The box has no X server, so I
+drove the game with Playwright's headless Chromium and read screenshots. 12
+jab taps scored nothing. Cause: input was a snapshot of held keys taken once
+per sim tick, and a quick tap (down and up inside one 16 ms tick) was never
+held at snapshot time. Humans tapping fast on a high-refresh screen would
+lose presses the same way. Fix: a key pressed since the last snapshot counts
+as held for exactly one snapshot. After the fix the same script scored 548
+and dropped a bot.
+
+**Seen and deferred:** enemies stack on one spot, colours drift between a
+character's sheets (per-sheet palettes), HUD font blurs. All in ROADMAP
+tuning notes.
+
 ## 2026-09-22 19:05 CDT: sim core green, the bot found a real bug, strip slicing fixed
 
 **What.** Deterministic sim in `src/sim/` (pure TS, fixed 60 Hz, seeded

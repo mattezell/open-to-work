@@ -9,8 +9,37 @@ Built in four days (2026-09-22 to 2026-09-25) for a The New Guard Deep Dive.
 
 ## Status
 
-Pre-alpha: design settled, build starting. See `DESIGN.md` for the game and
-`ROADMAP.md` for progress.
+M1 playable: Stage 1 (the Job Board) with Matt against ATS BOTs. See
+`DESIGN.md` for the game and `ROADMAP.md` for progress.
+
+## Run it
+
+```bash
+npm install
+npm run dev        # http://127.0.0.1:5180
+npm run check      # typecheck, lint, format check, vitest, pipeline unit tests
+npm run build      # static build in dist/
+```
+
+## Controls
+
+| Action | Keys |
+|---|---|
+| Move (belt: left/right, up/down for depth) | Arrows or WASD |
+| Attack (tap three times for the jab, jab, haymaker chain) | J or Z |
+| Jump (attack in the air for a jump kick) | K, X or Space |
+| Special (spinning clothesline, costs health, invulnerable) | L or C |
+| Restart after the stage ends | Enter |
+
+## Layout
+
+- `src/sim/`: the game itself, pure deterministic TypeScript, no Phaser.
+  Everything that matters is tested here, including a bot that must clear
+  Stage 1 on several seeds.
+- `src/view/`: Phaser rendering and keyboard input. Reads the sim, never
+  changes game state except by passing input to `step`.
+- `tools/`: the codex imagegen art pipeline (`assets.yaml` is the art
+  direction). `public/sprites/` holds its output.
 
 ## Docs
 
