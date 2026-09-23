@@ -39,6 +39,7 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
   commit each:
   - [x] 1. Quick fixes: no blink on the special or on panelists, spread the
     Panel desks with a hot-seat marker, tunnel CLEAR and CRASH feedback
+    (19e1c15)
   - [ ] 2. Bitmap pixel font (8 px text is blurry)
   - [ ] 3. Pause and help overlay: Esc or P pauses, H or ? for controls,
     TOKEN's orders, the enemy roster
