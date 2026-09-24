@@ -28,49 +28,49 @@ notes live in `~/w/opus55/JOURNAL.md`; this repo is the build.
 - [ ] M2 (Wed): asset pipeline and all actor sheets; Stage 1 playable
 - [x] Touch controls (added Tue, not in the original plan): the audience
   for this sees it on a phone
-- [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, ce03da4)
-- [x] Stage 1 complete (Tue night, ahead of M4, 4b35385): Spam Recruiter, The
+- [x] M3 (Wed): sidekick AI with directives (shipped Tue evening, 9a62723)
+- [x] Stage 1 complete (Tue night, ahead of M4, 6a973fc): Spam Recruiter, The
   Unpaid Take Home, coffee, Stage 1 wave layout
-- [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, ad0a5ae)
-- [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule, 53b4f84)
+- [x] Stage 2, the Take-Home Tunnel (Tue night, ahead of M4, e36152d)
+- [x] M4 (Thu): Stage 3, The Panel, ending (Tue night, ahead of schedule, 4a4d1a6)
 - [x] M5 (Thu): synthesized audio, bark bank from qwen3.8-27b (Tue night,
-  ahead of schedule, fc843df)
+  ahead of schedule, 35bf1b4)
 - [ ] Playtest polish (Matt's first playtest, Wed), in this order, one
   commit each:
   - [x] 1. Quick fixes: no blink on the special or on panelists, spread the
     Panel desks with a hot-seat marker, tunnel CLEAR and CRASH feedback
-    (19e1c15)
-  - [x] 2. Bitmap pixel font (8 px text is blurry) (58a4496)
+    (3669d4b)
+  - [x] 2. Bitmap pixel font (8 px text is blurry) (e6f6cf5)
   - [x] 3. Pause and help overlay: Esc or P pauses, H or ? for controls,
-    TOKEN's orders, the enemy roster (34b117d)
+    TOKEN's orders, the enemy roster (864ecbb)
   - [x] 4. Title screen, attract mode (the bot plays a demo after 20 s
-    idle), roster page, first-appearance name cards (1761465)
+    idle), roster page, first-appearance name cards (a7c8bbe)
   - [x] 5. HIRED screen: score, credits, "Hire the real Matt" links to
     immatt.com/cv/ and /contact/ (fall back to /contact/ if /cv/ is not
     live at deploy). /cv/ was not live on 2026-09-23 (the site answers it
-    with its home page), so `CV_LIVE` is false: CONTACT only (7bac7cc)
+    with its home page), so `CV_LIVE` is false: CONTACT only (68e05b5)
   - [x] 6. Generated parallax backgrounds, 2 to 3 layers per stage, code
     backgrounds kept as the fallback (7 layers: street 3, tunnel 2,
-    tower 2; plan in `src/view/backdrops.ts`) (87000a1)
+    tower 2; plan in `src/view/backdrops.ts`) (76155d5)
 - [x] M6 (Fri): beatability bot in CI, polish, deploy to Cloudflare
   - [x] Every stage and the whole campaign cleared by the bot in
     `npm run check` (`src/sim/campaign-bot.test.ts`; the per-stage bots
-    were already there) (1d65087)
+    were already there) (3f2c81e)
   - [x] /cv/ rechecked 2026-09-23: live (its own body, "CV" title), so
     `CV_LIVE` is true and the card offers CV, CONTACT, PLAY AGAIN.
-    Recheck again before each deploy build (1d65087)
+    Recheck again before each deploy build (3f2c81e)
   - [x] Deploy to Cloudflare: live at https://opentowork.immatt.com
     2026-09-23 (Matt chose it, with otw.immatt.com redirecting to it), static assets
     Worker plus a separate script-only redirect Worker for the alias so
-    sprite fetches never cost an invocation (1ecf000)
+    sprite fetches never cost an invocation (7a1e1fb)
 - [x] Link preview card (Open Graph and Twitter tags, 1200x630 image) and
   favicons, built from the ending art by `tools/gencard.py` (Matt's ask,
-  2026-09-23), live and checked against five crawler user agents (78ffb96)
+  2026-09-23), live and checked against five crawler user agents (b61242a)
 - [x] CV and contact links on the title screen and in help, so they are not
   gated behind beating the game (Matt's ask, 2026-09-23): a
   `START  CV  CONTACT` row on the title with START the default, sharing
   `MenuRow` with the HIRED card, and a HIRE MATT help page listing the
-  URLs; live (07a3943)
+  URLs; live (03b1fbf)
 - [ ] M7 (Fri, stretch): leaderboard with replay validation
 - [ ] Deep Dive draft for TNG
 

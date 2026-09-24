@@ -122,8 +122,11 @@ describe('the generated bark bank', () => {
   });
 
   it('never names a real company', () => {
+    // The company names from BANNED_WORDS in tools/genbarks.py.
+    const realCompany =
+      /\b(google|amazon|microsoft|apple|meta|facebook|linkedin|indeed|glassdoor|ziprecruiter|openai|anthropic|claude|chatgpt|gpt|copilot|netflix|twitter|github|slack|workday|greenhouse|lever|leetcode|hackerrank)\b/i;
     for (const [, variants] of lines)
-      for (const line of variants) expect(line).not.toMatch(/\bworkday\b/i);
+      for (const line of variants) expect(line).not.toMatch(realCompany);
   });
 
   it('reaches every generated line as the pick rotates', () => {

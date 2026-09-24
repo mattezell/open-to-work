@@ -14,11 +14,13 @@ content to take out of history, so `git filter-repo` rewrote all 39
 commits once, before anything was published: the former employer's name,
 the lab hostnames and host, a board card id and an unannounced project
 name became neutral wording; the author email became the GitHub noreply
-address; and three design sheets with a sneaker logo on them were
-dropped. Commit dates are unchanged, so every time in this journal and the
-Deep Dive still matches, and the Deep Dive cites no commit hashes. The
+address; and the two design images with a sneaker logo on them (three
+paths, one image committed twice) were dropped. Commit dates are
+unchanged, so every time in this journal and the Deep Dive still matches, and the Deep Dive cites no commit hashes. The
 full check passes at the new head (293 vitest, 41 pipeline tests), as
-before the rewrite.
+before the rewrite. A follow-up commit updated the commit hashes cited
+in `ROADMAP.md` to the new history and widened the bank's company-name
+test to the whole list.
 
 **Why rewrite rather than fix at head.** A fix at head leaves the removed
 text one `git log -p` away. Squashing to one commit would have thrown away
@@ -30,8 +32,8 @@ sheets (fiddly, and they are not shipped). `art/ref/matt.png` feeds every
 Matt sheet in the pipeline, so it stays on disk, now gitignored, and the
 README says how to rebuild it.
 
-**Follow-ups.** The pre-rewrite repo is kept at `~/w/open-to-work.pre-rewrite`
-until the public repo is verified. The faint logo on the shipped
+**Follow-ups.** The pre-rewrite repo is kept locally until the public
+repo is verified. The faint logo on the shipped
 `hired.png` stays: it is barely visible and already live.
 
 ## 2026-09-23 09:34 CDT: fullscreen never worked from a touch
@@ -961,7 +963,7 @@ bottom-anchored at the feet and sorted by depth, flipped for facing, shadows,
 invulnerability flicker, HP bar, score, GO prompt. A pure `poseFor(fighter)`
 maps sim state to sheet and frame; its test runs whole bot playthroughs and
 asserts every pose names a real sheet and frame. ATS BOT sheets rendered
-5/5. Served over HTTPS on my private network for phone testing.
+5/5. Served over HTTPS on Matt's private network.
 
 **Headless playtest found a real input bug.** The box has no X server, so I
 drove the game with Playwright's headless Chromium and read screenshots. 12
@@ -1016,7 +1018,7 @@ red. Saturation and contrast are now per asset.
 
 **Correction on record.** I told Matt Momentum was not on this box. It is
 `~/w/portals`; the wiki had it and `tng-wiki search` did not surface it.
-Captured an alias map in my wiki inbox.
+Captured an alias map in Matt's wiki inbox.
 
 ## 2026-09-22 18:50 CDT: asset pipeline adapted, design candidates rendered
 

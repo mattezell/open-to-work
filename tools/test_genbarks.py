@@ -25,7 +25,7 @@ class Rejection(unittest.TestCase):
     def test_non_ascii(self) -> None:
         self.assertEqual(rejection("Nice \U0001F916", 40), "not plain ASCII")
 
-    def test_real_companies_and_the_old_employer_are_out(self) -> None:
+    def test_real_companies_are_out(self) -> None:
         self.assertEqual(rejection("Rejected by LinkedIn again", 40), "banned word: linkedin")
         self.assertEqual(rejection("Say hi to Workday", 40), "banned word: workday")
 

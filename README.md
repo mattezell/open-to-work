@@ -27,8 +27,8 @@ director and playtester, and written up as a Deep Dive on
 [The New Guard](https://thenewguard.ai). The whole process is in the repo:
 every commit is one verified step, `JOURNAL.md` records each decision with
 its time, reasoning and rejected alternatives, and the tests show what was
-checked. A few journal entries point at Matt's private workspaces and
-wikis; those are not public, and nothing here needs them.
+checked. Some journal, roadmap and design notes point at Matt's private
+workspaces and wikis; those are not public, and nothing here needs them.
 
 ## Run it
 
@@ -237,8 +237,10 @@ the tower at full health, keeping the score Matt walked in with.
 The approved player design, `art/ref/matt.png`, is the reference image for
 every Matt sheet in `tools/assets.yaml`, but it is not in the repo (nor are
 `art/designs/matt_b.png` and `matt_c.png`): the generator put a
-third-party logo on the shoes. To regenerate Matt's sheets, render the
-`matt_b` design entry and copy it to `art/ref/matt.png` first.
+third-party logo on the shoes. The design entries (`matt_design_a` to
+`_c`) render from private reference photos in the ignored `ref/`, so to
+regenerate Matt's sheets you need your own reference: put a design image
+at `art/ref/matt.png` first.
 
 ### Regenerating a backdrop layer
 
