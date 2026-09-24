@@ -7,6 +7,8 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- A `LICENSE`: the code is MIT, the art is all rights reserved (the hero
+  is a real person's likeness).
 - CV and contact links without beating the game: the title screen's
   bottom row is now a `START  CV  CONTACT` menu (START chosen, so start
   keys still start), and help ends on a HIRE MATT page listing both URLs.

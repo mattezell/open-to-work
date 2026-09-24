@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "A 16-bit co-op beat 'em up about the hiring process: laid off Tuesday, shipped by Friday",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "dev": "sh tools/with-commit-dates.sh vite",
     "build": "tsc --noEmit && sh tools/with-commit-dates.sh vite build",

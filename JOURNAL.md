@@ -4,6 +4,36 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-24 15:33 CDT: history rewritten for the public repo
+
+**What.** Matt chose to open-source the repo as `mattezell/open-to-work`
+with its full history, the history being the point of a build log. Two
+independent audits of every commit (mine and an adversarial reviewer
+agent) found no secrets, account IDs or reference photos. They did find
+content to take out of history, so `git filter-repo` rewrote all 39
+commits once, before anything was published: the former employer's name,
+the lab hostnames and host, a board card id and an unannounced project
+name became neutral wording; the author email became the GitHub noreply
+address; and three design sheets with a sneaker logo on them were
+dropped. Commit dates are unchanged, so every time in this journal and the
+Deep Dive still matches, and the Deep Dive cites no commit hashes. The
+full check passes at the new head (293 vitest, 41 pipeline tests), as
+before the rewrite.
+
+**Why rewrite rather than fix at head.** A fix at head leaves the removed
+text one `git log -p` away. Squashing to one commit would have thrown away
+the step-by-step record the article points readers to.
+
+**Alternatives rejected.** Publishing as is (the employer is named in the
+first commit); a squashed history; repainting the logo out of the design
+sheets (fiddly, and they are not shipped). `art/ref/matt.png` feeds every
+Matt sheet in the pipeline, so it stays on disk, now gitignored, and the
+README says how to rebuild it.
+
+**Follow-ups.** The pre-rewrite repo is kept at `~/w/open-to-work.pre-rewrite`
+until the public repo is verified. The faint logo on the shipped
+`hired.png` stays: it is barely visible and already live.
+
 ## 2026-09-23 09:34 CDT: fullscreen never worked from a touch
 
 **What.** Matt, on Android: nowhere on the screen does a press enter

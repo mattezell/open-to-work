@@ -355,4 +355,5 @@ Cut order if behind: gamepad, leaderboard, grab and throw, the tunnel
 - Sidekick identity: an original robot character (recommended; avoids using
   a vendor's trademark as a character in a public game) versus "Claude" by
   name.
-- Public repo location and name on GitHub (`thenewguardai/open-to-work`?).
+- Public repo location: resolved 2026-09-24, `mattezell/open-to-work`, code
+  MIT and art all rights reserved (see `LICENSE`).

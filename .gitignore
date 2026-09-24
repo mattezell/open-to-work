@@ -5,3 +5,9 @@ tools/_staging/
 *.log
 /ref/
 __pycache__/
+
+# Reference and design art with a third-party logo on the shoes: kept
+# locally for the pipeline (assets.yaml refs), never published.
+/art/ref/matt.png
+/art/designs/matt_b.png
+/art/designs/matt_c.png
