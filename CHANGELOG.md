@@ -134,6 +134,9 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- The SOUND pill no longer covers the HUD on phones. In landscape it
+  sits under PAUSE in the left bar; in portrait all the pills sit just
+  under the game instead of over the health bars.
 - Fullscreen on Android: no touch anywhere entered it. The pad asked on
   the touch's way down, before Chrome grants the tap its user activation,
   and the one refusal used up its only try. It now asks when any tap

@@ -216,7 +216,7 @@
         opacity: 1;
         filter: brightness(1.3);
       }
-      /* Sound on or off: touch players have no M key. Top centre, clear of the HUD corners. */
+      /* Sound on or off: touch players have no M key. Centred; placed off the canvas per orientation below. */
       .sound-pill {
         display: none;
       }
@@ -241,7 +241,7 @@
       html.touch .sound-pill.off {
         background: #808080;
       }
-      /* Pause sits just right of the SOUND pill in portrait, clear of TOKEN's bar in the corner. */
+      /* Pause sits just right of the SOUND pill in portrait. */
       .pause-pill {
         display: none;
       }
@@ -283,13 +283,27 @@
         opacity: 0.6;
         touch-action: none;
       }
-      /* Landscape has side bars: keep the pills off the canvas, PAUSE atop the left bar, FULL the right. */
+      /* Portrait: the pills ride just under the game, off the HUD, above the pad's empty space. */
+      @media (orientation: portrait) {
+        html.touch .sound-pill,
+        html.touch .pause-pill,
+        html.touch .full-pill.shown {
+          top: calc(var(--safe-top) + var(--portrait-game-h) + 8px);
+        }
+      }
+      /* Landscape has side bars: keep the pills off the canvas, PAUSE and SOUND atop the left bar, FULL the right. */
       @media (orientation: landscape) {
         html.touch .pause-pill {
           left: calc(var(--safe-left) + 12px);
         }
         html.touch .full-pill.shown {
           right: calc(var(--safe-right) + 12px);
+        }
+        /* SOUND under PAUSE, so nothing covers the HUD's health bars. */
+        html.touch .sound-pill {
+          top: calc(var(--safe-top) + 36px);
+          left: calc(var(--safe-left) + 12px);
+          transform: none;
         }
       }
     </style>
