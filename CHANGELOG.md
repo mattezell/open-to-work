@@ -134,6 +134,13 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- Moving the stick on an iPhone paused the game (reported by a player
+  who came from Facebook). An in-app browser can take focus from the
+  page mid-drag, and a lost focus paused the stage. A
+  touch player now pauses only when the page is hidden; keyboard players
+  still pause on alt-tab.
+- Help no longer says the PAUSE and SOUND pills sit on the HUD; it names
+  them as pills off the game.
 - The SOUND pill no longer covers the HUD on phones. In landscape it
   sits under PAUSE in the left bar; in portrait all the pills sit just
   under the game instead of over the health bars.

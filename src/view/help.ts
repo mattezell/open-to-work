@@ -91,8 +91,8 @@ const TOUCH_CONTROLS: readonly HelpRow[] = [
   { head: 'C', text: 'Jump. B in the air to jump kick.' },
   { head: 'A', text: 'Special. A spinning clear; costs a little hp.' },
   { head: 'ORDER', text: 'The cyan pill gives TOKEN its next order.' },
-  { head: 'PAUSE', text: 'The PAUSE pill at the top.' },
-  { head: 'SOUND', text: 'The SOUND pill at the top.' },
+  { head: 'PAUSE', text: 'The PAUSE pill, off the game.' },
+  { head: 'SOUND', text: 'The SOUND pill, beside PAUSE.' },
 ];
 
 const ORDERS: HelpPage = {

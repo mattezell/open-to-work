@@ -4,6 +4,37 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-25 07:20 CDT: the stick paused the game on an iPhone
+
+**What.** A player on an iPhone, commenting on Matt's Facebook post, said
+every push of the stick paused the game; Matt's Android was fine. Pause
+has three triggers: the PAUSE pill, P or Esc, and Phaser's BLUR, which
+comes from `window.onblur`. The stick zone does not overlap the pill in
+either layout, so the blur was the suspect. A Playwright probe on the
+live site (390 by 664, touch, a CDP drag on the stick with a window blur
+dispatched mid-drag) paused the stage every time. The new
+`shouldAutoPause` rule ignores blur while the player uses touch and
+pauses on Phaser's HIDDEN (`visibilitychange`) for everyone. The same
+probe on the fixed build keeps playing through the blur and pauses when
+the page goes hidden.
+
+**Why blur on an iPhone.** Inferred, not confirmed on a device: the post
+was opened in Facebook's in-app browser, a WKWebView that claims
+focus when a drag looks like its own swipe gesture. Android Chrome
+enters fullscreen on the first touch and never saw it; iPhone Safari
+has no Fullscreen API, so the page stays inside the host app's chrome.
+
+**Alternatives rejected.** Ignoring blur for 300 ms after a touch (a
+timing guess, and it still pauses on a long drag); dropping blur entirely
+(desktop alt-tab should still pause); `touch-action` or
+`preventDefault` tweaks (the page already sets `touch-action: none` and the
+stick calls `preventDefault`; the focus loss is the host app's
+decision, not a scroll).
+
+**Follow-ups.** Confirm with the player. The help text still named the
+pills as sitting on the HUD, from before they moved under the game in
+portrait; fixed in the same change.
+
 ## 2026-09-24 15:33 CDT: history rewritten for the public repo
 
 **What.** Matt chose to open-source the repo as `mattezell/open-to-work`

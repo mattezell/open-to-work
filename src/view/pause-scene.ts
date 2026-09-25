@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCREEN_H, SCREEN_W } from '../sim/constants';
 import { sharedAudio } from './audio';
+import { shouldAutoPause } from './auto-pause';
 import { HELP_CODES, KEY_BINDINGS, PAUSE_CODES } from './controls';
 import { sharedDevices } from './devices';
 import {
@@ -41,8 +42,8 @@ export function pauseStage(scene: Phaser.Scene, page?: number): void {
 
 /**
  * A stage scene's way in: the pause and help keys, the touch PAUSE pill, and
- * an automatic pause when the window loses focus, so alt-tabbing away in the
- * middle of a wave does not cost Matt his health.
+ * an automatic pause when the player leaves (see shouldAutoPause), so
+ * alt-tabbing away in the middle of a wave does not cost Matt his health.
  */
 export function bindPause(scene: Phaser.Scene, touch: TouchPad): void {
   const onKey = (e: KeyboardEvent): void => {
@@ -51,14 +52,21 @@ export function bindPause(scene: Phaser.Scene, touch: TouchPad): void {
     else if (HELP_CODES.includes(e.code)) pauseStage(scene, 0);
   };
   const armPill = (): void => touch.setPauseHandler(() => pauseStage(scene), 'PAUSE');
-  const onBlur = (): void => pauseStage(scene);
+  const onBlur = (): void => {
+    if (shouldAutoPause('blur', touch.active)) pauseStage(scene);
+  };
+  const onHidden = (): void => {
+    if (shouldAutoPause('hidden', touch.active)) pauseStage(scene);
+  };
   scene.input.keyboard?.on('keydown', onKey);
   scene.game.events.on(Phaser.Core.Events.BLUR, onBlur);
+  scene.game.events.on(Phaser.Core.Events.HIDDEN, onHidden);
   scene.events.on(Phaser.Scenes.Events.RESUME, armPill);
   armPill();
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
     scene.input.keyboard?.off('keydown', onKey);
     scene.game.events.off(Phaser.Core.Events.BLUR, onBlur);
+    scene.game.events.off(Phaser.Core.Events.HIDDEN, onHidden);
     scene.events.off(Phaser.Scenes.Events.RESUME, armPill);
   });
 }
