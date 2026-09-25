@@ -134,6 +134,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- A double tap on the background on an iPhone (a missed button) zoomed
+  the page, with no way to pinch back out, and a zoomed page slid
+  sideways under the stick. In touch play, touches outside the game's
+  canvas no longer trigger browser gestures.
 - Moving the stick on an iPhone paused the game (reported by a player
   who came from Facebook). An in-app browser can take focus from the
   page mid-drag, and a lost focus paused the stage. A

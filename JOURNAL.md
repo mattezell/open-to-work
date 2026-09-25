@@ -4,6 +4,36 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-25 10:50 CDT: a double tap on the background zoomed the page on iOS
+
+**What.** With the blur fix live, the first player confirmed the pause
+was gone but said the page "wants to scroll sideways" if a drag is not
+just right. The iOS Simulator (iOS 26.5, plain Safari) showed neither
+problem. A second tester, on an iPhone 16 Pro with iOS 18.7.8 in Safari,
+found the cause: a double tap on the background, i.e. a missed button,
+zooms the page, and there is no getting back, because `touch-action:
+none` then blocks the pinch out. A zoomed page also pans under a drag,
+which is very likely the first player's sideways scroll. The fix: in
+touch play, a non-passive `touchstart` listener on the document cancels
+every touch that is not on the canvas (`cancelsBrowserGesture`). The
+canvas is left alone because Phaser's TouchManager already cancels its
+touches (`inputTouchCapture`, on by default) and the title menu's CV and
+CONTACT links open from them. A Playwright probe shows background
+touches now land cancelled and that the stick, the pads and the PAUSE
+pill still work; pointer events fire whether or not the touch is
+cancelled.
+
+**Why the page's own guards missed it.** iOS Safari has ignored
+`user-scalable=no` since iOS 10, and on this iOS 18 build `touch-action:
+none` on `html` and `body` did not stop a double-tap zoom on the body
+either. Cancelling `touchstart` is the one guard that holds everywhere.
+Not reproduced on a device we control; the iPhone check is the tester's.
+
+**Alternatives rejected.** `touch-action: none` on every element (the
+body already had it and still zoomed); cancelling only the second tap of
+a pair (a timing guess); cancelling touches on the canvas too (Phaser
+already does, and the menu links depend on its handling).
+
 ## 2026-09-25 07:20 CDT: the stick paused the game on an iPhone
 
 **What.** A player on an iPhone, commenting on Matt's Facebook post, said

@@ -6,6 +6,7 @@ import {
   showFullPill,
   type FullscreenState,
 } from './fullscreen';
+import { cancelsBrowserGesture } from './browser-gestures';
 import { TouchState, type ButtonAction } from './touch-state';
 
 /**
@@ -113,6 +114,15 @@ export class TouchPad {
         if (e.pointerType === 'touch') this.setActive(true);
       },
       { capture: true },
+    );
+    document.addEventListener(
+      'touchstart',
+      (e) => {
+        if (cancelsBrowserGesture(this.isActive, e.target instanceof HTMLCanvasElement)) {
+          e.preventDefault();
+        }
+      },
+      { passive: false },
     );
     window.addEventListener('keydown', () => {
       if (!prefersTouch()) this.setActive(false);
