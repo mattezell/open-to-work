@@ -6,7 +6,14 @@ import unittest
 
 from PIL import Image, ImageDraw
 
-from pixelize import base_right_x, crop_rows, normalise_strip, seamless, split_frames_by_blob
+from pixelize import (
+    base_right_x,
+    crop_rows,
+    freeze_box,
+    normalise_strip,
+    seamless,
+    split_frames_by_blob,
+)
 
 
 def strip(boxes: list[tuple[int, int, int, int]], size: tuple[int, int] = (400, 100)) -> Image.Image:
@@ -136,4 +143,31 @@ class BaseAnchor(unittest.TestCase):
     def test_centring_on_mass_lets_the_desk_slide(self) -> None:
         edges = base_right_of_frames(self.normalise("mass"), 2, 64)
         self.assertNotEqual(edges[0], edges[1])
+
+
+class FreezeBox(unittest.TestCase):
+    def sheet(self) -> Image.Image:
+        im = Image.new("RGBA", (60, 20), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle((2, 10, 17, 19), fill=(120, 80, 40, 255))
+        draw.rectangle((25, 12, 34, 19), fill=(120, 80, 40, 255))
+        draw.rectangle((42, 0, 45, 5), fill=(200, 40, 40, 255))
+        return im
+
+    def test_every_frame_shows_the_first_frames_box(self) -> None:
+        im = self.sheet()
+        freeze_box(im, 3, 20, (0, 8, 20, 20))
+        first = im.crop((0, 8, 20, 20)).tobytes()
+        self.assertEqual(im.crop((20, 8, 40, 20)).tobytes(), first)
+        self.assertEqual(im.crop((40, 8, 60, 20)).tobytes(), first)
+
+    def test_leaves_everything_outside_the_box_alone(self) -> None:
+        im = self.sheet()
+        before = im.crop((40, 0, 60, 8)).tobytes()
+        freeze_box(im, 3, 20, (0, 8, 20, 20))
+        self.assertEqual(im.crop((40, 0, 60, 8)).tobytes(), before)
+
+    def test_refuses_a_box_outside_the_frame(self) -> None:
+        with self.assertRaises(SystemExit):
+            freeze_box(self.sheet(), 3, 20, (0, 8, 21, 20))
 

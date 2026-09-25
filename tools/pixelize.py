@@ -509,6 +509,7 @@ def normalise_strip(
     target_height: int = 0,
     x_anchor: str = "bbox",
     base_x: int = 0,
+    static_box: tuple[int, int, int, int] | None = None,
 ) -> Image.Image:
     """Cut a generated sheet into frames and put them on one shared anchor.
 
@@ -524,7 +525,9 @@ def normalise_strip(
     an outstretched punch does not shove the body backwards. `x_anchor="base"`
     pins the rightmost pixel of each frame's bottom quarter to column `base_x`,
     for figures drawn with a prop in front of them (a panelist's desk): the
-    prop stays put while the figure behind it moves.
+    prop stays put while the figure behind it moves. `static_box` (x0, y0, x1,
+    y1 inside one frame) copies the first frame's pixels in that box onto every
+    other frame, for when the generator redrew the prop itself at another size.
     """
     im = im.convert("RGBA")
     crops = split_frames_by_blob(im, frames) if clean else None
@@ -574,9 +577,22 @@ def normalise_strip(
         x = i * frame_w + offset
         y = frame_h - h if anchor == "bottom" else (frame_h - h) // 2
         sheet.alpha_composite(small, (x, y))
+    if static_box:
+        freeze_box(sheet, frames, frame_w, static_box)
     if genesis_colors:
         sheet = snap_sheet_genesis(sheet, genesis_colors)
     return sheet
+
+
+def freeze_box(sheet: Image.Image, frames: int, frame_w: int,
+               box: tuple[int, int, int, int]) -> None:
+    """Copy frame 1's pixels inside `box` onto every later frame, alpha included."""
+    x0, y0, x1, y1 = box
+    if not (0 <= x0 < x1 <= frame_w and 0 <= y0 < y1 <= sheet.size[1]):
+        sys.exit(f"pixelize: static box {box} is not inside a {frame_w}x{sheet.size[1]} frame")
+    still = sheet.crop(box)
+    for i in range(1, frames):
+        sheet.paste(still, (i * frame_w + x0, y0))
 
 
 def base_right_x(im: Image.Image, band: float = 0.25) -> int:
@@ -662,6 +678,13 @@ def parse_band(value: str) -> tuple[float, float]:
     return top, bottom
 
 
+def parse_box(value: str) -> tuple[int, int, int, int]:
+    parts = [int(v) for v in value.split(",")]
+    if len(parts) != 4:
+        raise argparse.ArgumentTypeError("expected x0,y0,x1,y1")
+    return parts[0], parts[1], parts[2], parts[3]
+
+
 def parse_hex(value: str):
     if not value:
         return None
@@ -704,6 +727,8 @@ def main() -> None:
                             "or pin the right edge of the bottom quarter at --base-x")
     strip.add_argument("--base-x", type=int, default=0,
                        help="column for the base's right edge with --x-anchor base")
+    strip.add_argument("--static-box", type=parse_box, default=None,
+                       help="x0,y0,x1,y1 in frame pixels: every frame shows frame 1's pixels there")
     strip.add_argument("--keep-specks", action="store_true",
                        help="do not drop detached fragments inside a frame")
 
@@ -766,6 +791,7 @@ def main() -> None:
             target_height=args.target_height,
             x_anchor=args.x_anchor,
             base_x=args.base_x,
+            static_box=args.static_box,
         )
 
     out.save(args.out)

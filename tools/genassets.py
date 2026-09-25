@@ -212,6 +212,8 @@ def post_process(asset: dict, raw: Path, work: Path) -> bool:
     bright = str(asset.get("brightness", 1.08))
 
     if kind == "strip":
+        static_box = asset.get("static_box")
+        freeze = ["--static-box", ",".join(str(v) for v in static_box)] if static_box else []
         return pixelize([
             "strip",
             "--input", str(cut), "--out", str(out),
@@ -227,6 +229,7 @@ def post_process(asset: dict, raw: Path, work: Path) -> bool:
             "--saturation", str(asset.get("saturation", 1.18)),
             "--contrast", str(asset.get("contrast", 1.10)),
             "--brightness", bright,
+            *freeze,
         ])
 
     return pixelize([

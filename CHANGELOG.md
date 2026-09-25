@@ -138,7 +138,9 @@ All notable changes to this project are documented here. Format follows
   fidget (on the title screen's NOW HIRING roster and in the tower). The
   sprite pipeline centred every frame on the character, so a lean moved
   the desk with it; panel sheets now pin the desk's front leg in place
-  (`x_anchor: base` in `tools/assets.yaml`).
+  (`x_anchor: base` in `tools/assets.yaml`). The Hiring Manager's desk
+  also grew and shrank: the art itself drew it narrower in the second idle
+  frame, so that sheet now holds the first frame's desk (`static_box`).
 - The game sat off centre wherever the screen had room to its sides:
   a quarter of the spare width too far right (a phone in landscape,
   a desktop window), or too low in a tall window. In landscape on a phone

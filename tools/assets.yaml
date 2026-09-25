@@ -1293,6 +1293,8 @@ assets:
     target_height: 80
     x_anchor: base
     base_x: 100
+    # The generator drew frame 2's desk 6 px narrower; hold frame 1's desk.
+    static_box: [53, 57, 102, 96]
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match

@@ -4,6 +4,32 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-25 16:13 CDT: the Hiring Manager's desk, second pass
+
+**What.** After the anchor fix went live, Matt reported the Hiring
+Manager's desk still grew and shrank. The previous entry's claim that the
+raw desks were the same size was wrong for the Manager: that measurement
+compared desk heights, which do match, but the desk is about 6 px (10 per
+cent) narrower in the second idle frame, and its front panel is redrawn
+to match. Pinning the front leg kept the right edge still, so the left
+edge alone moved, which reads as the desk resizing. The fix is a
+`static_box` option on strips: after the frames are placed, the first
+frame's pixels inside the box (x 53 to 102, y 57 to the bottom: the desk
+and what is under it) are copied onto every other frame. The seam falls
+on the desk's left edge, and the chair, the arm on the desktop and the
+shoes under the desk still line up; checked at 7x. The pipeline output
+matches the composite that was reviewed pixel for pixel. The Screener's
+and the Tech Lead's desks only differ in texture pixels between frames,
+not in outline, so they do not get a box.
+
+**Alternatives rejected.** Regenerating the Manager's idle: another paid
+generation that can drift the same way. A single idle frame for the
+Manager: loses the fidget the other two keep.
+
+**Lesson.** Compare the prop's outline on all four sides (or an onion
+skin at full zoom), not one dimension, before calling two frames
+consistent.
+
 ## 2026-09-25 13:56 CDT: the desks that would not sit still
 
 **What.** Matt asked why the final-round bosses' desks change size on the
