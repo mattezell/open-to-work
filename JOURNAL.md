@@ -4,6 +4,36 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-25 11:40 CDT: the game was never centred
+
+**What.** Matt noticed in the iOS Simulator that landscape looked pushed
+right, with the right edge of the game under the A, B and C buttons. The
+cause is everywhere, not iOS: `#game` centres the canvas with flexbox,
+and Phaser's `autoCenter: CENTER_BOTH` also sets a margin of half the
+spare width on the canvas, which flexbox then centres together with the
+canvas. Net effect: the game sits a quarter of the spare space off
+centre. Measured on the live site: 188 px left and 63 px right at
+1280x720, 224 and 75 on an 874x402 phone in landscape, 330 above and
+110 below in an 800x1000 window. Portrait phones were fine only because
+the canvas fills the width there. The fix is `autoCenter: NO_CENTER`,
+leaving flexbox alone to centre, and it centres inside the safe-area
+padding, which Phaser's margin ignored. Playwright measured 11 sizes
+(desktop, phone and tablet, both orientations): every one is now within
+a pixel of centred. The dev build, tunnelled into the iPhone 17
+Simulator (iOS 26.5) in landscape, is centred between the stick and
+the buttons.
+
+**Alternatives rejected.** Dropping the flexbox and keeping Phaser's
+centring: Phaser measures the parent's border box, so it would centre
+across the safe-area padding and put the game under the Dynamic Island.
+
+**Follow-ups.** On the smallest landscape phones (667x375) the buttons
+still overlap the game's lower right corner; that is the landscape
+layout's design (translucent buttons over the play area), not this bug.
+Phaser's FIT also sizes the canvas from the border box, so with a
+safe-area inset the canvas can be a few pixels bigger than the padded
+box; not seen to matter, left alone.
+
 ## 2026-09-25 10:50 CDT: a double tap on the background zoomed the page on iOS
 
 **What.** With the blur fix live, the first player confirmed the pause

@@ -25,7 +25,9 @@ const game = new Phaser.Game({
   backgroundColor: '#101010',
   pixelArt: true,
   roundPixels: true,
-  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  // #game centres the canvas with flexbox, inside the safe-area padding. Phaser's own
+  // centring added a margin on top of that and pushed the game right of centre.
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.NO_CENTER },
   scene: [firstScene, ...SCENES.filter((scene) => scene !== firstScene)],
 });
 // Before boot, starting a scene queues its autostart with this data.

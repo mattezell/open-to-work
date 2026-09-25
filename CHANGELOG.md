@@ -134,6 +134,11 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- The game sat off centre wherever the screen had room to its sides:
+  a quarter of the spare width too far right (a phone in landscape,
+  a desktop window), or too low in a tall window. In landscape on a phone
+  that put the right edge of the game under the A, B and C buttons. It
+  is centred now.
 - A double tap on the background on an iPhone (a missed button) zoomed
   the page, with no way to pinch back out, and a zoomed page slid
   sideways under the stick. In touch play, touches outside the game's
