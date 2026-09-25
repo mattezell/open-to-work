@@ -4,6 +4,41 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-25 13:56 CDT: the desks that would not sit still
+
+**What.** Matt asked why the final-round bosses' desks change size on the
+title screen's roster as the characters move; the motion read as
+something far less professional than fidgeting. The desk is baked into each panelist's
+sprite, and the raw generations are fine: measured at full resolution,
+the desk is the same size in both idle frames, only the person behind
+it moves. The pipeline did it. `pixelize.py strip` defaults to
+`x_anchor: mass`, which centres every frame on its alpha centroid so a
+walking fighter's punch does not shove the body backwards. For a figure
+behind a fixed prop that is the wrong rule: when the Hiring Manager
+leans, the centroid moves, and the desk slides the other way by up to
+5 px (up to 16 px across one panelist's four sheets). At the roster's
+scale that reads as the desk pulsing. The fix is a third anchor, `base`,
+that pins the rightmost pixel of each frame's bottom quarter (the desk's
+front leg, since the art faces right) to one column, `base_x: 100`, for
+all 12 panel sheets. The staged raws were re-processed with
+`genassets.py --group panel --reuse-raw`, so no new generations: re-running
+the old settings reproduces the committed sheets byte for byte, so the
+anchor is the only change. Every one of the 36 frames now has its desk
+front at x=100; an onion-skin overlay shows the desk solid and only the
+figure moving, and the dev build's roster capture agrees.
+
+**Alternatives rejected.** Showing a single idle frame on the title:
+hides it there but leaves the same slide in the tower. Regenerating the
+art with a stricter prompt: costs generations, and the prompt already
+says "The desk does not move"; the model obeyed, the pipeline did not.
+
+**Follow-ups and risks.** In the idle sheets the desk front moves by at
+most 4 px against where it was; the tower fight itself was not replayed
+to look. The desk's size across
+sheets still varies a little, since each sheet pins its tallest frame
+to 80 px and the Manager stands up in its SATISFIED sheet; not visible
+in play so far.
+
 ## 2026-09-25 11:40 CDT: the game was never centred
 
 **What.** Matt noticed in the iOS Simulator that landscape looked pushed

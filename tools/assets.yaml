@@ -918,7 +918,9 @@ assets:
   # --- Stage 3, the Interview Tower ------------------------------------------
   # Designs first (group stage3-design), then the sheets reference them.
   # The panel interviewers are drawn with their own desk, so each one is a
-  # self-contained actor that depth-sorts in its own lane.
+  # self-contained actor that depth-sorts in its own lane. Their sheets pin
+  # the desk's front leg at x=100 (x_anchor: base) so the desk holds still
+  # while the interviewer moves behind it.
 
   - id: golem_design
     group: stage3-design
@@ -1145,6 +1147,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1161,6 +1165,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip4} The attached image is the approved character model sheet: match
@@ -1177,6 +1183,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1193,6 +1201,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1209,6 +1219,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1225,6 +1237,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip4} The attached image is the approved character model sheet: match
@@ -1241,6 +1255,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1257,6 +1273,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1273,6 +1291,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1289,6 +1309,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip4} The attached image is the approved character model sheet: match
@@ -1305,6 +1327,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match
@@ -1321,6 +1345,8 @@ assets:
     frame_width: 128
     frame_height: 96
     target_height: 80
+    x_anchor: base
+    base_x: 100
     outline: "101010"
     prompt: >
       {strip2} The attached image is the approved character model sheet: match

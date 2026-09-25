@@ -508,6 +508,7 @@ def normalise_strip(
     genesis_colors: int = 0,
     target_height: int = 0,
     x_anchor: str = "bbox",
+    base_x: int = 0,
 ) -> Image.Image:
     """Cut a generated sheet into frames and put them on one shared anchor.
 
@@ -520,7 +521,10 @@ def normalise_strip(
     of one character shares a body size; without it each sheet fills its own
     frame and the character changes size between animations. `x_anchor="mass"`
     centres each frame on its alpha centroid rather than its bounding box, so
-    an outstretched punch does not shove the body backwards.
+    an outstretched punch does not shove the body backwards. `x_anchor="base"`
+    pins the rightmost pixel of each frame's bottom quarter to column `base_x`,
+    for figures drawn with a prop in front of them (a panelist's desk): the
+    prop stays put while the figure behind it moves.
     """
     im = im.convert("RGBA")
     crops = split_frames_by_blob(im, frames) if clean else None
@@ -560,6 +564,11 @@ def normalise_strip(
         if x_anchor == "mass":
             offset = int(round(frame_w / 2 - alpha_centroid_x(small)))
             offset = min(frame_w - w, max(0, offset))
+        elif x_anchor == "base":
+            offset = base_x - base_right_x(small)
+            if offset < 0 or offset + w > frame_w:
+                sys.exit(f"pixelize: frame {i + 1} does not fit a {frame_w} px frame "
+                         f"with its base at x={base_x}; move --base-x or widen the frame")
         else:
             offset = (frame_w - w) // 2
         x = i * frame_w + offset
@@ -568,6 +577,17 @@ def normalise_strip(
     if genesis_colors:
         sheet = snap_sheet_genesis(sheet, genesis_colors)
     return sheet
+
+
+def base_right_x(im: Image.Image, band: float = 0.25) -> int:
+    """Rightmost opaque column in the bottom `band` of the image."""
+    alpha = im.getchannel("A")
+    w, h = alpha.size
+    top = min(h - 1, int(h * (1 - band)))
+    box = alpha.crop((0, top, w, h)).point(lambda a: 255 if a >= 128 else 0).getbbox()
+    if box is None:
+        sys.exit("pixelize: frame has nothing in its bottom band to anchor on")
+    return box[2] - 1
 
 
 def alpha_centroid_x(im: Image.Image) -> float:
@@ -679,8 +699,11 @@ def main() -> None:
     strip.add_argument("--anchor", choices=["bottom", "center"], default="bottom")
     strip.add_argument("--target-height", type=int, default=0,
                        help="pin the tallest frame to this height (one body size per character)")
-    strip.add_argument("--x-anchor", choices=["bbox", "mass"], default="bbox",
-                       help="centre frames on the bounding box or the alpha centroid")
+    strip.add_argument("--x-anchor", choices=["bbox", "mass", "base"], default="bbox",
+                       help="centre frames on the bounding box or the alpha centroid, "
+                            "or pin the right edge of the bottom quarter at --base-x")
+    strip.add_argument("--base-x", type=int, default=0,
+                       help="column for the base's right edge with --x-anchor base")
     strip.add_argument("--keep-specks", action="store_true",
                        help="do not drop detached fragments inside a frame")
 
@@ -742,6 +765,7 @@ def main() -> None:
             genesis_colors=genesis_colors,
             target_height=args.target_height,
             x_anchor=args.x_anchor,
+            base_x=args.base_x,
         )
 
     out.save(args.out)

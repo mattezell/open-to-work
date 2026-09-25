@@ -6,7 +6,7 @@ import unittest
 
 from PIL import Image, ImageDraw
 
-from pixelize import crop_rows, seamless, split_frames_by_blob
+from pixelize import base_right_x, crop_rows, normalise_strip, seamless, split_frames_by_blob
 
 
 def strip(boxes: list[tuple[int, int, int, int]], size: tuple[int, int] = (400, 100)) -> Image.Image:
@@ -101,3 +101,39 @@ class CropRows(unittest.TestCase):
         for top, bottom in ((0.5, 0.5), (0.8, 0.2), (-0.1, 1), (0, 1.2)):
             with self.assertRaises(ValueError):
                 crop_rows(plate, top, bottom)
+
+def desk_figure(lean: int) -> Image.Image:
+    """A figure whose head leans `lean` px to the right, behind a desk on the bottom quarter."""
+    im = Image.new("RGBA", (120, 100), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(im)
+    draw.rectangle((10 + lean, 0, 50 + lean, 60), fill=(200, 40, 40, 255))
+    draw.rectangle((30, 60, 100, 99), fill=(120, 80, 40, 255))
+    return im
+
+
+def base_right_of_frames(sheet: Image.Image, frames: int, frame_w: int) -> list[int]:
+    return [base_right_x(sheet.crop((i * frame_w, 0, (i + 1) * frame_w, sheet.size[1])))
+            for i in range(frames)]
+
+
+class BaseAnchor(unittest.TestCase):
+    def normalise(self, x_anchor: str) -> Image.Image:
+        pair = Image.new("RGBA", (400, 100), (0, 0, 0, 0))
+        pair.alpha_composite(desk_figure(0), (20, 0))
+        pair.alpha_composite(desk_figure(30), (220, 0))
+        return normalise_strip(
+            pair, 2, 64, 48, palette=None, dither=False, saturation=1.0, contrast=1.0,
+            brightness=1.0, alpha_threshold=24, outline=None, anchor="bottom",
+            target_height=40, x_anchor=x_anchor, base_x=50,
+        )
+
+    def test_finds_the_right_edge_of_the_bottom_band_not_the_widest_row(self) -> None:
+        self.assertEqual(base_right_x(desk_figure(60)), 100)
+
+    def test_the_desk_holds_still_while_the_figure_leans(self) -> None:
+        self.assertEqual(base_right_of_frames(self.normalise("base"), 2, 64), [50, 50])
+
+    def test_centring_on_mass_lets_the_desk_slide(self) -> None:
+        edges = base_right_of_frames(self.normalise("mass"), 2, 64)
+        self.assertNotEqual(edges[0], edges[1])
+
