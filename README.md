@@ -69,6 +69,8 @@ logged in to the account (`wrangler whoami`).
 ```bash
 # 1. recheck the CV page: it must differ from the home page, else set CV_LIVE false
 [ "$(curl -s https://immatt.com/cv/ | md5sum)" != "$(curl -s https://immatt.com/ | md5sum)" ] && echo CV live
+# 2. deploy only a pushed commit, so the live game always matches GitHub
+[ -z "$(git status --porcelain)" ] && git push origin main && [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] && echo pushed
 npm run check && npm run build     # the build bakes in the credit's commit dates
 npx wrangler deploy                # the game
 npx wrangler deploy -c wrangler.redirect.jsonc   # the otw alias (only when it changes)
