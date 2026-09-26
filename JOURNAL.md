@@ -4,6 +4,15 @@ Append-only, reverse-chronological. Newest entries at the top. This is the raw
 material for the TNG Deep Dive: decisions, surprises, what broke, exact
 commands.
 
+## 2026-09-26 01:38 CDT: double-tap zoom confirmed fixed on a device
+
+**What.** The tester who reported double-tap zoom (iPhone 16 Pro, iOS
+18.7.8) confirmed it no longer zooms. That closes the iOS reports: pause
+on blur (confirmed earlier), double-tap zoom and the sideways scroll that
+came with it. The deploy flow stays manual (`npx wrangler deploy` from a
+pushed, clean `main`, per the README); Matt chose not to move it to
+deploy on merge.
+
 ## 2026-09-25 16:13 CDT: the Hiring Manager's desk, second pass
 
 **What.** After the anchor fix went live, Matt reported the Hiring
